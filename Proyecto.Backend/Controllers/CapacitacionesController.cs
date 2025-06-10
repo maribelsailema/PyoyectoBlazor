@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Proyecto.Backend.Models;
 
 namespace Proyecto.Backend.Controllers
@@ -17,7 +18,8 @@ namespace Proyecto.Backend.Controllers
         [HttpGet("Listar")]
         public async Task<ActionResult<IEnumerable<Capacitacione>>> Listar()
         {
-            return await _context.Capacitaciones.ToListAsync();
+            var ap = await _context.Capacitaciones.ToListAsync();
+            return Ok(ap);
         }
 
         [HttpGet("Buscar/{id}")]
