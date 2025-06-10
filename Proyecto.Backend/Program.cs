@@ -1,4 +1,7 @@
 
+using Microsoft.EntityFrameworkCore;
+using Proyecto.Backend.Models;
+
 namespace Proyecto.Backend
 {
     public class Program
@@ -7,18 +10,28 @@ namespace Proyecto.Backend
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            builder.Services.AddDbContext<PlataformaDocenteContext>(options =>
+options.UseSqlServer(builder.Configuration.GetConnectionString("connectionDB"))
+);
 
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
 
+            builder.Services.AddSwaggerGen();
+
             var app = builder.Build();
+            app.MapGet("/", (HttpContext context) =>
+            {
+                context.Response.Redirect("/swagger/index.html", permanent: false);
+            });
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
+                app.UseSwaggerUI();
+                app.UseSwagger();
             }
 
             app.UseHttpsRedirection();
