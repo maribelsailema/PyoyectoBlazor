@@ -1,94 +1,94 @@
 ﻿@page "/perfil"
 @using System.ComponentModel.DataAnnotations
 
-
 <header class="navbar">
     <div class="navbar-left">
-    <h3>Bienvenido, @usuario.Nombre</h3>
+        <h3>Bienvenido, @usuario.Nombre</h3>
     </div>
     <nav class="navbar-right nav-links">
         <NavLink href="/inicio" class="nav-item"><i class="bi bi-house-fill"></i> Inicio</NavLink>
         <NavLink href="/promocion" class="nav-item"><i class="bi bi-bar-chart-line-fill"></i> Promoción</NavLink>
-        <NavLink href="/perfil" class="nav-item"><i class="bi bi-person-fill"></i> Perfil</NavLink>
+        <NavLink href="/perfil" class="nav-item active"><i class="bi bi-person-fill"></i> Perfil</NavLink> @* Añadir 'active' para el enlace actual *@
         <NavLink href="/" class="nav-item cerrar-sesion"><i class="bi bi-box-arrow-right"></i> Cerrar Sesión</NavLink>
     </nav>
 </header>
 
+<div class="page-content-wrapper">
+    @* Nuevo contenedor para el contenido principal *@
+    <div class="profile-card">
+        @* Cambiado a profile-card para mejor semántica con los estilos *@
+        <h3 class="profile-title"><i class="bi bi-person-badge"></i> Perfil de Usuario</h3>
 
-<div class="profile-container">
-    <h3 class="profile-title"><i class="bi bi-person-badge"></i> Perfil de Usuario</h3>
+        <div class="profile-actions">
+            <button class="btn btn-primary" @onclick="MostrarModalAgregar">
+                <i class="bi bi-plus-circle"></i> Agregar
+            </button>
+            <button class="btn btn-secondary" @onclick="MostrarModalImportar">
+                <i class="bi bi-cloud-download"></i> Importar / Cargar
+            </button> @* Cambiado el icono y texto para ser más genérico para "cargar datos" *@
+            <button class="btn btn-danger" @onclick="EliminarSeleccionado" disabled="@(Seleccionado == null)">
+                <i class="bi bi-trash"></i> Eliminar
+            </button>
+        </div>
 
-    <div class="profile-actions">
-        <button class="btn btn-primary me-2" @onclick="MostrarModalAgregar">
-            <i class="bi bi-plus-circle"></i> Agregar
-        </button>
-        <button class="btn btn-secondary me-2" @onclick="MostrarModalImportar">
-            <i class="bi bi-download"></i> Importar
-        </button>
-        <button class="btn btn-danger" @onclick="EliminarSeleccionado" disabled="@(Seleccionado == null)">
-            <i class="bi bi-trash"></i> Eliminar
-        </button>
-    </div>
-
-
-
-    @if (Datos.Any())
-    {
-        <div class="profile-table-container">
-            <table class="profile-table">
-                <thead>
-                    <tr>
-                        <th>Universidad</th>
-                        <th>Tiempo</th>
-                        <th>Obras</th>
-                        <th>Puntaje Eva.</th>
-                        <th>Horas Cap.</th>
-                        <th>Investigación</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var dato in Datos)
-                    {
-                        <tr class="@(dato == Seleccionado ? "selected-row" : null)"
-                            @onclick="() => SeleccionarFila(dato)">
-                            <td>@dato.Universidad</td>
-                            <td>@dato.Tiempo años</td>
-                            <td>@dato.Obras</td>
-                            <td>@dato.Puntaje.ToString("0.0") %</td>
-                            <td>@dato.Horas</td>
-                            <td>@dato.Investigacion meses</td>
-                            <td>
-                            <td>
-                                <button class="btn-edit" @onclick:stopPropagation @onclick="@(e => Editar(dato, e))">
-                                    <i class="bi bi-pencil"></i> Editar
-                                </button>
-                            </td>
-                            </td>
+        @if (Datos.Any())
+        {
+            <div class="profile-table-container">
+                <table class="profile-table">
+                    <thead>
+                        <tr>
+                            <th>Universidad</th>
+                            <th>Tiempo</th>
+                            <th>Obras</th>
+                            <th>Puntaje Eva.</th>
+                            <th>Horas Cap.</th>
+                            <th>Investigación</th>
+                            <th class="text-center">Acciones</th> @* Centrar el encabezado de acciones *@
                         </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
-    else
-    {
-        <div class="no-data">
-            <i class="bi bi-database-exclamation"></i>
-            <p>No hay datos registrados</p>
-        </div>
-    }
-</div>
+                    </thead>
+                    <tbody>
+                        @foreach (var dato in Datos)
+                        {
+                            <tr class="@(dato == Seleccionado ? "selected-row" : null)"
+                                @onclick="() => SeleccionarFila(dato)">
+                                <td>@dato.Universidad</td>
+                                <td>@dato.Tiempo años</td>
+                                <td>@dato.Obras</td>
+                                <td>@dato.Puntaje.ToString("0.0") %</td>
+                                <td>@dato.Horas</td>
+                                <td>@dato.Investigacion meses</td>
+                                <td class="table-actions">
+                                    @* Nueva clase para la celda de acciones *@
+                                    <button class="btn-edit" @onclick:stopPropagation @onclick="@(e => Editar(dato, e))">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="no-data">
+                <i class="bi bi-database-exclamation"></i>
+                <p>No hay datos registrados. ¡Usa el botón "Agregar" o "Importar" para empezar!</p>
+            </div>
+        }
+    </div> @* Fin .profile-card *@
+</div> @* Fin .page-content-wrapper *@
 
-<!-- Modal Agregar -->
+
 @if (ModalAgregarVisible)
 {
     <div class="modal fade show d-block" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
+            @* Centrar el modal verticalmente *@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Agregar Datos</h5>
-                    <button class="btn-close" @onclick="() => ModalAgregarVisible = false"></button>
+                    <button type="button" class="btn-close" @onclick="() => ModalAgregarVisible = false" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <EditForm Model="NuevoDato" OnValidSubmit="GuardarNuevoDato">
@@ -137,15 +137,14 @@
     <div class="modal-backdrop fade show"></div>
 }
 
-<!-- Modal Editar -->
 @if (ModalEditarVisible && EditandoDato != null)
 {
     <div class="modal fade show d-block" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title"><i class="bi bi-pencil-square"></i> Editar Datos</h5>
-                    <button class="btn-close" @onclick="() => ModalEditarVisible = false"></button>
+                    <button type="button" class="btn-close" @onclick="() => ModalEditarVisible = false" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <EditForm Model="EditandoDato" OnValidSubmit="ActualizarDato">
@@ -156,8 +155,26 @@
                             <label class="form-label">Universidad</label>
                             <InputText class="form-control" @bind-Value="EditandoDato.Universidad" />
                         </div>
-
-                        <!-- Resto de campos similares al modal agregar -->
+                        <div class="mb-3">
+                            <label class="form-label">Tiempo (años)</label>
+                            <InputNumber class="form-control" @bind-Value="EditandoDato.Tiempo" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Número de Obras</label>
+                            <InputNumber class="form-control" @bind-Value="EditandoDato.Obras" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Puntaje de Evaluación (%)</label>
+                            <InputNumber class="form-control" @bind-Value="EditandoDato.Puntaje" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Horas de Capacitación</label>
+                            <InputNumber class="form-control" @bind-Value="EditandoDato.Horas" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tiempo en Investigación (meses)</label>
+                            <InputNumber class="form-control" @bind-Value="EditandoDato.Investigacion" />
+                        </div>
 
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" @onclick="() => ModalEditarVisible = false">Cancelar</button>
@@ -172,29 +189,49 @@
 
 }
 
-<!-- Modal Importar -->
 @if (ModalImportarVisible)
 {
     <div class="modal fade show d-block" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-download"></i> Importar Datos</h5>
-                    <button class="btn-close" @onclick="() => ModalImportarVisible = false"></button>
+                    <h5 class="modal-title"><i class="bi bi-cloud-arrow-up"></i> Importar / Cargar Datos</h5> @* Icono más apropiado para cargar *@
+                    <button type="button" class="btn-close" @onclick="() => ModalImportarVisible = false" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <p>Selecciona una fuente para importar o cargar datos académicos automáticamente.</p>
                     <div class="mb-3">
                         <label class="form-label">Fuente de datos:</label>
                         <select class="form-select" @bind="FuenteImportacion">
                             <option value="senecyt">SENESCYT</option>
                             <option value="ministerio">Ministerio de Educación</option>
                             <option value="otra">Otra Universidad</option>
+                            <option value="archivo">Cargar desde archivo (.csv, .xlsx)</option> @* Opción para cargar desde archivo *@
                         </select>
                     </div>
+
+                    @if (FuenteImportacion == "archivo")
+                    {
+                        <div class="mb-3 file-upload-area">
+                            @* Área para cargar archivo *@
+                            <label class="form-label">Arrastra o haz clic para cargar un archivo:</label>
+                            <InputFile OnChange="HandleFileSelection" />
+                            @if (!string.IsNullOrEmpty(FileName))
+                            {
+                                <p class="mt-2 text-success"><i class="bi bi-check-circle-fill"></i> Archivo seleccionado: @FileName</p>
+                            }
+                            else
+                            {
+                                <p class="mt-2 text-muted">Formatos soportados: .csv, .xlsx</p>
+                            }
+                        </div>
+                    }
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" @onclick="() => ModalImportarVisible = false">Cancelar</button>
-                    <button type="button" class="btn btn-primary" @onclick="ImportarDatos">Importar</button>
+                    <button type="button" class="btn btn-primary" @onclick="ImportarDatos" disabled="@(FuenteImportacion == "archivo" && !FileSelected)">
+                        <i class="bi bi-upload"></i> Cargar Datos
+                    </button> @* Cambiado el texto y habilitado/deshabilitado según archivo *@
                 </div>
             </div>
         </div>
@@ -205,11 +242,22 @@
 @code {
     public class DatoAcademico
     {
+        [Required(ErrorMessage = "La universidad es obligatoria.")]
         public string Universidad { get; set; } = string.Empty;
+
+        [Range(0, 100, ErrorMessage = "El tiempo debe estar entre 0 y 100 años.")]
         public int Tiempo { get; set; }
+
+        [Range(0, 50, ErrorMessage = "Las obras deben ser un número entre 0 y 50.")]
         public int Obras { get; set; }
+
+        [Range(0.0, 100.0, ErrorMessage = "El puntaje debe estar entre 0.0 y 100.0.")]
         public double Puntaje { get; set; }
+
+        [Range(0, 500, ErrorMessage = "Las horas deben estar entre 0 y 500.")]
         public int Horas { get; set; }
+
+        [Range(0, 60, ErrorMessage = "La investigación debe estar entre 0 y 60 meses.")]
         public int Investigacion { get; set; }
     }
 
@@ -222,9 +270,23 @@
     private bool ModalEditarVisible = false;
     private bool ModalImportarVisible = false;
     private string FuenteImportacion = "senecyt";
+    private IBrowserFile? SelectedFile; // Para manejar la carga de archivos
+    private string FileName = string.Empty; // Para mostrar el nombre del archivo seleccionado
+    private bool FileSelected => SelectedFile != null;
 
-    private void MostrarModalAgregar() => ModalAgregarVisible = true;
-    private void MostrarModalImportar() => ModalImportarVisible = true;
+
+    private void MostrarModalAgregar()
+    {
+        NuevoDato = new DatoAcademico(); // Resetear el formulario al abrir el modal
+        ModalAgregarVisible = true;
+    }
+    private void MostrarModalImportar()
+    {
+        FuenteImportacion = "senecyt"; // Reiniciar la fuente de importación al abrir
+        SelectedFile = null; // Reiniciar el archivo seleccionado
+        FileName = string.Empty;
+        ModalImportarVisible = true;
+    }
 
     private void GuardarNuevoDato()
     {
@@ -239,6 +301,7 @@
             });
         NuevoDato = new();
         ModalAgregarVisible = false;
+        StateHasChanged(); // Forzar la actualización de la UI
     }
 
     private void SeleccionarFila(DatoAcademico dato)
@@ -252,11 +315,13 @@
         {
             Datos.Remove(Seleccionado);
             Seleccionado = null;
+            StateHasChanged(); // Forzar la actualización de la UI
         }
     }
 
     private void Editar(DatoAcademico dato, MouseEventArgs e)
     {
+        // Se crea una copia para que la edición no afecte el objeto original hasta que se guarde
         EditandoDato = new DatoAcademico
             {
                 Universidad = dato.Universidad,
@@ -266,7 +331,7 @@
                 Horas = dato.Horas,
                 Investigacion = dato.Investigacion
             };
-        Seleccionado = dato;
+        Seleccionado = dato; // Mantener la referencia al original para actualizarlo
         ModalEditarVisible = true;
     }
 
@@ -274,6 +339,7 @@
     {
         if (EditandoDato != null && Seleccionado != null)
         {
+            // Actualizar las propiedades del objeto original 'Seleccionado' con los valores de 'EditandoDato'
             Seleccionado.Universidad = EditandoDato.Universidad;
             Seleccionado.Tiempo = EditandoDato.Tiempo;
             Seleccionado.Obras = EditandoDato.Obras;
@@ -281,25 +347,60 @@
             Seleccionado.Horas = EditandoDato.Horas;
             Seleccionado.Investigacion = EditandoDato.Investigacion;
             ModalEditarVisible = false;
+            StateHasChanged(); // Forzar la actualización de la UI
         }
     }
 
-    private void ImportarDatos()
+    private async Task ImportarDatos()
     {
-        var dato = FuenteImportacion switch
+        if (FuenteImportacion == "archivo" && SelectedFile != null)
         {
-            "senecyt" => new DatoAcademico { Universidad = "SENESCYT", Tiempo = 5, Obras = 4, Puntaje = 97.5, Horas = 120, Investigacion = 18 },
-            "ministerio" => new DatoAcademico { Universidad = "Ministerio Educación", Tiempo = 3, Obras = 2, Puntaje = 96.0, Horas = 100, Investigacion = 15 },
-            _ => new DatoAcademico { Universidad = "Universidad Central", Tiempo = 4, Obras = 3, Puntaje = 98.5, Horas = 110, Investigacion = 24 }
-        };
-        Datos.Add(dato);
+            // Aquí iría la lógica real para procesar el archivo.
+            // Por simplicidad, solo agregamos un dato de ejemplo.
+            // En una aplicación real, leerías el contenido del archivo.
+            var datoImportadoFromFile = new DatoAcademico
+                {
+                    Universidad = $"Datos de Archivo: {FileName}",
+                    Tiempo = 2,
+                    Obras = 1,
+                    Puntaje = 85.0,
+                    Horas = 40,
+                    Investigacion = 6
+                };
+            Datos.Add(datoImportadoFromFile);
+            Console.WriteLine($"Archivo {FileName} simulado como importado.");
+        }
+        else
+        {
+            var dato = FuenteImportacion switch
+            {
+                "senecyt" => new DatoAcademico { Universidad = "SENESCYT", Tiempo = 5, Obras = 4, Puntaje = 97.5, Horas = 120, Investigacion = 18 },
+                "ministerio" => new DatoAcademico { Universidad = "Ministerio Educación", Tiempo = 3, Obras = 2, Puntaje = 96.0, Horas = 100, Investigacion = 15 },
+                _ => new DatoAcademico { Universidad = "Universidad Desconocida", Tiempo = 4, Obras = 3, Puntaje = 90.0, Horas = 80, Investigacion = 12 }
+            };
+            Datos.Add(dato);
+        }
+
         ModalImportarVisible = false;
+        StateHasChanged(); // Forzar la actualización de la UI
     }
+
+    private async Task HandleFileSelection(InputFileChangeEventArgs e)
+    {
+        SelectedFile = e.File;
+        FileName = e.File.Name;
+        // Aquí podrías añadir validaciones de tamaño o tipo de archivo si fuera necesario
+    }
+
+
     private UsuarioModel usuario = new();
 
     protected override void OnInitialized()
     {
-        usuario = new UsuarioModel { Nombre = "Usuario" }; // Simulación
+        usuario = new UsuarioModel { Nombre = "Docente Ejemplo" }; // Simulación de usuario logueado
+        // Opcional: Cargar algunos datos de ejemplo al inicio
+        Datos.Add(new DatoAcademico { Universidad = "Universidad de Quito", Tiempo = 7, Obras = 5, Puntaje = 98.2, Horas = 150, Investigacion = 24 });
+        Datos.Add(new DatoAcademico { Universidad = "Escuela Politécnica", Tiempo = 3, Obras = 2, Puntaje = 92.5, Horas = 80, Investigacion = 12 });
     }
 
     public class UsuarioModel
@@ -307,6 +408,7 @@
         public string Nombre { get; set; } = string.Empty;
     }
 }
+
 <footer class="footer">
     <div class="footer-info">
         <div class="footer-section">
