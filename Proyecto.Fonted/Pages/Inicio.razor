@@ -1,0 +1,57 @@
+﻿@page "/inicio"
+@using System.ComponentModel.DataAnnotations
+
+<header class="navbar">
+    <div class="navbar-left">
+        <h3>Bienvenido, @usuario.Nombre</h3>
+    </div>
+    <nav class="navbar-right nav-links">
+        <NavLink href="/homeUsuario" class="nav-item"><i class="bi bi-house-fill"></i> Inicio</NavLink>
+        <NavLink href="/promocion" class="nav-item"><i class="bi bi-bar-chart-line-fill"></i> Promoción</NavLink>
+        <NavLink href="/perfil" class="nav-item"><i class="bi bi-person-fill"></i> Perfil</NavLink>
+        <NavLink href="/login" class="nav-item cerrar-sesion"><i class="bi bi-box-arrow-right"></i> Cerrar Sesión</NavLink>
+    </nav>
+</header>
+
+<main class="contenido">
+    <section class="bienvenida">
+        <h2>Bienvenido al Sistema de Gestión de Promociones para Docentes de la FISEI</h2>
+        <NavLink href="/promocion" class="btn-principal">
+            <i class="bi bi-check2-circle"></i> Iniciar Proceso
+        </NavLink>
+    </section>
+</main>
+
+<footer class="footer">
+    <div class="footer-info">
+        <div class="footer-section">
+            <h4><i class="bi bi-info-circle-fill"></i> Sobre Nosotros</h4>
+            <p>Sistema de Promoción para Docentes de la FISEI.<br>Para agilizar trámites.</p>
+        </div>
+        <div class="footer-section">
+            <h4><i class="bi bi-envelope-fill"></i> Contactos</h4>
+            <p>support@correo.com<br>+593 99 234 56789</p>
+        </div>
+        <div class="footer-section">
+            <h4><i class="bi bi-link-45deg"></i> Enlaces Rápidos</h4>
+            <NavLink href="/inicio"><i class="bi bi-house-fill"></i> Inicio</NavLink><br />
+            <NavLink href="/promocion"><i class="bi bi-bar-chart-line-fill"></i> Promoción</NavLink><br />
+            <NavLink href="/perfil"><i class="bi bi-person-fill"></i> Perfil</NavLink>
+        </div>
+    </div>
+    <p class="copyright">© 2025 Sistema de Promoción, Todos los Derechos Reservados</p>
+</footer>
+
+@code {
+    private UsuarioModel usuario = new();
+
+    protected override void OnInitialized()
+    {
+        usuario = new UsuarioModel { Nombre = "Usuario" }; // Simulación
+    }
+
+    public class UsuarioModel
+    {
+        public string Nombre { get; set; } = string.Empty;
+    }
+}

@@ -1,0 +1,229 @@
+﻿@page "/promocion"
+@using System.ComponentModel.DataAnnotations
+@inject NavigationManager Navigation
+@inject ILogger<Promocion> Logger
+
+<header class="navbar">
+    <div class="navbar-left">
+        <!-- El título de la página "Promoción Docente" o el nombre de usuario se mostraría aquí -->
+        <h3>Promoción Docente</h3>
+    </div>
+    <nav class="navbar-right nav-links">
+        <NavLink href="/inicio" class="nav-item"><i class="bi bi-house-fill"></i> Inicio</NavLink>
+        <NavLink href="/promocion" class="nav-item"><i class="bi bi-bar-chart-line-fill"></i> Promoción</NavLink>
+        <NavLink href="/perfil" class="nav-item"><i class="bi bi-person-fill"></i> Perfil</NavLink>
+        <NavLink href="/login" class="nav-item cerrar-sesion"><i class="bi bi-box-arrow-right"></i> Cerrar Sesión</NavLink>
+    </nav>
+</header>
+
+<main class="contenido-promocion">
+    <div class="container">
+        <!-- Sección de Posición Actual -->
+        <div class="current-position">
+            <h3><i class="bi bi-info-circle"></i> Tu posición actual: <strong>@currentPosition.RoleType</strong></h3>
+            <p class="text-muted">@currentPosition.Description</p>
+        </div>
+
+        <!-- Tabla de Niveles de Promoción -->
+        <div class="table-responsive">
+            <table class="table table-hover promotion-table">
+                <thead>
+                    <tr>
+                        <th>Tipo de Rol</th>
+                        <th>Tiempo en Rol</th>
+                        <th># de Obras</th>
+                        <th>Puntaje Evaluación</th>
+                        <th>Cap. Cursos Aprob.</th>
+                        <th>Investigación</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var level in promotionLevels)
+                    {
+                        <tr class="@(level.IsAvailable ? "" : "disabled-row")">
+                            <td>@level.RoleType</td>
+                            <td>@level.TimeInRole</td>
+                            <td>@level.Works</td>
+                            <td>@level.EvaluationScore</td>
+                            <td>@level.CoursesHours</td>
+                            <td>@level.ResearchMonths</td>
+                            <td>
+                                @if (level.IsAvailable && !hasPosted)
+                                {
+                                    <button class="btn-postular" @onclick="() => Postular(level.RoleType)">
+                                        <i class="bi bi-send-check"></i> Postular
+                                    </button>
+                                }
+                                else if (level.IsAvailable && hasPosted)
+                                {
+                                    <button class="btn-disabled" disabled>
+                                        <i class="bi bi-check-circle"></i> Postulación Procesando
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button class="btn-disabled" disabled>
+                                        <i class="bi bi-lock"></i> No disponible
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Sección de Requisitos para Postulación -->
+        <div class="requirements-info mt-4">
+            <h4><i class="bi bi-card-checklist"></i> Requisitos para postulación:</h4>
+            <ul>
+                @foreach (var req in requirements)
+                {
+                    <li>@req</li>
+                }
+            </ul>
+        </div>
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="footer-info">
+        <div class="footer-section">
+            <h4><i class="bi bi-info-circle-fill"></i> Sobre Nosotros</h4>
+            <p>Sistema de Promoción para Docentes de la FISEI.<br>Para agilizar trámites.</p>
+        </div>
+        <div class="footer-section">
+            <h4><i class="bi bi-envelope-fill"></i> Contactos</h4>
+            <p>support@correo.com<br>+593 99 234 56789</p>
+        </div>
+        <div class="footer-section">
+            <h4><i class="bi bi-link-45deg"></i> Enlaces Rápidos</h4>
+            <NavLink href="/inicio"><i class="bi bi-house-fill"></i> Inicio</NavLink><br />
+            <NavLink href="/promocion"><i class="bi bi-bar-chart-line-fill"></i> Promoción</NavLink><br />
+            <NavLink href="/perfil"><i class="bi bi-person-fill"></i> Perfil</NavLink>
+        </div>
+    </div>
+    <p class="copyright">© 2025 Sistema de Promoción, Todos los Derechos Reservados</p>
+</footer>
+
+@code {
+    // Modelo para la posición actual del usuario
+    private CurrentPositionModel currentPosition = new();
+
+    // Lista de niveles de promoción para la tabla
+    private List<PromotionLevel> promotionLevels = new();
+
+    // Lista de requisitos para la postulación
+    private List<string> requirements = new();
+
+    // Estado para controlar si el usuario ya ha postulado (simulado)
+    private bool hasPosted = false;
+
+    /// <summary>
+    /// Se ejecuta cuando el componente se inicializa.
+    /// Aquí simulamos la carga de datos que vendrían de una API.
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        Logger.LogInformation("Componente Promocion inicializado.");
+
+        // Simulación de datos de posición actual del usuario
+        currentPosition = new CurrentPositionModel
+            {
+                RoleType = "Docente Titular 1 (DT1)",
+                Description = "Puedes postularte solo al siguiente nivel (DT2). Una vez aprobada tu promoción, podrás postularte al siguiente nivel cuando cumples los requisitos."
+            };
+
+        // Simulación de datos de niveles de promoción
+        promotionLevels = new List<PromotionLevel>
+        {
+            new PromotionLevel
+            {
+                RoleType = "DT2",
+                TimeInRole = "4 años",
+                Works = "1",
+                EvaluationScore = "75%",
+                CoursesHours = "96 horas",
+                ResearchMonths = "12 meses",
+                IsAvailable = true // Este es el nivel al que se puede postular inicialmente
+            },
+            new PromotionLevel
+            {
+                RoleType = "DT3",
+                TimeInRole = "4 años",
+                Works = "2",
+                EvaluationScore = "75%",
+                CoursesHours = "96 horas",
+                ResearchMonths = "12 meses",
+                IsAvailable = false // No disponible hasta que se cumplan los requisitos de DT2
+            },
+            new PromotionLevel
+            {
+                RoleType = "DT4",
+                TimeInRole = "4 años",
+                Works = "3",
+                EvaluationScore = "75%",
+                CoursesHours = "128 horas",
+                ResearchMonths = "24 meses",
+                IsAvailable = false // No disponible
+            }
+        };
+
+        // Simulación de datos de requisitos
+        requirements = new List<string>
+        {
+            "Haber cumplido el tiempo mínimo en el puesto actual (4 años como DT1)",
+            "Tener al menos 1 obra publicada o equivalente",
+            "Haber obtenido un puntaje mínimo de 75% en la última evaluación",
+            "Haber completado 96 horas de capacitación aprobada",
+            "Haber participado en investigación durante al menos 12 meses"
+        };
+    }
+
+    /// <summary>
+    /// Maneja la acción de postularse a un puesto.
+    /// Simula el proceso de postulación y actualiza el estado de la UI.
+    /// </summary>
+    /// <param name="roleType">El tipo de rol al que el usuario desea postularse.</param>
+    private void Postular(string roleType)
+    {
+        // En una aplicación real, aquí harías una llamada a tu API para procesar la postulación.
+        // Por ejemplo: await Http.PostAsJsonAsync("api/promocion/postular", new { Role = roleType });
+
+        Logger.LogInformation("Usuario intentando postularse al puesto: {RoleType}", roleType);
+
+        // Simulamos que la postulación es exitosa y se está procesando.
+        // Esto deshabilitará el botón "Postular" y mostrará "Postulación Procesando".
+        hasPosted = true;
+
+        // Opcional: Navegar a la página de perfil después de un breve retraso
+        // para que el usuario vea el estado "Procesando" antes de la navegación.
+        // await Task.Delay(2000); // Esto requeriría Postular ser async Task
+        Navigation.NavigateTo("/perfil");
+    }
+
+    /// <summary>
+    /// Modelo de datos para la posición actual del docente.
+    /// </summary>
+    public class CurrentPositionModel
+    {
+        public string RoleType { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Modelo de datos para un nivel de promoción.
+    /// </summary>
+    public class PromotionLevel
+    {
+        public string RoleType { get; set; } = string.Empty;
+        public string TimeInRole { get; set; } = string.Empty;
+        public string Works { get; set; } = string.Empty;
+        public string EvaluationScore { get; set; } = string.Empty;
+        public string CoursesHours { get; set; } = string.Empty;
+        public string ResearchMonths { get; set; } = string.Empty;
+        public bool IsAvailable { get; set; }
+    }
+}
+
