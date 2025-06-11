@@ -15,8 +15,14 @@
             <ValidationSummary />
 
             <div class="form-group">
-                <label>Nombre Completo</label>
-                <InputText @bind-Value="registerModel.FullName" class="form-control" placeholder="Juan Pérez" />
+                <label>Nombre </label>
+                <InputText @bind-Value="registerModel.FullName" class="form-control" placeholder="Juan" />
+                <ValidationMessage For="@(() => registerModel.FullName)" />
+            </div>
+
+             <div class="form-group">
+                <label>Apellido </label>
+                <InputText @bind-Value="registerModel.FullName" class="form-control" placeholder="Pérez" />
                 <ValidationMessage For="@(() => registerModel.FullName)" />
             </div>
 
