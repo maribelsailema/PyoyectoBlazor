@@ -1,0 +1,51 @@
+﻿@page "/recuperar-contrasena"
+@using System.ComponentModel.DataAnnotations
+@inject NavigationManager Navigation
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <i class="fas fa-key fa-3x"></i>
+            <h2>Recuperar Contraseña</h2>
+            <p>Ingrese su correo electrónico para restablecer su contraseña</p>
+        </div>
+
+        <EditForm Model="@recoveryModel" OnValidSubmit="HandleRecovery">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-group">
+                <label>Correo Electrónico</label>
+                <InputText @bind-Value="recoveryModel.Email" class="form-control" placeholder="su@correo.com" />
+                <ValidationMessage For="@(() => recoveryModel.Email)" />
+            </div>
+
+            <button type="submit" class="btn-auth">
+                <i class="fas fa-paper-plane"></i> Enviar Enlace
+            </button>
+
+            <div class="auth-links">
+                <NavLink href="/" class="auth-link">
+                    <i class="fas fa-arrow-left"></i> Volver al Login
+                </NavLink>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private RecoveryModel recoveryModel = new();
+
+    private void HandleRecovery()
+    {
+        // Lógica para enviar enlace de recuperación
+        Navigation.NavigateTo("/enlace-enviado");
+    }
+
+    public class RecoveryModel
+    {
+        [Required(ErrorMessage = "El correo es obligatorio")]
+        [EmailAddress(ErrorMessage = "Ingrese un correo válido")]
+        public string Email { get; set; }
+    }
+}

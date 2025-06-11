@@ -36,9 +36,13 @@
             </button>
 
             <div class="login-links">
-                <a href="#">¿Olvidó su contraseña?</a><br />
-                <span>¿No tiene una cuenta? <a href="#">Regístrese aquí</a></span><br />
-                <a href="#">Continuar</a>
+                <NavLink href="/recuperar-contrasena" class="login-link">
+                    <i class="fas fa-question-circle"></i> ¿Olvidó su contraseña?
+                </NavLink>
+                <span>
+                    ¿No tiene una cuenta?
+                    <NavLink href="/registro" class="login-link">Regístrese aquí</NavLink>
+                </span>
             </div>
         </div>
     </div>

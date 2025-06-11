@@ -1,0 +1,80 @@
+﻿@page "/registro"
+@using System.ComponentModel.DataAnnotations
+@inject NavigationManager Navigation
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <i class="fas fa-user-plus fa-3x"></i>
+            <h2>Crear Cuenta</h2>
+            <p>Complete el formulario para registrarse</p>
+        </div>
+
+        <EditForm Model="@registerModel" OnValidSubmit="HandleRegister">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-group">
+                <label>Nombre Completo</label>
+                <InputText @bind-Value="registerModel.FullName" class="form-control" placeholder="Juan Pérez" />
+                <ValidationMessage For="@(() => registerModel.FullName)" />
+            </div>
+
+            <div class="form-group">
+                <label>Correo Electrónico</label>
+                <InputText @bind-Value="registerModel.Email" class="form-control" placeholder="su@correo.com" />
+                <ValidationMessage For="@(() => registerModel.Email)" />
+            </div>
+
+            <div class="form-group">
+                <label>Contraseña</label>
+                <InputText @bind-Value="registerModel.Password" type="password" class="form-control" />
+                <ValidationMessage For="@(() => registerModel.Password)" />
+            </div>
+
+            <div class="form-group">
+                <label>Confirmar Contraseña</label>
+                <InputText @bind-Value="registerModel.ConfirmPassword" type="password" class="form-control" />
+                <ValidationMessage For="@(() => registerModel.ConfirmPassword)" />
+            </div>
+
+            <button type="submit" class="btn-auth">
+                <i class="fas fa-user-check"></i> Registrarse
+            </button>
+
+            <div class="auth-links">
+                <NavLink href="/" class="auth-link">
+                    <i class="fas fa-sign-in-alt"></i> ¿Ya tienes cuenta? Inicia Sesión
+                </NavLink>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private RegisterModel registerModel = new();
+
+    private void HandleRegister()
+    {
+        // Lógica de registro
+        Navigation.NavigateTo("/registro-exitoso");
+    }
+
+    public class RegisterModel
+    {
+        [Required(ErrorMessage = "El nombre es obligatorio")]
+        public string FullName { get; set; }
+
+        [Required(ErrorMessage = "El correo es obligatorio")]
+        [EmailAddress(ErrorMessage = "Ingrese un correo válido")]
+        public string Email { get; set; }
+
+        [Required(ErrorMessage = "La contraseña es obligatoria")]
+        [MinLength(8, ErrorMessage = "Mínimo 8 caracteres")]
+        public string Password { get; set; }
+
+        [Required(ErrorMessage = "Confirme su contraseña")]
+        [Compare(nameof(Password), ErrorMessage = "Las contraseñas no coinciden")]
+        public string ConfirmPassword { get; set; }
+    }
+}
