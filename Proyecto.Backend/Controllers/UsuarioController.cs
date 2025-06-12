@@ -19,6 +19,7 @@ namespace Proyecto.Backend.Controllers
         {
             var usuarios = await _context.Usuarios.ToListAsync();
             return Ok(usuarios);
+
         }
 
         [HttpPost("Guardar")]
@@ -46,6 +47,7 @@ namespace Proyecto.Backend.Controllers
 
             await _context.SaveChangesAsync();
             return Ok(usuarioActualizado);
+
         }
 
         [HttpDelete("Eliminar/{ced}")]
@@ -72,5 +74,25 @@ namespace Proyecto.Backend.Controllers
             }
             return Ok(usuario);
         }
+        [HttpPost("Validar")]
+        public async Task<ActionResult<Usuario>> ValidarUsuario([FromBody] LoginDTO login)
+        {
+            if (login == null || string.IsNullOrWhiteSpace(login.Usuari) || string.IsNullOrWhiteSpace(login.Pass))
+            {
+                return BadRequest("Usuario y contraseña son obligatorios.");
+            }
+
+            var usuario = await _context.Usuarios
+                .FirstOrDefaultAsync(u => u.Usuari == login.Usuari && u.Pass == login.Pass);
+
+            if (usuario == null)
+            {
+                return Unauthorized("Usuario o contraseña incorrectos.");
+            }
+
+            usuario.Pass = ""; // Evitar enviar la contraseña al frontend
+            return Ok(usuario);
+        }
+
     }
 }

@@ -1,8 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Proyecto.Backend.Models;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 namespace Proyecto.Backend
 {
@@ -12,54 +9,36 @@ namespace Proyecto.Backend
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // ?? Configurar DbContext
+            // Configurar DbContext
             builder.Services.AddDbContext<PlataformaDocenteContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("connectionDB"))
             );
 
-            // ?? Configurar JWT
-            var jwtKey = builder.Configuration["Jwt:Key"];
-            var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
-
-            builder.Services.AddAuthentication(options =>
+            // Configurar CORS
+            builder.Services.AddCors(options =>
             {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(options =>
-            {
-                options.RequireHttpsMetadata = false;
-                options.SaveToken = true;
-                options.TokenValidationParameters = new TokenValidationParameters
+                options.AddDefaultPolicy(policy =>
                 {
-                    ValidateIssuer = true,
-                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
-
-                    ValidateAudience = true,
-                    ValidAudience = builder.Configuration["Jwt:Audience"],
-
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
-
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero
-                };
+                    policy.AllowAnyOrigin()
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
             });
 
-            // ?? Agregar servicios
+            // Agregar servicios
             builder.Services.AddControllers();
-            builder.Services.AddOpenApi();
+            builder.Services.AddOpenApi(); // Solo si realmente lo usas
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
 
-            // ?? Redirección a Swagger
+            // Redirección a Swagger
             app.MapGet("/", (HttpContext context) =>
             {
                 context.Response.Redirect("/swagger/index.html", permanent: false);
             });
 
-            // ?? Middleware
+            // Middleware
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
@@ -69,9 +48,12 @@ namespace Proyecto.Backend
 
             app.UseHttpsRedirection();
 
-            // ?? Agrega estas dos líneas en orden
-            app.UseAuthentication(); // <-- IMPORTANTE: primero
-            app.UseAuthorization();  // <-- después
+            // Usar CORS
+            app.UseCors();
+
+            // Ya no se usa JWT
+            // app.UseAuthentication(); <-- Eliminar
+            // app.UseAuthorization(); <-- Eliminar si no proteges nada
 
             app.MapControllers();
 
