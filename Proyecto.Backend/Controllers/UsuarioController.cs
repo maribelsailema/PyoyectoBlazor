@@ -19,7 +19,6 @@ namespace Proyecto.Backend.Controllers
         {
             var usuarios = await _context.Usuarios.ToListAsync();
             return Ok(usuarios);
-
         }
 
         [HttpPost("Guardar")]
@@ -47,7 +46,6 @@ namespace Proyecto.Backend.Controllers
 
             await _context.SaveChangesAsync();
             return Ok(usuarioActualizado);
-
         }
 
         [HttpDelete("Eliminar/{ced}")]
