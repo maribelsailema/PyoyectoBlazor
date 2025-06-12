@@ -1,0 +1,86 @@
+﻿@page "/inicio-admin"
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+<header class="navbar">
+    <div class="navbar-left">
+        <h3>Bienvenido, @usuario.Nombre (Administrador)</h3>
+    </div>
+    <nav class="navbar-right nav-links">
+        <NavLink href="/inicio-admin" class="nav-item">
+            <i class="bi bi-house-fill"></i> Inicio
+        </NavLink>
+        <NavLink href="/verificar" class="nav-item">
+            <i class="bi bi-clipboard-check-fill"></i> Verificar Requisitos
+        </NavLink>
+        <NavLink href="/reportes" class="nav-item">
+            <i class="bi bi-bar-chart-line-fill"></i> Reportes
+        </NavLink>
+        <NavLink href="/gestion-bd" class="nav-item">
+            <i class="bi bi-database-fill-gear"></i> Gestión de BD
+        </NavLink>
+        <NavLink href="/importar-bd" class="nav-item">
+            <i class="bi bi-upload"></i> Importar BD
+        </NavLink>
+        <NavLink href="/" class="nav-item cerrar-sesion">
+            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+        </NavLink>
+    </nav>
+</header>
+
+<main class="contenido">
+    <section class="bienvenida">
+        <h2>Panel de Administración del Sistema de Promoción FISEI</h2>
+        <p>Seleccione una opción para gestionar procesos, verificar requisitos o administrar la base de datos.</p>
+
+        <div class="acciones-admin">
+            <NavLink href="/verificar" class="btn-usuario">
+                <i class="bi bi-check-circle-fill"></i> Verificar Requisitos
+            </NavLink>
+            <NavLink href="/reportes" class="btn-usuario">
+                <i class="bi bi-bar-chart-fill"></i> Generar Reportes
+            </NavLink>
+            <NavLink href="/gestion-bd" class="btn-usuario">
+                <i class="bi bi-hdd-fill"></i> Gestión de Base de Datos
+            </NavLink>
+            <NavLink href="/importar-bd" class="btn-usuario">
+                <i class="bi bi-cloud-arrow-up-fill"></i> Importar Datos
+            </NavLink>
+        </div>
+    </section>
+</main>
+
+<footer class="footer">
+    <div class="footer-info">
+        <div class="footer-section">
+            <h4><i class="bi bi-info-circle-fill"></i> Acerca del Sistema</h4>
+            <p>Módulo administrativo del Sistema de Promoción Docente FISEI.</p>
+        </div>
+        <div class="footer-section">
+            <h4><i class="bi bi-envelope-fill"></i> Soporte Técnico</h4>
+            <p>admin@fisei.edu.ec<br>+593 98 765 4321</p>
+        </div>
+        <div class="footer-section">
+            <h4><i class="bi bi-link-45deg"></i> Accesos Rápidos</h4>
+            <NavLink href="/verificar"><i class="bi bi-clipboard-check-fill"></i> Verificación</NavLink><br />
+            <NavLink href="/reportes"><i class="bi bi-bar-chart-line-fill"></i> Reportes</NavLink><br />
+            <NavLink href="/gestion-bd"><i class="bi bi-database-fill-gear"></i> BD</NavLink><br />
+            <NavLink href="/importar-bd"><i class="bi bi-cloud-arrow-up-fill"></i> Importar</NavLink>
+        </div>
+    </div>
+    <p class="copyright">© 2025 Sistema de Promoción, Todos los Derechos Reservados</p>
+</footer>
+
+@code {
+    private UsuarioModel usuario = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        usuario = await Http.GetFromJsonAsync<UsuarioModel>("https://tu-api.com/api/usuario/actual");
+    }
+
+    public class UsuarioModel
+    {
+        public string Nombre { get; set; } = string.Empty;
+    }
+}
