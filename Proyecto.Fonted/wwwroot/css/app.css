@@ -167,7 +167,7 @@ a {
 
 .login-form,
 .auth-card {
-    background: var(--card-bg-color);
+    background: var(--card-bg-color); /* Asegúrate que no haya transparencia aquí */
     padding: var(--spacing-xl);
     border-radius: var(--border-radius-lg);
     box-shadow: var(--shadow-lg);
@@ -227,7 +227,7 @@ a {
     border-radius: var(--border-radius-md);
     font-size: 1rem;
     transition: var(--transition-normal);
-    background-color: var(--light-bg-color);
+    background-color: var(--light-bg-color); /* Esto debe ser un color sólido */
 }
 
     .form-input:focus,
@@ -244,7 +244,7 @@ a {
 
 .btn-login,
 .btn-auth {
-    background: linear-gradient(to right, var(--secondary-color), var(--success-color));
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
     color: white;
     border: none;
     padding: var(--spacing-sm);
@@ -1245,35 +1245,81 @@ h4 {
         transform: translateX(5px);
     }
 
-.alert {
-    border-radius: 0.5rem;
-    padding: 1rem 1.5rem;
-    font-size: 1.05rem;
-    line-height: 1.6;
-    margin-top: 2rem;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+/* Estilos mejorados para alertas */
+.alert-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 2000;
+    width: 350px;
+    max-width: 90%;
+    animation: slideIn 0.3s ease-out forwards;
 }
 
-.alert-danger {
-    background-color: #fdeded;
-    color: #c0392b;
-    border-color: #e74c3c;
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.alert {
+    border-radius: 8px;
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    border: none;
+    border-left: 5px solid;
 }
 
 .alert-success {
-    background-color: #e8f8f5;
-    color: #27ae60;
-    border-color: #2ecc71;
+    background-color: #f0fff4;
+    color: #2f855a;
+    border-left-color: #38a169;
 }
 
-.alert .btn {
-    font-size: 0.95rem;
-    padding: 0.4rem 1rem;
-    margin-left: 1.25rem;
-    border-radius: 0.3rem;
-    transition: all 0.2s ease;
+.alert-danger {
+    background-color: #fff5f5;
+    color: #c53030;
+    border-left-color: #e53e3e;
 }
 
+.alert-warning {
+    background-color: #fffaf0;
+    color: #b7791f;
+    border-left-color: #dd6b20;
+}
+
+.alert-info {
+    background-color: #ebf8ff;
+    color: #2b6cb0;
+    border-left-color: #3182ce;
+}
+
+.alert i {
+    margin-right: 12px;
+    font-size: 1.3rem;
+}
+
+.close-alert {
+    margin-left: auto;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.close-alert:hover {
+    opacity: 1;
+}
 .btn-primary {
     background-color: #3498db !important;
     border-color: #3498db !important;
@@ -1298,4 +1344,87 @@ h4 {
 
 .text-muted {
     color: #7f8c8d !important;
+}
+
+
+/* Estilos para las tarjetas de categorías */
+.categoria-card {
+    background-color: #ffffff;
+    border: 2px solid #76a5af;
+    border-radius: 15px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+    text-align: center;
+    padding: 2rem 1rem;
+    height: 100%;
+}
+
+    .categoria-card h5 {
+        color: #2c3e50;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .categoria-card .btn {
+        background-color: #76a5af;
+        color: white;
+        font-weight: 500;
+        border: none;
+        padding: 0.6rem 1.2rem;
+        border-radius: 50px;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+        .categoria-card .btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+    .categoria-card:hover {
+        transform: scale(1.03);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    }
+
+
+    /*
+        Importar BD
+    */
+.importar-contenedor {
+    max-width: 600px;
+    margin: auto;
+    padding: 2rem;
+    box-shadow: 0 0 10px #ccc;
+    border-radius: 10px;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.btn-primary:disabled {
+    background-color: #ccc;
+    border-color: #ccc;
+}
+/* Solución para transparencia en el login */
+.login-form {
+    background-color: var(--card-bg-color) !important;
+}
+
+.form-input:hover,
+.form-input:focus {
+    background-color: var(--card-bg-color) !important;
+    opacity: 1 !important;
+}
+
+.btn-login:hover {
+    opacity: 1 !important;
+    background: linear-gradient(to right, var(--secondary-color), var(--secondary-color)) !important;
+}
+
+.login-links a:hover {
+    opacity: 1 !important;
+}
+
+.input-group:hover {
+    opacity: 1 !important;
 }

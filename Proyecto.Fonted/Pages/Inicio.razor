@@ -1,4 +1,4 @@
-﻿@page "/inicio"
+@page "/inicio"
 @using System.ComponentModel.DataAnnotations
 
 <header class="navbar">
@@ -15,9 +15,14 @@
         <NavLink href="/perfil" class="nav-item">
             <i class="bi bi-person-fill"></i> Perfil
         </NavLink>
+        <NavLink href="/exportar" class="nav-item active">
+            <i class="bi bi-download"></i> Exportar
+        </NavLink>
         <NavLink href="/" class="nav-item cerrar-sesion">
             <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
         </NavLink>
+        
+        
     </nav>
 </header>
 
@@ -44,6 +49,7 @@
             <h4><i class="bi bi-link-45deg"></i> Enlaces Rápidos</h4>
             <NavLink href="/inicio"><i class="bi bi-house-fill"></i> Inicio</NavLink><br />
             <NavLink href="/promocion"><i class="bi bi-bar-chart-line-fill"></i> Promoción</NavLink><br />
+            <NavLink href="/exportar"><i class="bi bi-backpack4"></i>Exportar Datos</NavLink><br />
             <NavLink href="/perfil"><i class="bi bi-person-fill"></i> Perfil</NavLink>
         </div>
     </div>
@@ -55,23 +61,11 @@
 
     protected override void OnInitialized()
     {
-        // Simulación: asignamos las partes del nombre por separado
-        usuario.Nom1 = "Carlos";
-        usuario.Nom2 = "Eduardo";
-        usuario.Ape1 = "Mora";
-        usuario.Ape2 = "Loja";
-
-        // Ahora @usuario.Nombre mostrará "Carlos Eduardo Mora Loja"
+        usuario = new UsuarioModel { Nombre = "Usuario" }; // Simulación
     }
 
     public class UsuarioModel
     {
-        public string Ced { get; set; } = "";
-        public string Nom1 { get; set; } = "";
-        public string Nom2 { get; set; } = "";
-        public string Ape1 { get; set; } = "";
-        public string Ape2 { get; set; } = "";
-
-        public string Nombre => $"{Nom1} {Nom2} {Ape1} {Ape2}".Trim();
+        public string Nombre { get; set; } = string.Empty;
     }
 }
