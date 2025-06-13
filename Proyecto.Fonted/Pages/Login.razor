@@ -65,8 +65,19 @@
 
                 if (usuario is not null && !string.IsNullOrEmpty(usuario.Ced))
                 {
-                    // Redirigir con la cédula como query string
-                    Navigation.NavigateTo($"/inicio?ced={usuario.Ced}");
+                    var tipo = usuario.TipoUsuario?.ToLower();
+                    if (tipo == "docente")
+                    {
+                        Navigation.NavigateTo($"/inicio?ced={usuario.Ced}");
+                    }
+                    else if (tipo == "admin")
+                    {
+                        Navigation.NavigateTo($"/inicio-admin?ced={usuario.Ced}");
+                    }
+                    else
+                    {
+                        mensajeError = "Tipo de usuario no reconocido.";
+                    }
                 }
                 else
                 {
