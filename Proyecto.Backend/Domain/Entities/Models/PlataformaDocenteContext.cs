@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
-namespace Proyecto.Backend.Models;
+namespace Proyecto.Backend.Domain.Entities.Models;
 
 public partial class PlataformaDocenteContext : DbContext
 {

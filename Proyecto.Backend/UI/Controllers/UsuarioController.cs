@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Proyecto.Backend.Models;
+using Proyecto.Backend.Domain.Entities.Models;
 
-namespace Proyecto.Backend.Controllers
+namespace Proyecto.Backend.UI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -51,7 +51,7 @@ namespace Proyecto.Backend.Controllers
         }
 
         [HttpDelete("Eliminar/{ced}")]
-        public async Task<ActionResult<Usuario>> EliminarUsuario(String ced)
+        public async Task<ActionResult<Usuario>> EliminarUsuario(string ced)
         {
             var usuario = await _context.Usuarios.FindAsync(ced);
             if (usuario == null)
@@ -74,5 +74,25 @@ namespace Proyecto.Backend.Controllers
             }
             return Ok(usuario);
         }
+        [HttpPost("Validar")]
+        public async Task<ActionResult<Usuario>> ValidarUsuario([FromBody] LoginDTO login)
+        {
+            if (login == null || string.IsNullOrWhiteSpace(login.Usuari) || string.IsNullOrWhiteSpace(login.Pass))
+            {
+                return BadRequest("Usuario y contraseña son obligatorios.");
+            }
+
+            var usuario = await _context.Usuarios
+                .FirstOrDefaultAsync(u => u.Usuari == login.Usuari && u.Pass == login.Pass);
+
+            if (usuario == null)
+            {
+                return Unauthorized("Usuario o contraseña incorrectos.");
+            }
+
+            usuario.Pass = ""; // Evitar enviar la contraseña al frontend
+            return Ok(usuario);
+        }
+
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Proyecto.Backend.Models;
+namespace Proyecto.Backend.Domain.Entities.Models;
 
 public partial class RequisitosAscenso
 {

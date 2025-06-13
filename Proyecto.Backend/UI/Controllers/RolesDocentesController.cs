@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Proyecto.Backend.Models;
+using Proyecto.Backend.Domain.Entities.Models;
 
-namespace Proyecto.Backend.Controllers
+namespace Proyecto.Backend.UI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
