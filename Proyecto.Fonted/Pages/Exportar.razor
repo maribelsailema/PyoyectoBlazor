@@ -1,1 +1,131 @@
-﻿
+﻿@page "/exportar"
+
+
+<header class="navbar">
+    <div class="navbar-left">
+        <h3>Bienvenido </h3>
+    </div>
+    <nav class="navbar-right nav-links">
+        <NavLink href="/inicio" class="nav-item">
+            <i class="bi bi-house-fill"></i> Inicio
+        </NavLink>
+        <NavLink href="/promocion" class="nav-item">
+            <i class="bi bi-bar-chart-line-fill"></i> Promoción
+        </NavLink>
+        <NavLink href="/perfil" class="nav-item">
+            <i class="bi bi-person-fill"></i> Perfil
+        </NavLink>
+        <NavLink href="/exportar" class="nav-item">
+            <i class="bi bi-download"></i> Exportar
+        </NavLink>
+        <NavLink href="/" class="nav-item cerrar-sesion">
+            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+        </NavLink>
+
+
+    </nav>
+</header>
+
+<div class="export-container">
+    <h3 class="export-title"><i class="fas fa-file-export me-2"></i>Exportar Datos</h3>
+
+    <div class="export-card">
+        <div class="export-filters">
+            <!-- Selector de Tabla -->
+            <div class="filter-group">
+                <label class="filter-label">Tabla a Exportar</label>
+                <select class="form-select">
+                    <option value="">Seleccione una tabla</option>
+                    <option value="Usuarios">Usuarios</option>
+                    <option value="EvaluacionesDocentes">Evaluaciones Docentes</option>
+                    <option value="Capacitaciones">Capacitaciones</option>
+                    <option value="Obras">Obras</option>
+                    <option value="Investigaciones">Investigaciones</option>
+                </select>
+            </div>
+
+            <!-- Selector de Formato -->
+            <div class="filter-group">
+                <label class="filter-label">Formato de Exportación</label>
+                <select class="form-select">
+                    <option value="Excel">Excel (.xlsx)</option>
+                    <option value="CSV">CSV (.csv)</option>
+                    <option value="PDF">PDF (.pdf)</option>
+                </select>
+            </div>
+
+            <!-- Botón de Exportación -->
+            <div class="export-button">
+                <button class="btn btn-primary">
+                    <i class="fas fa-download me-2"></i>Exportar
+                </button>
+            </div>
+        </div>
+
+        <!-- Filtros Adicionales (se muestran dinámicamente con CSS) -->
+        <div class="additional-filters">
+            <div class="filter-section">
+                <h6><i class="fas fa-filter me-2"></i>Filtros Adicionales</h6>
+
+                <!-- Filtros para Usuarios -->
+                <div class="filter-row usuario-filters">
+                    <div class="filter-item">
+                        <label>Tipo de Usuario</label>
+                        <select class="form-select">
+                            <option value="">Todos</option>
+                            <option value="admin">Administradores</option>
+                            <option value="docente">Docentes</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label>Fecha Desde</label>
+                        <input type="date" class="form-control">
+                    </div>
+
+                    <div class="filter-item">
+                        <label>Fecha Hasta</label>
+                        <input type="date" class="form-control">
+                    </div>
+                </div>
+
+                <!-- Filtros para Evaluaciones -->
+                <div class="filter-row evaluacion-filters">
+                    <div class="filter-item">
+                        <label>Período</label>
+                        <input type="text" class="form-control" placeholder="Ej: 2023-1">
+                    </div>
+
+                    <div class="filter-item">
+                        <label>Puntaje Mínimo</label>
+                        <input type="number" step="0.01" class="form-control">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+   
+</style>
+<footer class="footer">
+    <div class="footer-info">
+        <div class="footer-section">
+            <h4><i class="bi bi-info-circle-fill"></i> Sobre Nosotros</h4>
+            <p>Sistema de Promoción para Docentes de la FISEI.<br>Para agilizar trámites.</p>
+        </div>
+        <div class="footer-section">
+            <h4><i class="bi bi-envelope-fill"></i> Contactos</h4>
+            <p>support@correo.com<br>+593 99 234 56789</p>
+        </div>
+        <div class="footer-section">
+            <h4><i class="bi bi-link-45deg"></i> Enlaces Rápidos</h4>
+            <NavLink href="/inicio"><i class="bi bi-house-fill"></i> Inicio</NavLink><br />
+            <NavLink href="/promocion"><i class="bi bi-bar-chart-line-fill"></i> Promoción</NavLink><br />
+            <NavLink href="/exportar"><i class="bi bi-backpack4"></i>Exportar Datos</NavLink><br />
+            <NavLink href="/perfil"><i class="bi bi-person-fill"></i> Perfil</NavLink>
+        </div>
+    </div>
+    <p class="copyright">© 2025 Sistema de Promoción, Todos los Derechos Reservados</p>
+</footer>

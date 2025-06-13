@@ -5,7 +5,7 @@
 
 <header class="navbar">
     <div class="navbar-left">
-        <!-- El título de la página "Promoción Docente" o el nombre de usuario se mostraría aquí -->
+
         <h3>Promoción Docente</h3>
     </div>
     <nav class="navbar-right nav-links">
@@ -21,13 +21,12 @@
 
 <main class="contenido-promocion">
     <div class="container">
-        <!-- Sección de Posición Actual -->
+
         <div class="current-position">
             <h3><i class="bi bi-info-circle"></i> Tu posición actual: <strong>@currentPosition.RoleType</strong></h3>
             <p class="text-muted">@currentPosition.Description</p>
         </div>
 
-        <!-- Tabla de Niveles de Promoción -->
         <div class="table-responsive">
             <table class="table table-hover promotion-table">
                 <thead>
@@ -111,22 +110,15 @@
 </footer>
 
 @code {
-    // Modelo para la posición actual del usuario
     private CurrentPositionModel currentPosition = new();
 
-    // Lista de niveles de promoción para la tabla
     private List<PromotionLevel> promotionLevels = new();
 
-    // Lista de requisitos para la postulación
     private List<string> requirements = new();
 
-    // Estado para controlar si el usuario ya ha postulado (simulado)
     private bool hasPosted = false;
 
-    /// <summary>
-    /// Se ejecuta cuando el componente se inicializa.
-    /// Aquí simulamos la carga de datos que vendrían de una API.
-    /// </summary>
+  
     protected override void OnInitialized()
     {
         Logger.LogInformation("Componente Promocion inicializado.");
