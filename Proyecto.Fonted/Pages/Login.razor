@@ -3,6 +3,7 @@
 @inject ILogger<Login> Logger
 @inject NavigationManager Navigation
 @inject HttpClient Http
+@inject IJSRuntime JS
 
 <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
     <DataAnnotationsValidator />
@@ -65,6 +66,9 @@
 
                 if (usuario is not null && !string.IsNullOrEmpty(usuario.Ced))
                 {
+                   //guarda la ced para consumir después
+                    await JS.InvokeVoidAsync("localStorage.setItem", "cedulaUsuario", usuario.Ced);
+
                     // Redirigir con la cédula como query string
                     Navigation.NavigateTo($"/inicio?ced={usuario.Ced}");
                 }
