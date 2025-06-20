@@ -2,6 +2,8 @@
 @using Proyecto.Frontend.Services
 @inject IJSRuntime JS
 @inject InvestigacionService investigacionService
+@inject CapacitacionesService capacitacionesService
+
 @using Proyecto.Shared
 @using Proyecto.Shared.Models
 
@@ -226,6 +228,45 @@
                 </tbody>
             </table>
         }
+        @if (mostrarCapacitaciones)
+{
+    <h4>Capacitaciones</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Curso</th>
+                <th>Duración (horas)</th>
+                <th>Fecha Inicio</th>
+                <th>PDF</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cap in listaCapacitaciones)
+            {
+                <tr>
+                    <td>@cap.NombreCurso</td>
+                    <td>@cap.DuracionHoras</td>
+                    <td>@cap.FechaInicio</td>
+                    <td>
+                        @if (cap.Pdf != null)
+                        {
+                            <a target="_blank" href="@($"data:application/pdf;base64,{Convert.ToBase64String(cap.Pdf)}")">Ver PDF</a>
+                        }
+                        else
+                        {
+                            <span>No PDF</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button class="btn btn-primary" @onclick="SubirCapacitaciones">
+        <i class="bi bi-upload"></i> Subir a BD
+    </button>
+}
+
 
 
 
@@ -301,6 +342,8 @@
     private bool mostrarInvestigaciones = false;
     private string tablaSeleccionada = "";
     private string mensaje = " ";
+    private List<Capacitacione> listaCapacitaciones = new();
+    private bool mostrarCapacitaciones = false;
 
 
     private async Task ImportarDatos()
@@ -329,7 +372,35 @@
         {
             mostrarInvestigaciones = false; // Ocultar si no es investigaciones
         }
+        if (tablaSeleccionada == "Capacitaciones")
+        {
+            var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+
+            if (!string.IsNullOrEmpty(cedula))
+            {
+                listaCapacitaciones = await capacitacionesService.ObtenerPorCedulaAsync(cedula);
+                mostrarCapacitaciones = true;
+            }
+        }
+        else
+        {
+            mostrarCapacitaciones = false;
+        }
+
     }
+    private async Task SubirCapacitaciones()
+{
+    if (listaCapacitaciones.Any())
+    {
+        await capacitacionesService.GuardarAsync(listaCapacitaciones.First());
+        mensaje = "Capacitación subida correctamente.";
+    }
+    else
+    {
+        mensaje = "No hay capacitaciones para subir.";
+    }
+}
+
 
 
   

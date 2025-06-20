@@ -19,6 +19,7 @@ namespace Proyecto.Fonted
             // Cambiar BaseAddress al URL del backend API
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7201/") });
             builder.Services.AddScoped<InvestigacionService>();
+            builder.Services.AddScoped<CapacitacionesService>();
 
             await builder.Build().RunAsync();
         }
