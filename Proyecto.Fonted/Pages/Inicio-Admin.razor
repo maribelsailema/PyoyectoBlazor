@@ -1,86 +1,94 @@
 ﻿@page "/inicio-admin"
 @using System.Net.Http.Json
 @inject HttpClient Http
+@inject IJSRuntime JS
 
-<header class="navbar">
-    <div class="navbar-left">
-        <h3>Bienvenido, @usuario.Nombre (Administrador)</h3>
-    </div>
-    <nav class="navbar-right nav-links">
-        <NavLink href="/inicio-admin" class="nav-item">
-            <i class="bi bi-house-fill"></i> Inicio
-        </NavLink>
-        <NavLink href="/verificar" class="nav-item">
-            <i class="bi bi-clipboard-check-fill"></i> Verificar Requisitos
-        </NavLink>
-        <NavLink href="/reportes" class="nav-item">
-            <i class="bi bi-bar-chart-line-fill"></i> Reportes
-        </NavLink>
-        <NavLink href="/gestion-bd" class="nav-item">
-            <i class="bi bi-database-fill-gear"></i> Gestión de BD
-        </NavLink>
-        <NavLink href="/importar-bd" class="nav-item">
-            <i class="bi bi-upload"></i> Importar BD
-        </NavLink>
-        <NavLink href="/" class="nav-item cerrar-sesion">
-            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
-        </NavLink>
-    </nav>
-</header>
-
-<main class="contenido">
-    <section class="bienvenida">
-        <h2>Panel de Administración del Sistema de Promoción FISEI</h2>
-        <p>Seleccione una opción para gestionar procesos, verificar requisitos o administrar la base de datos.</p>
-
-        <div class="acciones-admin">
-            <NavLink href="/verificar" class="btn-usuario">
-                <i class="bi bi-check-circle-fill"></i> Verificar Requisitos
-            </NavLink>
-            <NavLink href="/reportes" class="btn-usuario">
-                <i class="bi bi-bar-chart-fill"></i> Generar Reportes
-            </NavLink>
-            <NavLink href="/gestion-bd" class="btn-usuario">
-                <i class="bi bi-hdd-fill"></i> Gestión de Base de Datos
-            </NavLink>
-            <NavLink href="/importar-bd" class="btn-usuario">
-                <i class="bi bi-cloud-arrow-up-fill"></i> Importar Datos
-            </NavLink>
-        </div>
-    </section>
-</main>
-
-<footer class="footer">
-    <div class="footer-info">
-        <div class="footer-section">
-            <h4><i class="bi bi-info-circle-fill"></i> Acerca del Sistema</h4>
-            <p>Módulo administrativo del Sistema de Promoción Docente FISEI.</p>
-        </div>
-        <div class="footer-section">
-            <h4><i class="bi bi-envelope-fill"></i> Soporte Técnico</h4>
-            <p>admin@fisei.edu.ec<br>+593 98 765 4321</p>
-        </div>
-        <div class="footer-section">
-            <h4><i class="bi bi-link-45deg"></i> Accesos Rápidos</h4>
-            <NavLink href="/verificar"><i class="bi bi-clipboard-check-fill"></i> Verificación</NavLink><br />
-            <NavLink href="/reportes"><i class="bi bi-bar-chart-line-fill"></i> Reportes</NavLink><br />
-            <NavLink href="/gestion-bd"><i class="bi bi-database-fill-gear"></i> BD</NavLink><br />
-            <NavLink href="/importar-bd"><i class="bi bi-cloud-arrow-up-fill"></i> Importar</NavLink>
+<Header_Admin/>
+<div class="container my-5">
+    <div class="skills-container">
+        <h2 class="text-center text-white mb-5">Estadísticas del Sistema</h2>
+        <div class="row justify-content-center">
+            @foreach (var estadistica in estadisticas)
+            {
+                <div class="col-sm-6 col-md-4 mb-4">
+                    <div class="skill-item mx-auto animated show">
+                        <svg class="skill-circle" viewBox="0 0 160 160">
+                            <defs>
+                                <linearGradient id="@($"gradient-{estadistica.Titulo}")" x1="1" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="#4a6cf7" />
+                                    <stop offset="100%" stop-color="#2541b2" />
+                                </linearGradient>
+                            </defs>
+                            <circle class="bg" cx="80" cy="80" r="70"></circle>
+                            <circle class="progress" cx="80" cy="80" r="70"
+                                    stroke="url(#@($"gradient-{estadistica.Titulo}"))"
+                                    @ref="estadistica.RefProgressCircle"
+                                    stroke-dasharray="440"
+                                    stroke-dashoffset="440">
+                            </circle>
+                        </svg>
+                        <div class="skill-text">
+                            <div class="skill-percent">@estadistica.PorcentajeActual%</div>
+                            <div class="skill-name">@estadistica.Titulo</div>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
     </div>
-    <p class="copyright">© 2025 Sistema de Promoción, Todos los Derechos Reservados</p>
-</footer>
+</div>
+
+
+<Footer_Admin/>
 
 @code {
     private UsuarioModel usuario = new();
+    private List<Estadistica> estadisticas = new()
+    {
+        new Estadistica { Titulo = "Verificaciones", Porcentaje = 90 },
+        new Estadistica { Titulo = "Reportes", Porcentaje = 85 },
+        new Estadistica { Titulo = "Gestión BD", Porcentaje = 80 },
+    };
 
     protected override async Task OnInitializedAsync()
     {
         usuario = await Http.GetFromJsonAsync<UsuarioModel>("https://tu-api.com/api/usuario/actual");
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            foreach (var est in estadisticas)
+            {
+                await AnimarProgreso(est);
+            }
+        }
+    }
+
+    private async Task AnimarProgreso(Estadistica est)
+    {
+        const double circ = 440;
+        for (int i = 0; i <= est.Porcentaje; i++)
+        {
+            est.PorcentajeActual = i;
+            var offset = circ - (circ * i) / 100;
+            await JS.InvokeVoidAsync("setStrokeDashOffset", est.RefProgressCircle, offset);
+            StateHasChanged();
+            await Task.Delay(10);
+        }
+    }
+
     public class UsuarioModel
     {
         public string Nombre { get; set; } = string.Empty;
+    }
+
+    public class Estadistica
+    {
+        public string Titulo { get; set; } = "";
+        public int Porcentaje { get; set; }
+        public int PorcentajeActual { get; set; } = 0;
+        public ElementReference RefProgressCircle { get; set; }
     }
 }

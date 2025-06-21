@@ -1,0 +1,143 @@
+﻿.estado-proceso-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 2rem 1rem;
+    background-color: #f3f4f6;
+}
+
+/* Ya definido previamente: puedes combinar con esto */
+.container-estado-proceso {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 768px;
+    border: 1px solid #e2e8f0;
+}
+
+/* Título principal */
+.header-estado-proceso {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+/* Caja de información del docente */
+.docente-info-box {
+    background-color: #eff6ff;
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    border: 1px solid #bfdbfe;
+    margin-bottom: 1.5rem;
+}
+
+    .docente-info-box h5 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1e40af;
+        margin-bottom: 0.5rem;
+    }
+
+        .docente-info-box h5 span {
+            color: #4338ca;
+            font-weight: 700;
+        }
+
+    .docente-info-box p {
+        font-size: 0.875rem;
+        color: #3b82f6;
+        margin-bottom: 0.25rem;
+    }
+
+        .docente-info-box p strong {
+            font-weight: 500;
+        }
+
+/* Lista de requisitos */
+.lista-requisitos {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+    .lista-requisitos li {
+        background-color: #f9fafb;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        border-radius: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid #e5e7eb;
+    }
+
+        .lista-requisitos li span:first-child {
+            font-weight: 500;
+            color: #374151;
+        }
+
+/* Badge de estado */
+.badge-status {
+    padding: 0.4rem 0.8rem;
+    font-weight: 600;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    text-align: center;
+    min-width: 100px;
+}
+
+/* Estados visuales */
+.bg-green-100 {
+    background-color: #d1fae5;
+}
+
+.text-green-700 {
+    color: #047857;
+}
+
+.bg-yellow-100 {
+    background-color: #fef3c7;
+}
+
+.text-yellow-700 {
+    color: #b45309;
+}
+
+.bg-red-100 {
+    background-color: #fee2e2;
+}
+
+.text-red-700 {
+    color: #b91c1c;
+}
+
+/* Contenedor del botón */
+.pdf-button-container {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Botón PDF reutilizando btn-usuario */
+.btn-usuario {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #2563eb;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.06);
+    transition: all 0.3s ease-in-out;
+}
+
+    .btn-usuario:hover {
+        background-color: #1d4ed8;
+        transform: translateY(-2px) scale(1.05);
+    }

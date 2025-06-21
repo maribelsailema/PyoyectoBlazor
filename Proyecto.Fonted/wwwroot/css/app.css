@@ -154,7 +154,10 @@ a {
     }
 }
 
+/*
+
 /* Login y autenticación */
+
 .login-container,
 .auth-container {
     display: flex;
@@ -301,6 +304,9 @@ a {
         transform: scale(1) translateY(0);
     }
 }
+
+
+/*
 
 /* Página de inicio - Navbar y contenido */
 .navbar {
@@ -888,132 +894,7 @@ footer {
 }
 
 /* Página de promoción */
-.contenido-promocion {
-    padding: var(--spacing-lg) var(--spacing-sm);
-    min-height: 60vh;
-    text-align: left;
-}
 
-.current-position {
-    background-color: #e3f2fd;
-    padding: var(--spacing-md);
-    border-radius: var(--border-radius-md);
-    margin-bottom: var(--spacing-lg);
-    border-left: 5px solid #76a5af;
-    color: var(--dark-text-color);
-}
-
-.promotion-table {
-    background-color: var(--card-bg-color);
-    border-radius: var(--border-radius-md);
-    overflow: hidden;
-    box-shadow: var(--shadow-md);
-    width: 100%;
-    border-collapse: collapse;
-}
-
-    .promotion-table th {
-        background-color: #76a5af;
-        color: white;
-        font-weight: 500;
-        padding: var(--spacing-sm);
-        text-align: center;
-    }
-
-    .promotion-table td {
-        vertical-align: middle;
-        text-align: center;
-        padding: var(--spacing-sm);
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .promotion-table tbody tr:nth-child(even) {
-        background-color: var(--light-bg-color);
-    }
-
-    .promotion-table tbody tr:last-child td {
-        border-bottom: none;
-    }
-
-.btn-postular {
-    padding: 0.5rem 1rem;
-    background-color: var(--success-color);
-    color: white;
-    border: none;
-    border-radius: var(--border-radius-sm);
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: var(--transition-fast);
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    box-shadow: var(--shadow-sm);
-}
-
-    .btn-postular:hover {
-        background-color: darken(var(--success-color), 8%);
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-    }
-
-.btn-disabled {
-    padding: 0.5rem 1rem;
-    background-color: var(--light-text-color);
-    color: white;
-    border: none;
-    border-radius: var(--border-radius-sm);
-    font-size: 0.9rem;
-    cursor: not-allowed;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    opacity: 0.7;
-    box-shadow: var(--shadow-sm);
-}
-
-.disabled-row {
-    opacity: 0.7;
-    background-color: var(--light-bg-color);
-}
-
-.requirements-info {
-    background-color: var(--light-bg-color);
-    padding: var(--spacing-md);
-    border-radius: var(--border-radius-md);
-    margin-top: var(--spacing-lg);
-    border: 1px solid var(--border-color);
-}
-
-    .requirements-info h4 {
-        color: var(--primary-color);
-        margin-bottom: var(--spacing-sm);
-    }
-
-    .requirements-info ul {
-        padding-left: var(--spacing-md);
-        margin-top: var(--spacing-xs);
-        list-style: disc;
-        color: var(--dark-text-color);
-    }
-
-    .requirements-info li {
-        margin-bottom: 0.5rem;
-    }
-
-@media (max-width: 768px) {
-    .promotion-table {
-        font-size: 0.9rem;
-    }
-
-        .promotion-table td, .promotion-table th {
-            padding: 0.5rem;
-        }
-
-    .btn-postular, .btn-disabled {
-        padding: 0.3rem 0.6rem;
-        font-size: 0.8rem;
-    }
-}
 
 /* Modales */
 .modal {
@@ -1510,3 +1391,73 @@ h4 {
         flex-direction: column;
     }
 }
+
+
+
+/*
+    Formulario 
+*/
+/* Formulario de evaluación personalizado 
+form {
+    max-width: 800px;
+    margin: 20px auto;
+    background-color: #f9f9f9;
+    padding: 25px 140px;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+    form h3 {
+        margin-bottom: 25px;
+        text-align: center;
+        color: #333;
+    }
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #444;
+}
+
+input.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
+    box-sizing: border-box;
+}
+
+    input.form-control:focus {
+        border-color: #007bff;
+        outline: none;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+    }
+
+button.btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 8px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+    button.btn:hover {
+        background-color: #0056b3;
+        cursor: pointer;
+    }
+    */
+
+
+/*
+    Para progreso
+*/
+

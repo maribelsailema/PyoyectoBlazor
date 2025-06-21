@@ -1,0 +1,180 @@
+﻿/*
+   General
+ */
+body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background-color: #f8fafc;
+    color: #1e293b;
+}
+
+.contenido {
+    padding: 3rem 1.5rem;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+}
+
+/*
+   Contenedor Principal
+*/
+.reportes-admin {
+    background-color: #ffffff;
+    border-radius: 1rem;
+    padding: 3rem;
+    max-width: 1000px;
+    width: 100%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+    /*    Títulos
+*/
+    .reportes-admin h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+
+    .reportes-admin p {
+        text-align: center;
+        font-size: 1rem;
+        color: #64748b;
+        margin-bottom: 2rem;
+    }
+
+/* 
+   Filtros
+*/
+.filtros {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    background: #f1f5f9;
+    padding: 2rem;
+    border-radius: 0.75rem;
+    margin-bottom: 2.5rem;
+    border: 1px solid #e2e8f0;
+}
+
+.filtro label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #334155;
+}
+
+.filtro input,
+.filtro select {
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    background-color: white;
+    transition: border-color 0.3s;
+}
+
+    .filtro input:focus,
+    .filtro select:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+/* 
+   Botón Generar
+*/
+.acciones {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+    .acciones button {
+        background-color: #3b82f6;
+        color: white;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        font-size: 1rem;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+
+        .acciones button:hover {
+            background-color: #2563eb;
+            transform: scale(1.03);
+        }
+
+/* 
+   Resultados
+*/
+.resultados h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #0f172a;
+}
+
+.resultados p {
+    text-align: center;
+    color: #6b7280;
+    font-style: italic;
+}
+
+/* 
+   Tabla
+*/
+.resultados table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.resultados th,
+.resultados td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+    font-size: 0.875rem;
+}
+
+.resultados th {
+    background-color: #f1f5f9;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #475569;
+}
+
+.resultados td {
+    color: #334155;
+}
+
+/* 
+   Exportar botón
+*/
+.exportar {
+    text-align: right;
+    margin-top: 1.5rem;
+}
+
+    .exportar button {
+        background-color: #10b981;
+        color: white;
+        padding: 0.6rem 1.25rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+        .exportar button:hover {
+            background-color: #059669;
+        }

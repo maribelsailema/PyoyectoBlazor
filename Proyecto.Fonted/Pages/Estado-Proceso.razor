@@ -1,0 +1,122 @@
+﻿@page "/estado-proceso"
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject IJSRuntime JS
+
+<Header />
+
+<main class="contenido estado-proceso-wrapper">
+    <div class="container-estado-proceso">
+
+        <h2 class="header-estado-proceso">
+            Estado de Proceso para Ascenso
+        </h2>
+
+        <div class="docente-info-box">
+            <h5>
+                👤 Docente: <span>@docente.Nombre</span>
+            </h5>
+            <p>🎓 Rol actual: <strong>@docente.RolActual</strong></p>
+            <p>📅 Años en el rol: <strong>@docente.AniosTrabajo</strong> años</p>
+        </div>
+
+        <ul class="lista-requisitos">
+            @foreach (var requisito in requisitos)
+            {
+                <li>
+                    <span>@requisito.Nombre</span>
+                    <span class="badge-status @GetBadgeClass(requisito)">
+                        @requisito.ValorActual / @requisito.ValorRequerido @GetStatusIcon(requisito)
+                    </span>
+                </li>
+            }
+        </ul>
+
+        <div class="pdf-button-container">
+            <button @onclick="GenerarReportePDF" class="btn-usuario">
+                <i class="bi bi-download"></i> Generar Reporte PDF
+            </button>
+        </div>
+
+    </div>
+</main>
+
+<Footer />
+
+@code {
+    public class UsuarioModel
+    {
+        public string Nombre { get; set; } = string.Empty;
+    }
+
+    public class DocenteModel
+    {
+        public string Nombre { get; set; } = "Juan Pérez";
+        public string RolActual { get; set; } = "Docente Auxiliar";
+        public int AniosTrabajo { get; set; } = 10;
+    }
+
+    public class RequisitoModel
+    {
+        public string Nombre { get; set; } = string.Empty;
+        public int ValorActual { get; set; }
+        public int ValorRequerido { get; set; }
+        public bool Cumplido { get; set; }
+        public bool ParcialmenteCumplido { get; set; }
+    }
+
+    private UsuarioModel usuario = new();
+    private DocenteModel docente = new();
+    private List<RequisitoModel> requisitos = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // 🔽 Aquí se debe realizar la llamada a la API para obtener al usuario actual
+            // Ejemplo: usuario = await Http.GetFromJsonAsync<UsuarioModel>("https://api.tuservidor.com/usuario/actual");
+            usuario.Nombre = "Administrador"; // Simulación temporal
+
+            // 🔽 Aquí se debe obtener la información del docente
+            // Ejemplo: docente = await Http.GetFromJsonAsync<DocenteModel>("https://api.tuservidor.com/docente/actual");
+            docente.Nombre = "Juan Pérez";
+            docente.RolActual = "Docente Auxiliar";
+            docente.AniosTrabajo = 10;
+
+            // 🔽 Aquí se debe obtener la lista de requisitos desde el backend
+            // Ejemplo: requisitos = await Http.GetFromJsonAsync<List<RequisitoModel>>("https://api.tuservidor.com/requisitos");
+            requisitos = new List<RequisitoModel>
+            {
+                new RequisitoModel { Nombre = "Producción Científica/Artística", ValorActual = 5, ValorRequerido = 5, Cumplido = true },
+                new RequisitoModel { Nombre = "Evaluación Docente (Puntaje)", ValorActual = 85, ValorRequerido = 90, ParcialmenteCumplido = true },
+                new RequisitoModel { Nombre = "Investigación (Meses)", ValorActual = 12, ValorRequerido = 24 },
+                new RequisitoModel { Nombre = "Capacitaciones (Horas)", ValorActual = 60, ValorRequerido = 40, Cumplido = true }
+            };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error al cargar datos del servidor: {ex.Message}");
+            // Opcional: mostrar notificación al usuario
+        }
+    }
+
+    private string GetBadgeClass(RequisitoModel requisito)
+    {
+        if (requisito.Cumplido)
+            return "bg-green-100 text-green-700";
+        else if (requisito.ParcialmenteCumplido)
+            return "bg-yellow-100 text-yellow-700";
+        else
+            return "bg-red-100 text-red-700";
+    }
+
+    private string GetStatusIcon(RequisitoModel requisito)
+    {
+        return requisito.Cumplido ? "✔️" : "❌";
+    }
+
+    private async Task GenerarReportePDF()
+    {
+        await JS.InvokeVoidAsync("alert", "Generando reporte PDF...");
+    }
+}

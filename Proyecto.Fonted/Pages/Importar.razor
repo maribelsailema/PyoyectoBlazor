@@ -1,1 +1,60 @@
-﻿
+﻿@page "/importar"
+
+
+<Header/>
+
+<EditForm Model="@formulario" OnValidSubmit="Import">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="rol">Tiempo en el rol (años):</label>
+        <InputNumber id="rol" class="form-control" @bind-Value="formulario.TiempoRolAnos" />
+    </div>
+
+    <div class="form-group">
+        <label for="obras">Número de obras:</label>
+        <InputNumber id="obras" class="form-control" @bind-Value="formulario.NumeroObras" />
+    </div>
+
+    <div class="form-group">
+        <label for="evaluacion">Evaluación docente (%):</label>
+        <InputNumber id="evaluacion" class="form-control" @bind-Value="formulario.EvaluacionDocente" />
+    </div>
+
+    <div class="form-group">
+        <label for="horas">Horas de cursos:</label>
+        <InputNumber id="horas" class="form-control" @bind-Value="formulario.HorasCurso" />
+    </div>
+
+    <div class="form-group">
+        <label for="investigacion">Investigación (meses):</label>
+        <InputNumber id="investigacion" class="form-control" @bind-Value="formulario.InvestigacionMeses" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Importar</button>
+</EditForm>
+<Footer />
+
+@code {
+    private EvaluacionFormularioDto formulario = new();
+
+    private void Import()
+    {
+        Console.WriteLine("Formulario listo para enviar al backend:");
+        Console.WriteLine($"Rol: {formulario.TiempoRolAnos} años");
+        Console.WriteLine($"Obras: {formulario.NumeroObras}");
+        Console.WriteLine($"Evaluación: {formulario.EvaluacionDocente}%");
+        Console.WriteLine($"Cursos: {formulario.HorasCurso} horas");
+        Console.WriteLine($"Investigación: {formulario.InvestigacionMeses} meses");
+    }
+
+    public class EvaluacionFormularioDto
+    {
+        public int TiempoRolAnos { get; set; }
+        public int NumeroObras { get; set; }
+        public double EvaluacionDocente { get; set; }
+        public int HorasCurso { get; set; }
+        public int InvestigacionMeses { get; set; }
+    }
+}

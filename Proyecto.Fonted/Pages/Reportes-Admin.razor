@@ -1,0 +1,175 @@
+﻿@page "/reportes-admin"
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject IJSRuntime JS
+
+<Header_Admin />
+
+
+<main class="contenido">
+    <div class="reportes-admin">
+        <h1>Generador de Reportes </h1>
+        <div class="filtros">
+
+
+			<div class="filtro">
+				<label for="reportType">Tipo de Reporte:</label>
+				<select id="reportType" @bind="SelectedReportType">
+					<option value="">Seleccione un tipo</option>
+					@foreach (var type in ReportTypes)
+					{
+						<option value="@type">@type</option>
+					}
+				</select>
+			</div>
+			<div class="filtro">
+				<label for="cedulaDocente">Cédula del Docente:</label>
+				<input type="text" id="cedulaDocente" @bind="CedulaDocente" placeholder="Ingrese cédula del docente" />
+			</div>
+			<div class="filtro">
+				<label for="periodo">Período:</label>
+				<input type="text" id="periodo" @bind="SelectedPeriod" placeholder="Ingrese período (ej. 2024-1)" />
+			</div>
+			<div class="filtro">
+				<label for="fechaInicio">Fecha Inicio:</label>
+				<input type="date" id="fechaInicio" @bind="@FechaInicio" />
+			</div>
+			<div class="filtro">
+				<label for="fechaFin">Fecha Fin:</label>
+				<input type="date" id="fechaFin" @bind="@FechaFin" />
+			</div>
+			<div class="filtro">
+				<label for="facultad">Facultad:</label>
+				<select id="facultad" @bind="@SelectedFacultad">
+					<option value="">Seleccione una facultad</option>
+					@foreach (var facultad in Facultades)
+					{
+						<option value="@facultad">@facultad</option>
+					}
+				</select>
+			</div>
+			<div class="filtro">
+				<label for="carrera">Carrera:</label>
+				<select id="carrera" @bind="@SelectedCarrera">
+					<option value="">Seleccione una carrera</option>
+					@foreach (var carrera in Carreras)
+					{
+						<option value="@carrera">@carrera</option>
+					}
+				</select>
+			</div>
+
+           
+
+     
+            
+        </div>
+
+        <div class="acciones">
+            <button @onclick="GenerateReport">Generar Reporte</button>
+        </div>
+
+        <section class="resultados">
+            <h2>Resultados del Reporte</h2>
+            @if (ReportResults.Any())
+            {
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Docente</th>
+                            <th>Tipo</th>
+                            <th>Detalle</th>
+                            <th>Fecha</th>
+                            <th>Valor/Puntaje</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var result in ReportResults)
+                        {
+                            <tr>
+                                <td>@result.Docente</td>
+                                <td>@result.Tipo</td>
+                                <td>@result.Detalle</td>
+                                <td>@result.Fecha.ToString("yyyy-MM-dd")</td>
+                                <td>@result.ValorPuntaje</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <div class="exportar">
+                    <button @onclick="ExportToPdf">Exportar a PDF</button>
+                </div>
+            }
+            else
+            {
+                <p>No hay resultados para mostrar. Ajusta los filtros.</p>
+            }
+        </section>
+    </div>
+</main>
+
+<Footer_Admin />
+
+@code {
+    private string SelectedReportType { get; set; } = string.Empty;
+    private string CedulaDocente { get; set; } = string.Empty;
+    private string SelectedPeriod { get; set; } = string.Empty;
+    private DateTime? FechaInicio { get; set; }
+    private DateTime? FechaFin { get; set; }
+    private string SelectedFacultad { get; set; } = string.Empty;
+    private string SelectedCarrera { get; set; } = string.Empty;
+
+    private List<string> ReportTypes { get; set; } = new() {
+        "Evaluaciones Docentes",
+        "Capacitaciones por Docente",
+        "Obras por Docente",
+        "Investigaciones por Docente",
+        "Roles y Antigüedad"
+    };
+
+    private List<string> Facultades { get; set; } = new() {
+        "Facultad de Ciencias de la Computación",
+        "Facultad de Ingeniería Civil",
+        "Facultad de Ciencias Administrativas"
+    };
+
+    private List<string> Carreras { get; set; } = new() {
+        "Ingeniería de Software",
+        "Ingeniería de Sistemas",
+        "Ingeniería Industrial",
+        "Arquitectura"
+    };
+
+    public class ReporteResultado
+    {
+        public string Docente { get; set; } = string.Empty;
+        public string Tipo { get; set; } = string.Empty;
+        public string Detalle { get; set; } = string.Empty;
+        public DateTime Fecha { get; set; }
+        public string ValorPuntaje { get; set; } = string.Empty;
+    }
+
+    private List<ReporteResultado> ReportResults { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        // TODO: Llamar a API para llenar Facultades y Carreras si se desea dinámicamente
+        // Facultades = await Http.GetFromJsonAsync<List<string>>("api/facultades");
+    }
+
+    private async Task GenerateReport()
+    {
+        // TODO: Reemplazar esta simulación con un llamado real a tu API de reportes
+        ReportResults = new List<ReporteResultado>
+        {
+            new() { Docente = "Juan Pérez", Tipo = "Evaluación Docente", Detalle = "Período 2024-1", Fecha = new DateTime(2024, 6, 15), ValorPuntaje = "92.50" },
+            new() { Docente = "María García", Tipo = "Obra", Detalle = "Artículo 'IA en Educación'", Fecha = new DateTime(2023, 11, 1), ValorPuntaje = "N/A" }
+        };
+    }
+
+    private async Task ExportToPdf()
+    {
+        // TODO: Llamar a tu API para exportar el PDF
+        await JS.InvokeVoidAsync("alert", "Exportando a PDF");
+    }
+}
