@@ -2,8 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
+    
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+      <RunAOTCompilation>false</RunAOTCompilation>
+      <BlazorWebAssemblyEnableLinking>false</BlazorWebAssemblyEnableLinking>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
   </PropertyGroup>
 
