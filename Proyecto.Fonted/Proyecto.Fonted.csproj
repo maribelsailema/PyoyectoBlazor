@@ -5,8 +5,8 @@
     
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-      <RunAOTCompilation>false</RunAOTCompilation>
-      <BlazorWebAssemblyEnableLinking>false</BlazorWebAssemblyEnableLinking>
+        <RunAOTCompilation>false</RunAOTCompilation>
+  <WasmEnableSIMD>false</WasmEnableSIMD>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
   </PropertyGroup>
 
