@@ -18,6 +18,12 @@
             </h5>
             <p>🎓 Rol actual: <strong>@docente.RolActual</strong></p>
             <p>📅 Años en el rol: <strong>@docente.AniosTrabajo</strong> años</p>
+            <p>
+                📊 Estado del proceso:
+                <span class="estado-proceso-badge @GetEstadoClass(docente.EstadoProceso)">
+                    @docente.EstadoProceso
+                </span>
+            </p>
         </div>
 
         <ul class="lista-requisitos">
@@ -54,6 +60,7 @@
         public string Nombre { get; set; } = "Juan Pérez";
         public string RolActual { get; set; } = "Docente Auxiliar";
         public int AniosTrabajo { get; set; } = 10;
+        public string EstadoProceso { get; set; } = "EN ESPERA"; // 👈 NUEVO
     }
 
     public class RequisitoModel
@@ -73,18 +80,13 @@
     {
         try
         {
-            // 🔽 Aquí se debe realizar la llamada a la API para obtener al usuario actual
-            // Ejemplo: usuario = await Http.GetFromJsonAsync<UsuarioModel>("https://api.tuservidor.com/usuario/actual");
-            usuario.Nombre = "Administrador"; // Simulación temporal
+            usuario.Nombre = "Administrador";
 
-            // 🔽 Aquí se debe obtener la información del docente
-            // Ejemplo: docente = await Http.GetFromJsonAsync<DocenteModel>("https://api.tuservidor.com/docente/actual");
             docente.Nombre = "Juan Pérez";
             docente.RolActual = "Docente Auxiliar";
             docente.AniosTrabajo = 10;
+            docente.EstadoProceso = "EN ESPERA"; 
 
-            // 🔽 Aquí se debe obtener la lista de requisitos desde el backend
-            // Ejemplo: requisitos = await Http.GetFromJsonAsync<List<RequisitoModel>>("https://api.tuservidor.com/requisitos");
             requisitos = new List<RequisitoModel>
             {
                 new RequisitoModel { Nombre = "Producción Científica/Artística", ValorActual = 5, ValorRequerido = 5, Cumplido = true },
@@ -96,7 +98,6 @@
         catch (Exception ex)
         {
             Console.WriteLine($"❌ Error al cargar datos del servidor: {ex.Message}");
-            // Opcional: mostrar notificación al usuario
         }
     }
 
@@ -113,6 +114,17 @@
     private string GetStatusIcon(RequisitoModel requisito)
     {
         return requisito.Cumplido ? "✔️" : "❌";
+    }
+
+    private string GetEstadoClass(string estado)
+    {
+        return estado switch
+        {
+            "ACEPTADO" => "text-green-700",
+            "RECHAZADO" => "text-red-700",
+            "EN ESPERA" => "text-yellow-700",
+            _ => "text-gray-700"
+        };
     }
 
     private async Task GenerarReportePDF()

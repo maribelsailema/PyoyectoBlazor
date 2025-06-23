@@ -141,3 +141,11 @@
         background-color: #1d4ed8;
         transform: translateY(-2px) scale(1.05);
     }
+.estado-proceso-badge {
+    padding: 0.4rem 0.75rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+}

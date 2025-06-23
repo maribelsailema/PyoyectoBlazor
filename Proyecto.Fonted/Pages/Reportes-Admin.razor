@@ -5,64 +5,57 @@
 
 <Header_Admin />
 
-
 <main class="contenido">
     <div class="reportes-admin">
-        <h1>Generador de Reportes </h1>
+        <h1>Generador de Reportes</h1>
+
         <div class="filtros">
-
-
-			<div class="filtro">
-				<label for="reportType">Tipo de Reporte:</label>
-				<select id="reportType" @bind="SelectedReportType">
-					<option value="">Seleccione un tipo</option>
-					@foreach (var type in ReportTypes)
-					{
-						<option value="@type">@type</option>
-					}
-				</select>
-			</div>
-			<div class="filtro">
-				<label for="cedulaDocente">Cédula del Docente:</label>
-				<input type="text" id="cedulaDocente" @bind="CedulaDocente" placeholder="Ingrese cédula del docente" />
-			</div>
-			<div class="filtro">
-				<label for="periodo">Período:</label>
-				<input type="text" id="periodo" @bind="SelectedPeriod" placeholder="Ingrese período (ej. 2024-1)" />
-			</div>
-			<div class="filtro">
-				<label for="fechaInicio">Fecha Inicio:</label>
-				<input type="date" id="fechaInicio" @bind="@FechaInicio" />
-			</div>
-			<div class="filtro">
-				<label for="fechaFin">Fecha Fin:</label>
-				<input type="date" id="fechaFin" @bind="@FechaFin" />
-			</div>
-			<div class="filtro">
-				<label for="facultad">Facultad:</label>
-				<select id="facultad" @bind="@SelectedFacultad">
-					<option value="">Seleccione una facultad</option>
-					@foreach (var facultad in Facultades)
-					{
-						<option value="@facultad">@facultad</option>
-					}
-				</select>
-			</div>
-			<div class="filtro">
-				<label for="carrera">Carrera:</label>
-				<select id="carrera" @bind="@SelectedCarrera">
-					<option value="">Seleccione una carrera</option>
-					@foreach (var carrera in Carreras)
-					{
-						<option value="@carrera">@carrera</option>
-					}
-				</select>
-			</div>
-
-           
-
-     
-            
+            <div class="filtro">
+                <label for="reportType">Tipo de Reporte:</label>
+                <select id="reportType" @bind="SelectedReportType">
+                    <option value="">Seleccione un tipo</option>
+                    @foreach (var type in ReportTypes)
+                    {
+                        <option value="@type">@type</option>
+                    }
+                </select>
+            </div>
+            <div class="filtro">
+                <label for="cedulaDocente">Cédula del Docente:</label>
+                <input type="text" id="cedulaDocente" @bind="CedulaDocente" placeholder="Ingrese cédula del docente" />
+            </div>
+            <div class="filtro">
+                <label for="periodo">Período:</label>
+                <input type="text" id="periodo" @bind="SelectedPeriod" placeholder="Ingrese período (ej. 2024-1)" />
+            </div>
+            <div class="filtro">
+                <label for="fechaInicio">Fecha Inicio:</label>
+                <input type="date" id="fechaInicio" @bind="FechaInicio" />
+            </div>
+            <div class="filtro">
+                <label for="fechaFin">Fecha Fin:</label>
+                <input type="date" id="fechaFin" @bind="FechaFin" />
+            </div>
+            <div class="filtro">
+                <label for="facultad">Facultad:</label>
+                <select id="facultad" @bind="SelectedFacultad">
+                    <option value="">Seleccione una facultad</option>
+                    @foreach (var facultad in Facultades)
+                    {
+                        <option value="@facultad">@facultad</option>
+                    }
+                </select>
+            </div>
+            <div class="filtro">
+                <label for="carrera">Carrera:</label>
+                <select id="carrera" @bind="SelectedCarrera">
+                    <option value="">Seleccione una carrera</option>
+                    @foreach (var carrera in Carreras)
+                    {
+                        <option value="@carrera">@carrera</option>
+                    }
+                </select>
+            </div>
         </div>
 
         <div class="acciones">
@@ -105,6 +98,57 @@
                 <p>No hay resultados para mostrar. Ajusta los filtros.</p>
             }
         </section>
+
+        <section class="postulantes">
+            <h2>Postulantes Registrados</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cédula</th>
+                        <th>Nombre</th>
+                        <th>Facultad</th>
+                        <th>Carrera</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var docente in DocentesPostulantes)
+                    {
+                        <tr>
+                            <td>
+                                <a href="#" @onclick="() => VerDetalles(docente.Cedula)">@docente.Cedula</a>
+                            </td>
+                            <td>@docente.NombreCompleto</td>
+                            <td>@docente.Facultad</td>
+                            <td>@docente.Carrera</td>
+                            <td><span class="@GetEstadoColor(docente.EstadoPostulacion)">@docente.EstadoPostulacion</span></td>
+                            <td>
+                                <button @onclick="() => ExportResumenPdf(docente.Cedula)">📄 Resumen</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </section>
+
+        @if (MostrarModal && DocenteSeleccionado != null)
+        {
+            <div class="modal-backdrop" @onclick="() => MostrarModal = false"></div>
+            <div class="modal-detalle">
+                <h3>Detalle del Docente</h3>
+                <p><strong>Cédula:</strong> @DocenteSeleccionado.Cedula</p>
+                <p><strong>Nombre:</strong> @DocenteSeleccionado.NombreCompleto</p>
+                <p><strong>Facultad:</strong> @DocenteSeleccionado.Facultad</p>
+                <p><strong>Carrera:</strong> @DocenteSeleccionado.Carrera</p>
+                <p><strong>Estado:</strong> @DocenteSeleccionado.EstadoPostulacion</p>
+
+                <div class="modal-acciones">
+                    <button @onclick="AceptarPostulacion" class="btn-aceptar">✅ Aceptar</button>
+                    <button @onclick="RechazarPostulacion" class="btn-rechazar">❌ Rechazar</button>
+                </div>
+            </div>
+        }
     </div>
 </main>
 
@@ -119,7 +163,8 @@
     private string SelectedFacultad { get; set; } = string.Empty;
     private string SelectedCarrera { get; set; } = string.Empty;
 
-    private List<string> ReportTypes { get; set; } = new() {
+    private List<string> ReportTypes { get; set; } = new()
+    {
         "Evaluaciones Docentes",
         "Capacitaciones por Docente",
         "Obras por Docente",
@@ -127,18 +172,90 @@
         "Roles y Antigüedad"
     };
 
-    private List<string> Facultades { get; set; } = new() {
+    private List<string> Facultades { get; set; } = new()
+    {
         "Facultad de Ciencias de la Computación",
         "Facultad de Ingeniería Civil",
         "Facultad de Ciencias Administrativas"
     };
 
-    private List<string> Carreras { get; set; } = new() {
+    private List<string> Carreras { get; set; } = new()
+    {
         "Ingeniería de Software",
         "Ingeniería de Sistemas",
         "Ingeniería Industrial",
         "Arquitectura"
     };
+
+    private List<DocentePostulanteModel> DocentesPostulantes = new()
+    {
+        new() { Cedula = "0102030405", NombreCompleto = "Juan Pérez", Facultad = "FCC", Carrera = "Software", EstadoPostulacion = "EN ESPERA" },
+        new() { Cedula = "0607080910", NombreCompleto = "María García", Facultad = "FICA", Carrera = "Civil", EstadoPostulacion = "EN ESPERA" }
+    };
+
+    private DocentePostulanteModel? DocenteSeleccionado;
+    private bool MostrarModal = false;
+
+    private void VerDetalles(string cedula)
+    {
+        DocenteSeleccionado = DocentesPostulantes.FirstOrDefault(d => d.Cedula == cedula);
+        MostrarModal = true;
+    }
+
+    private void AceptarPostulacion()
+    {
+        if (DocenteSeleccionado != null)
+            DocenteSeleccionado.EstadoPostulacion = "ACEPTADO";
+
+        MostrarModal = false;
+    }
+
+    private void RechazarPostulacion()
+    {
+        if (DocenteSeleccionado != null)
+            DocenteSeleccionado.EstadoPostulacion = "RECHAZADO";
+
+        MostrarModal = false;
+    }
+
+    private string GetEstadoColor(string estado) => estado switch
+    {
+        "ACEPTADO" => "estado-aceptado",
+        "RECHAZADO" => "estado-rechazado",
+        _ => "estado-espera"
+    };
+
+    private async Task GenerateReport()
+    {
+        // Simulación de generación de reportes - reemplazar con llamada real API
+        ReportResults = new List<ReporteResultado>
+        {
+            new() { Docente = "Juan Pérez", Tipo = "Evaluación Docente", Detalle = "Período 2024-1", Fecha = new DateTime(2024, 6, 15), ValorPuntaje = "92.50" },
+            new() { Docente = "María García", Tipo = "Obra", Detalle = "Artículo 'IA en Educación'", Fecha = new DateTime(2023, 11, 1), ValorPuntaje = "N/A" }
+        };
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ExportToPdf()
+    {
+        // Aquí la llamada para exportar el reporte en PDF
+        await JS.InvokeVoidAsync("alert", "Exportando reporte a PDF...");
+    }
+
+    private async Task ExportResumenPdf(string cedula)
+    {
+        // Exportar resumen PDF de un postulante específico
+        await JS.InvokeVoidAsync("alert", $"Exportando resumen PDF para cédula: {cedula}");
+    }
+
+    public class DocentePostulanteModel
+    {
+        public string Cedula { get; set; } = string.Empty;
+        public string NombreCompleto { get; set; } = string.Empty;
+        public string Facultad { get; set; } = string.Empty;
+        public string Carrera { get; set; } = string.Empty;
+        public string EstadoPostulacion { get; set; } = "EN ESPERA";
+    }
 
     public class ReporteResultado
     {
@@ -150,26 +267,4 @@
     }
 
     private List<ReporteResultado> ReportResults { get; set; } = new();
-
-    protected override void OnInitialized()
-    {
-        // TODO: Llamar a API para llenar Facultades y Carreras si se desea dinámicamente
-        // Facultades = await Http.GetFromJsonAsync<List<string>>("api/facultades");
-    }
-
-    private async Task GenerateReport()
-    {
-        // TODO: Reemplazar esta simulación con un llamado real a tu API de reportes
-        ReportResults = new List<ReporteResultado>
-        {
-            new() { Docente = "Juan Pérez", Tipo = "Evaluación Docente", Detalle = "Período 2024-1", Fecha = new DateTime(2024, 6, 15), ValorPuntaje = "92.50" },
-            new() { Docente = "María García", Tipo = "Obra", Detalle = "Artículo 'IA en Educación'", Fecha = new DateTime(2023, 11, 1), ValorPuntaje = "N/A" }
-        };
-    }
-
-    private async Task ExportToPdf()
-    {
-        // TODO: Llamar a tu API para exportar el PDF
-        await JS.InvokeVoidAsync("alert", "Exportando a PDF");
-    }
 }
