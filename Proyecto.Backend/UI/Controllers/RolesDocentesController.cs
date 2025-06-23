@@ -20,7 +20,7 @@ namespace Proyecto.Backend.UI.Controllers
         public async Task<ActionResult<IEnumerable<RolesDocente>>> Listar()
         {
             var rol = await _context.RolesDocentes.ToListAsync();
-            
+
             return Ok(rol);
         }
 
@@ -89,5 +89,28 @@ namespace Proyecto.Backend.UI.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+    
+
+    [HttpGet("RolActual/{cedula}")]
+        public async Task<ActionResult<object>> ObtenerRolActual(string cedula)
+        {
+            var rol = await _context.RolesDocentes
+                .Where(r => r.Cedula == cedula && r.Activo)
+                .Select(r => new
+                {
+                    r.Rol,
+                    r.FechaAsignacion,
+                    AñosEnRol = EF.Functions.DateDiffYear(
+                     r.FechaAsignacion.ToDateTime(TimeOnly.MinValue),
+                      DateTime.Today)
+
+                })
+                .FirstOrDefaultAsync();
+
+            if (rol == null) return NotFound("No se encontró un rol activo.");
+
+            return Ok(rol);
+        }
+
     }
 }

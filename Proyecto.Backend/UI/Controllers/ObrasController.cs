@@ -63,5 +63,22 @@ namespace Proyecto.Backend.UI.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+    
+    [HttpGet("ByDocente/{cedula}")]
+        public async Task<ActionResult<IEnumerable<Obra>>> GetObrasByDocente(string cedula)
+        {
+            var obras = await _context.Obras
+                .Where(o => o.Cedula == cedula)
+                .Select(o => new Obra
+                {
+                    IdObra = o.IdObra,
+                    TipoObra = o.TipoObra,
+                    Fecha = o.Fecha
+                })
+                .ToListAsync();
+
+            return Ok(obras);
+        }
     }
+
 }

@@ -64,5 +64,14 @@ namespace Proyecto.Backend.UI.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+        [HttpGet("HorasTotales/{cedula}")]
+        public async Task<ActionResult<int>> GetHorasTotalesCapacitacion(string cedula)
+        {
+            var horas = await _context.Capacitaciones
+                .Where(c => c.Cedula == cedula)
+                .SumAsync(c => c.DuracionHoras);
+
+            return Ok(horas);
+        }
     }
 }
