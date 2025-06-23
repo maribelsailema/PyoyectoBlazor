@@ -76,17 +76,38 @@ namespace Proyecto.Backend.UI.Controllers
 
             var resultado = investigaciones.Select(i => new Proyecto.Shared.Models.Investigacion
             {
+                IdInv = i.IdInv,
+                Cedula = i.Cedula,
                 NombreProyecto = i.NombreProyecto,
                 TiempoMeses = i.TiempoMeses,
                 FechaInicio = i.FechaInicio.ToDateTime(TimeOnly.MinValue),
                 FechaFin = i.FechaFin?.ToDateTime(TimeOnly.MinValue),
                 Pdf = i.Pdf
+                 
             }).ToList();
 
             return Ok(resultado);
         }
+
+        [HttpGet("VerPdf/{id}")]
+        public async Task<IActionResult> VerPdf(int id)
+        {
+            var investigacion = await _context.Investigaciones.FindAsync(id);
+
+            if (investigacion == null || investigacion.Pdf == null)
+            {
+                return NotFound("PDF no encontrado");
+            }
+
+            return File(investigacion.Pdf, "application/pdf");
+        }
+
+
+
+
+
     }
 
-    
+
 
 }

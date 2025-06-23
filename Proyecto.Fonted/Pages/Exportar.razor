@@ -199,6 +199,12 @@
 
         @if (mostrarInvestigaciones)
         {
+            <div class="mb-3">
+    <button class="btn btn-success" @onclick="MostrarFormulario">
+        <i class="bi bi-plus-circle"></i> Agregar Investigación
+    </button>
+</div>
+
             <h4>Investigaciones</h4>
             <table class="table">
                 <thead>
@@ -219,13 +225,71 @@
                             <td>@inv.TiempoMeses</td>
                             <td>@inv.FechaInicio</td>
                             <td>@inv.FechaFin</td>
-                            <td>@inv.Pdf</td>
+                            <td>@inv.IdInv
+
+                                @if (inv.Pdf != null && inv.Pdf.Length > 0)
+                                {
+                                    <a href="https://localhost:7099/api/Investigaciones/VerPdf/@inv.IdInv" target="_blank" class="btn btn-sm btn-primary">
+                                        Ver PDF
+                                    </a>
+
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Sin PDF</span>
+                                }
+                            </td>
+
 
                         </tr>
                     }
                 </tbody>
             </table>
         }
+
+        @if (mostrarFormulario)
+{
+    <EditForm Model="@nuevaInvestigacion" OnValidSubmit="GuardarNuevaInvestigacion">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="row mb-3">
+            <div class="col">
+                <label>Título del Proyecto</label>
+                <InputText class="form-control" @bind-Value="nuevaInvestigacion.NombreProyecto" />
+            </div>
+            <div class="col">
+                <label>Carrera</label>
+                <InputText class="form-control" @bind-Value="nuevaInvestigacion.Carrera" />
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col">
+                <label>Fecha de Inicio</label>
+                <InputDate class="form-control" @bind-Value="nuevaInvestigacion.FechaInicio" />
+            </div>
+            <div class="col">
+                <label>Fecha de Fin</label>
+                <InputDate class="form-control" @bind-Value="nuevaInvestigacion.FechaFin" />
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label>Subir PDF</label>
+            <InputFile OnChange="SubirPDF" />
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-circle"></i> Guardar
+            </button>
+            <button type="button" class="btn btn-secondary" @onclick="CerrarFormulario">
+                <i class="bi bi-x-circle"></i> Cancelar
+            </button>
+        </div>
+    </EditForm>
+}
 
 
 
@@ -302,6 +366,9 @@
     private string tablaSeleccionada = "";
     private string mensaje = " ";
 
+    private Investigacion nuevaInvestigacion = new();
+    private IBrowserFile? archivoPDF;
+    private bool mostrarFormulario = false;
 
     private async Task ImportarDatos()
 
@@ -330,6 +397,63 @@
             mostrarInvestigaciones = false; // Ocultar si no es investigaciones
         }
     }
+
+    private async Task MostrarFormulario()
+    {
+        nuevaInvestigacion = new Investigacion();
+        mostrarFormulario = true;
+    }
+
+    private void CerrarFormulario()
+    {
+        mostrarFormulario = false;
+    }
+
+    private async Task SubirPDF(InputFileChangeEventArgs e)
+    {
+        archivoPDF = e.File;
+    }
+
+    private async Task GuardarNuevaInvestigacion()
+    {
+        try
+        {
+            nuevaInvestigacion.Cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+
+            if (archivoPDF is not null)
+            {
+                using var stream = archivoPDF.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+                using var memory = new MemoryStream();
+                await stream.CopyToAsync(memory);
+                nuevaInvestigacion.Pdf = memory.ToArray();
+            }
+
+            await investigacionService.GuardarInvestigacionAsync(nuevaInvestigacion);
+
+            mensaje = "Investigación guardada correctamente.";
+            mostrarFormulario = false;
+            archivoPDF = null;
+
+            // Recargar investigaciones
+            listaInvestigaciones = await investigacionService.ObtenerPorCedulaAsync(nuevaInvestigacion.Cedula);
+        }
+  
+        catch (Exception ex)
+        {
+            mensaje = $"Error detallado: {ex.Message}";
+            Console.WriteLine(ex); // Opcional
+        }
+
+    }
+    private string? ObtenerPdfUrl(byte[]? pdf)
+    {
+        if (pdf == null || pdf.Length == 0)
+            return null;
+
+        var base64 = Convert.ToBase64String(pdf);
+        return $"data:application/pdf;base64,{base64}";
+    }
+
 
 
   

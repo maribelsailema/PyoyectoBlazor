@@ -1,13 +1,12 @@
 ﻿using System.Net.Http;
 using System.Net.Http.Json;
-using Proyecto.Shared.Models; // Cambia si tu modelo está en otro namespace
+using Proyecto.Shared.Models;
 
 namespace Proyecto.Frontend.Services
 {
     public class InvestigacionService
     {
         private readonly HttpClient _http;
-        private object http;
 
         public InvestigacionService(HttpClient http)
         {
@@ -16,14 +15,41 @@ namespace Proyecto.Frontend.Services
 
         public async Task<List<Investigacion>> ObtenerInvestigacionesAsync()
         {
-            return await _http.GetFromJsonAsync<List<Investigacion>>("api/Investigaciones/Listar");
-
+            return await _http.GetFromJsonAsync<List<Investigacion>>("api/Investigaciones/Listar")
+                   ?? new List<Investigacion>();
         }
+
         public async Task<List<Investigacion>> ObtenerPorCedulaAsync(string cedula)
         {
-            return await _http.GetFromJsonAsync<List<Investigacion>>($"api/Investigaciones/PorCedula/{cedula}");
+            return await _http.GetFromJsonAsync<List<Investigacion>>($"api/Investigaciones/PorCedula/{cedula}")
+                   ?? new List<Investigacion>();
+        }
+
+        public async Task GuardarInvestigacionAsync(Investigacion investigacion)
+        {
+            try
+            {
+                var response = await _http.PostAsJsonAsync("api/Investigaciones/Guardar", investigacion);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine("Contenido del error: " + errorContent); // 🔍 Debug
+                    throw new Exception($"Error al guardar la investigación: {errorContent}");
+                }
+            }
+            catch (HttpRequestException httpEx)
+            {
+                throw new Exception($"Error de red o conexión: {httpEx.Message}");
+            }
+            catch (Exception ex)
+            {
+                throw; // No volver a encapsular, para evitar mensajes repetidos
+            }
         }
 
 
     }
 }
+
+

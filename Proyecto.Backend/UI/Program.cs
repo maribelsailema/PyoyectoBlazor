@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Proyecto.Backend.Domain.Entities.Models;
+using Proyecto.Backend.Infrastructure.Serialization;
+
 
 
 namespace Proyecto.Backend.UI
@@ -27,7 +29,13 @@ namespace Proyecto.Backend.UI
             });
 
             // Agregar servicios
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
+    });
+
+
             builder.Services.AddOpenApi(); // Solo si realmente lo usas
             builder.Services.AddSwaggerGen();
 

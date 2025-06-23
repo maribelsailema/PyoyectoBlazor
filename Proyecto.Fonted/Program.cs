@@ -6,6 +6,7 @@ using Proyecto.Fonted; // o el namespace real donde esté App.razor
 
 
 
+
 namespace Proyecto.Fonted
 {
     public class Program
