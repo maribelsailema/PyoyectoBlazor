@@ -236,7 +236,7 @@
             <tr>
                 <th>Curso</th>
                 <th>Duración (horas)</th>
-                <th>Fecha Inicio</th>
+                <th>Fecha </th>
                 <th>PDF</th>
             </tr>
         </thead>
@@ -250,7 +250,23 @@
                     <td>
                         @if (cap.Pdf != null)
                         {
-                            <a target="_blank" href="@($"data:application/pdf;base64,{Convert.ToBase64String(cap.Pdf)}")">Ver PDF</a>
+                     <a href="#" onclick="openPdf('@Convert.ToBase64String(cap.Pdf)'); return false;" style="cursor:pointer; color:blue; text-decoration:underline;">
+                    Ver PDF
+            </a>
+
+            <script>
+function openPdf(base64) {
+    const byteCharacters = atob(base64);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: 'application/pdf' });
+    const blobUrl = URL.createObjectURL(blob);
+    window.open(blobUrl);
+}
+</script>
                         }
                         else
                         {
