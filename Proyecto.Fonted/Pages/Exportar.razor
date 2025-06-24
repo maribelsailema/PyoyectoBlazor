@@ -1,10 +1,12 @@
 ﻿@page "/exportar"
+@using Proyecto.Fonted.Services
 @using Proyecto.Frontend.Services
 @inject IJSRuntime JS
 @inject InvestigacionService investigacionService
 @using Proyecto.Shared
 @using Proyecto.Shared.Models
-
+@inject IJSRuntime JS
+@inject CarreraService carreraService
 
 
 <style>
@@ -225,20 +227,35 @@
                             <td>@inv.TiempoMeses</td>
                             <td>@inv.FechaInicio</td>
                             <td>@inv.FechaFin</td>
-                            <td>@inv.IdInv
+                            <td>@inv.NombreCarrera</td>
+
+                            <td>
 
                                 @if (inv.Pdf != null && inv.Pdf.Length > 0)
                                 {
-                                    <a href="https://localhost:7099/api/Investigaciones/VerPdf/@inv.IdInv" target="_blank" class="btn btn-sm btn-primary">
+                                    <a href="#" onclick="openPdf('@Convert.ToBase64String(inv.Pdf)'); return false;"
+                                       style="cursor:pointer; color:blue; text-decoration:underline;">
                                         Ver PDF
                                     </a>
-
                                 }
                                 else
                                 {
                                     <span class="text-muted">Sin PDF</span>
                                 }
                             </td>
+                            <label>Carrera</label>
+                            <div class="col">
+                                <label>Carrera</label>
+                                <select class="form-select" @bind="nuevaInvestigacion.IdCarrera">
+                                    <option value="">Seleccione una carrera</option>
+                                    @foreach (var c in listaCarreras)
+                                    {
+                                        <option value="@c.IdCarrera">@c.Nombre</option>
+                                    }
+                                </select>
+                            </div>
+
+<ValidationMessage For="@(() => nuevaInvestigacion.IdCarrera)" />
 
 
                         </tr>
@@ -359,6 +376,20 @@
     </div>
     <p class="copyright">© 2025 Sistema de Promoción, Todos los Derechos Reservados</p>
 </footer>
+<script>
+    function openPdf(base64) {
+        const byteCharacters = atob(base64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, '_blank');
+    }
+</script>
+
 
 @code {
     private List<Investigacion> listaInvestigaciones = new();
@@ -420,13 +451,17 @@
         {
             nuevaInvestigacion.Cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
 
-            if (archivoPDF is not null)
+            // Validar archivo PDF antes de continuar
+            if (archivoPDF is null)
             {
-                using var stream = archivoPDF.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
-                using var memory = new MemoryStream();
-                await stream.CopyToAsync(memory);
-                nuevaInvestigacion.Pdf = memory.ToArray();
+                mensaje = "Debe subir un archivo PDF.";
+                return;
             }
+
+            using var stream = archivoPDF.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+            using var memory = new MemoryStream();
+            await stream.CopyToAsync(memory);
+            nuevaInvestigacion.Pdf = memory.ToArray();
 
             await investigacionService.GuardarInvestigacionAsync(nuevaInvestigacion);
 
@@ -437,21 +472,28 @@
             // Recargar investigaciones
             listaInvestigaciones = await investigacionService.ObtenerPorCedulaAsync(nuevaInvestigacion.Cedula);
         }
-  
         catch (Exception ex)
         {
             mensaje = $"Error detallado: {ex.Message}";
-            Console.WriteLine(ex); // Opcional
+            Console.WriteLine(ex);
         }
-
     }
-    private string? ObtenerPdfUrl(byte[]? pdf)
-    {
-        if (pdf == null || pdf.Length == 0)
-            return null;
 
-        var base64 = Convert.ToBase64String(pdf);
-        return $"data:application/pdf;base64,{base64}";
+    private List<Carrera> listaCarreras = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        listaCarreras = await carreraService.ObtenerCarrerasAsync();
+    }
+
+    
+    private async Task AbrirPdf(byte[]? pdf)
+    {
+        if (pdf != null && pdf.Length > 0)
+        {
+            string base64 = Convert.ToBase64String(pdf);
+            await JS.InvokeVoidAsync("openPdfFromBase64", base64);
+        }
     }
 
 

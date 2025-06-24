@@ -71,19 +71,22 @@ namespace Proyecto.Backend.UI.Controllers
         public async Task<ActionResult<IEnumerable<Proyecto.Shared.Models.Investigacion>>> ObtenerPorCedula(string cedula)
         {
             var investigaciones = await _context.Investigaciones
-                .Where(i => i.Cedula == cedula)
-                .ToListAsync();
+    .Include(i => i.IdCarreraNavigation)
+    .Where(i => i.Cedula == cedula)
+    .ToListAsync();
 
             var resultado = investigaciones.Select(i => new Proyecto.Shared.Models.Investigacion
             {
-                IdInv = i.IdInv,
+                
                 Cedula = i.Cedula,
                 NombreProyecto = i.NombreProyecto,
                 TiempoMeses = i.TiempoMeses,
                 FechaInicio = i.FechaInicio.ToDateTime(TimeOnly.MinValue),
                 FechaFin = i.FechaFin?.ToDateTime(TimeOnly.MinValue),
-                Pdf = i.Pdf
-                 
+                Pdf = i.Pdf,
+                IdCarrera = i.IdCarrera,
+                NombreCarrera = i.IdCarreraNavigation?.Nombre
+
             }).ToList();
 
             return Ok(resultado);
