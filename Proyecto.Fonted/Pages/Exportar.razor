@@ -267,6 +267,7 @@ function openPdf(base64) {
     window.open(blobUrl);
 }
 </script>
+
                         }
                         else
                         {
@@ -278,9 +279,40 @@ function openPdf(base64) {
         </tbody>
     </table>
 
-    <button class="btn btn-primary" @onclick="SubirCapacitaciones">
-        <i class="bi bi-upload"></i> Subir a BD
-    </button>
+    <button class="btn btn-primary" @onclick="ToggleFormularioCapacitacion">
+    <i class="bi bi-upload"></i> @(mostrarFormularioCap ? "Cancelar" : "Subir a BD")
+</button>
+
+@if (mostrarFormularioCap)
+{
+    <EditForm Model="@nuevaCapacitacion" OnValidSubmit="EnviarCapacitacion">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        
+        <div class="mb-3">
+            <label>Nombre del Curso</label>
+            <InputText class="form-control" @bind-Value="nuevaCapacitacion.NombreCurso" />
+        </div>
+        <div class="mb-3">
+            <label>Duración (horas)</label>
+            <InputNumber class="form-control" @bind-Value="nuevaCapacitacion.DuracionHoras" />
+        </div>
+        <div class="mb-3">
+            <label>Fecha de Inicio</label>
+            <InputDate class="form-control" @bind-Value="nuevaCapacitacion.FechaInicio" />
+        </div>
+        <div class="mb-3">
+            <label>Archivo PDF</label>
+            <InputFile OnChange="CargarArchivoPdf" />
+        </div>
+
+        <button class="btn btn-success" type="submit">
+            <i class="bi bi-check-circle"></i> Enviar Capacitación
+        </button>
+    </EditForm>
+}
+
 }
 
 
@@ -360,6 +392,9 @@ function openPdf(base64) {
     private string mensaje = " ";
     private List<Capacitacione> listaCapacitaciones = new();
     private bool mostrarCapacitaciones = false;
+    private bool mostrarFormularioCap = false;
+private Capacitacione nuevaCapacitacion = new();
+private IBrowserFile? archivoPdf = null;
 
 
     private async Task ImportarDatos()
@@ -404,6 +439,59 @@ function openPdf(base64) {
         }
 
     }
+    private async Task CargarArchivoPdf(InputFileChangeEventArgs e)
+{
+    archivoPdf = e.File;
+    if (archivoPdf != null)
+    {
+        using var stream = archivoPdf.OpenReadStream(10_000_000); // 10 MB
+        using var ms = new MemoryStream();
+        await stream.CopyToAsync(ms);
+        nuevaCapacitacion.Pdf = ms.ToArray();
+    }
+}
+
+private async Task EnviarCapacitacion()
+{
+    try
+    {
+        if (nuevaCapacitacion.Pdf != null)
+        {
+            if (string.IsNullOrWhiteSpace(nuevaCapacitacion.Cedula))
+            {
+                var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+                if (!string.IsNullOrWhiteSpace(cedula))
+                {
+                    nuevaCapacitacion.Cedula = cedula;
+                }
+                else
+                {
+                    mensaje = "No se pudo obtener la cédula del usuario.";
+                    return;
+                }
+            }
+
+            await capacitacionesService.GuardarAsync(nuevaCapacitacion);
+            mensaje = "Capacitación registrada correctamente.";
+
+            // Resetear el formulario
+            nuevaCapacitacion = new();
+            archivoPdf = null;
+            mostrarFormularioCap = false;
+        }
+        else
+        {
+            mensaje = "Debe adjuntar un archivo PDF.";
+        }
+    }
+    catch (Exception ex)
+    {
+        mensaje = $"Error al guardar capacitación: {ex.Message}";
+        Console.Error.WriteLine(ex);
+    }
+}
+
+
     private async Task SubirCapacitaciones()
 {
     if (listaCapacitaciones.Any())
@@ -414,6 +502,25 @@ function openPdf(base64) {
     else
     {
         mensaje = "No hay capacitaciones para subir.";
+    }
+
+}
+private async Task CargarCedulaDesdeLocalStorage()
+{
+    var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+    if (!string.IsNullOrWhiteSpace(cedula))
+    {
+        nuevaCapacitacion.Cedula = cedula;
+    }
+}
+
+private async Task ToggleFormularioCapacitacion()
+{
+    mostrarFormularioCap = !mostrarFormularioCap;
+
+    if (mostrarFormularioCap)
+    {
+        await CargarCedulaDesdeLocalStorage(); // Cargar cédula automáticamente
     }
 }
 

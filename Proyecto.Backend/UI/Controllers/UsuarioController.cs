@@ -82,17 +82,20 @@ namespace Proyecto.Backend.UI.Controllers
                 return BadRequest("Usuario y contraseña son obligatorios.");
             }
 
+            // Trae el usuario por nombre exacto (sensible a mayúsculas)
             var usuario = await _context.Usuarios
-                .FirstOrDefaultAsync(u => u.Usuari == login.Usuari && u.Pass == login.Pass);
+                .FirstOrDefaultAsync(u => u.Usuari == login.Usuari);
 
-            if (usuario == null)
+            // Si no existe o la contraseña no coincide exactamente
+            if (usuario == null || !usuario.Pass.Equals(login.Pass, StringComparison.Ordinal))
             {
                 return Unauthorized("Usuario o contraseña incorrectos.");
             }
 
-            usuario.Pass = ""; // Evitar enviar la contraseña al frontend
+            usuario.Pass = ""; // No enviar contraseña
             return Ok(usuario);
         }
+
 
     }
 }
