@@ -61,7 +61,9 @@
             var response = await Http.PostAsJsonAsync("api/Usuario/Validar", datosLogin);
 
             if (response.IsSuccessStatusCode)
-            {
+
+              {
+
                 var usuario = await response.Content.ReadFromJsonAsync<Usuario>();
 
                 if (usuario is not null && !string.IsNullOrEmpty(usuario.Ced))
@@ -69,13 +71,32 @@
                    //guarda la ced para consumir después
                     await JS.InvokeVoidAsync("localStorage.setItem", "cedulaUsuario", usuario.Ced);
 
-                    // Redirigir con la cédula como query string
-                    Navigation.NavigateTo($"/inicio?ced={usuario.Ced}");
+                    var tipo = usuario.TipoUsuario?.ToLower();
+                    if (tipo == "docente")
+                    {
+                        Navigation.NavigateTo($"/inicio?ced={usuario.Ced}");
+                    }
+                    else if (tipo == "admin")
+                    {
+                        Navigation.NavigateTo($"/inicio-admin?ced={usuario.Ced}");
+                    }
+                    else
+                    {
+                        mensajeError = "Tipo de usuario no reconocido.";
+                    }
+
+
+
+
+
                 }
                 else
                 {
                     mensajeError = "Usuario no válido.";
                 }
+
+
+
             }
             else
             {
