@@ -2,12 +2,12 @@
 @using System.ComponentModel.DataAnnotations
 @inject ILogger<Login> Logger
 @inject NavigationManager Navigation
-
+@inject HttpClient Http
+@inject IJSRuntime JS
 
 <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
     <DataAnnotationsValidator />
     <ValidationSummary />
-
 
     <div class="login-container">
         <div class="login-form">
@@ -23,16 +23,19 @@
                 <InputText @bind-Value="loginModel.Usuario" class="form-input" placeholder="Ingrese su usuario" autocomplete="username" />
             </div>
 
-
             <label>Contraseña</label>
             <div class="input-group">
                 <i class="fas fa-lock"></i>
                 <InputText @bind-Value="loginModel.Contrasena" class="form-input" placeholder="Ingrese su contraseña" type="password" autocomplete="current-password" />
             </div>
 
+            @if (!string.IsNullOrEmpty(mensajeError))
+            {
+                <div class="error-message">@mensajeError</div>
+            }
+
             <button class="btn-login" type="submit">
                 <i class="fas fa-sign-in-alt"></i> Ingresar
-
             </button>
 
         </div>
@@ -41,16 +44,49 @@
 
 @code {
     private LoginModel loginModel = new();
+    private string mensajeError = "";
 
     private async Task HandleLogin()
     {
         Logger.LogInformation("Intentando login con usuario: {Usuario}", loginModel.Usuario);
-        Navigation.NavigateTo("/inicio");
 
-        // Aquí deberías llamar a tu servicio de autenticación via HttpClient
-        // Ejemplo:
-        // var response = await Http.PostAsJsonAsync("api/auth/login", loginModel);
+        var datosLogin = new
+        {
+            usuari = loginModel.Usuario,
+            pass = loginModel.Contrasena
+        };
 
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/Usuario/Validar", datosLogin);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var usuario = await response.Content.ReadFromJsonAsync<Usuario>();
+
+                if (usuario is not null && !string.IsNullOrEmpty(usuario.Ced))
+                {
+                    //guarda la ced para consumir después
+                    await JS.InvokeVoidAsync("localStorage.setItem", "cedulaUsuario", usuario.Ced);
+
+                    // Redirigir con la cédula como query string
+                    Navigation.NavigateTo($"/inicio?ced={usuario.Ced}");
+                }
+                else
+                {
+                    mensajeError = "Usuario no válido.";
+                }
+            }
+            else
+            {
+                mensajeError = "Credenciales incorrectas.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error en login.");
+            mensajeError = $"Error en la conexión al servidor: {ex.Message}";
+        }
     }
 
     public class LoginModel
@@ -60,5 +96,17 @@
 
         [Required(ErrorMessage = "La contraseña es obligatoria.")]
         public string? Contrasena { get; set; }
+    }
+
+    public class Usuario
+    {
+        public string Ced { get; set; }
+        public string Nom1 { get; set; }
+        public string Nom2 { get; set; }
+        public string Ape1 { get; set; }
+        public string Ape2 { get; set; }
+        public string Usuari { get; set; }
+        public string TipoUsuario { get; set; }
+        public string FechaIngreso { get; set; }
     }
 }
