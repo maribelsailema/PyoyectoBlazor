@@ -243,17 +243,7 @@
                                     <span class="text-muted">Sin PDF</span>
                                 }
                             </td>
-                            <label>Carrera</label>
-                            <div class="col">
-                                <label>Carrera</label>
-                                <select class="form-select" @bind="nuevaInvestigacion.IdCarrera">
-                                    <option value="">Seleccione una carrera</option>
-                                    @foreach (var c in listaCarreras)
-                                    {
-                                        <option value="@c.IdCarrera">@c.Nombre</option>
-                                    }
-                                </select>
-                            </div>
+                            
 
 <ValidationMessage For="@(() => nuevaInvestigacion.IdCarrera)" />
 
@@ -276,9 +266,16 @@
                 <InputText class="form-control" @bind-Value="nuevaInvestigacion.NombreProyecto" />
             </div>
             <div class="col">
-                <label>Carrera</label>
-                <InputText class="form-control" @bind-Value="nuevaInvestigacion.Carrera" />
-            </div>
+    <label>Carrera</label>
+    <select class="form-select" @bind="nuevaInvestigacion.IdCarrera">
+        <option value="">Seleccione una carrera</option>
+        @foreach (var carrera in listaCarreras)
+        {
+            <option value="@carrera.IdCarrera">@carrera.Nombre</option>
+        }
+    </select>
+    <ValidationMessage For="@(() => nuevaInvestigacion.IdCarrera)" />
+</div> 
         </div>
 
         <div class="row mb-3">
