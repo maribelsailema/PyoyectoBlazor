@@ -7,16 +7,13 @@
 
 <header class="navbar">
     <div class="navbar-left">
-        <!-- El título de la página "Promoción Docente" o el nombre de usuario se mostraría aquí -->
         <h3>Promoción Docente</h3>
     </div>
     <nav class="navbar-right nav-links">
         <NavLink href="/inicio" class="nav-item"><i class="bi bi-house-fill"></i> Inicio</NavLink>
         <NavLink href="/promocion" class="nav-item"><i class="bi bi-bar-chart-line-fill"></i> Promoción</NavLink>
         <NavLink href="/perfil" class="nav-item"><i class="bi bi-person-fill"></i> Perfil</NavLink>
-        <NavLink href="/exportar" class="nav-item">
-            <i class="bi bi-download"></i> Exportar
-        </NavLink>
+        <NavLink href="/exportar" class="nav-item"><i class="bi bi-download"></i> Exportar</NavLink>
         <NavLink href="/" class="nav-item cerrar-sesion"><i class="bi bi-box-arrow-right"></i> Cerrar Sesión</NavLink>
     </nav>
 </header>
@@ -38,52 +35,64 @@
                 Error al cargar los datos. Intente nuevamente más tarde.
             </div>
         }
-        else if (currentRol != null)
+        else
         {
-            <!-- Sección de Posición Actual -->
-            <div class="current-position">
-                <h3><i class="bi bi-info-circle"></i> Tu posición actual: <strong>@currentRol.Rol</strong></h3>
-                <p class="text-muted">@GetRolDescription(currentRol.Rol)</p>
-                <p><strong>Fecha de asignación:</strong> @currentRol.FechaAsignacion.ToString("dd/MM/yyyy")</p>
-                <p><strong>Años en el rol:</strong> @currentRol.AniosEnRol años</p>
-            </div>
-
-            @if (requisitosPromocion?.Any() == true)
+            if (currentRol != null)
             {
-                <!-- Tabla de Niveles de Promoción -->
-                <div class="table-responsive">
+                var primerRequisito = requisitosPromocion.FirstOrDefault();
+
+                <!-- Posición Actual -->
+                <div class="current-position mb-4">
+                    <h3><i class="bi bi-info-circle"></i> Tu posición actual: <strong>@currentRol.Rol</strong></h3>
+                    <p class="text-muted">@GetRolDescription(currentRol.Rol)</p>
+                    <p><strong>Fecha de asignación:</strong> @currentRol.FechaAsignacion.ToString("dd/MM/yyyy")</p>
+                    <p><strong>Años en el rol:</strong> @currentRol.AniosEnRol años</p>
+                </div>
+
+                <!-- Tabla de Requisitos -->
+                <div class="table-responsive mb-4">
+                    <h4><i class="bi bi-list-check"></i> Requisitos para el siguiente nivel:</h4>
                     <table class="table table-hover promotion-table">
                         <thead>
                             <tr>
-                                <th>Nivel de Promoción</th>
-                                <th>Tiempo Requerido</th>
-                                <th>Obras Requeridas</th>
-                                <th>Puntaje Mínimo</th>
+                                <th>Nivel</th>
+                                <th>Tiempo</th>
+                                <th>Obras</th>
+                                <th>Puntaje</th>
                                 <th>Capacitación</th>
                                 <th>Investigación</th>
                                 <th>Estado</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var req in requisitosPromocion)
+                            @if (requisitosPromocion.Any())
+                            {
+                                foreach (var req in requisitosPromocion)
+                                {
+                                    <tr>
+                                        <td>@req.HaciaRol</td>
+                                        <td>@req.TiempoMinimoAnios años</td>
+                                        <td>@req.ObrasMinimas</td>
+                                        <td>@req.PuntajeEvaluacionMinimo%</td>
+                                        <td>@req.HorasCapacitacionMin horas</td>
+                                        <td>@(req.MesesInvestigacionMin.HasValue ? $"{req.MesesInvestigacionMin} meses" : "-")</td>
+                                        <td>
+                                            @if (req.CumpleRequisitos)
+                                            {
+                                                <span class="badge bg-success">Disponible</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">No disponible</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
                             {
                                 <tr>
-                                    <td>@req.HaciaRol</td>
-                                    <td>@req.TiempoMinimoAnios años</td>
-                                    <td>@req.ObrasMinimas</td>
-                                    <td>@req.PuntajeEvaluacionMinimo%</td>
-                                    <td>@req.HorasCapacitacionMin horas</td>
-                                    <td>@(req.MesesInvestigacionMin.HasValue ? $"{req.MesesInvestigacionMin} meses" : "-")</td>
-                                    <td>
-                                        @if (req.CumpleRequisitos)
-                                        {
-                                            <span class="badge bg-success">Disponible</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-secondary">No disponible</span>
-                                        }
-                                    </td>
+                                    <td colspan="7" class="text-center text-muted">No se encontraron requisitos de promoción para tu rol actual.</td>
                                 </tr>
                             }
                         </tbody>
@@ -91,63 +100,14 @@
                 </div>
 
                 <!-- Resumen de Cumplimiento -->
-                <div class="requirements-info mt-4">
-                    <h4><i class="bi bi-card-checklist"></i> Tu progreso actual:</h4>
-                    <ul>
-                        <li>
-                            <strong>Tiempo en el rol:</strong>
-                            @currentRol.AniosEnRol años de @requisitosPromocion.FirstOrDefault()?.TiempoMinimoAnios ?? 0 requeridos
-                            @if (currentRol.AniosEnRol >= (requisitosPromocion.FirstOrDefault()?.TiempoMinimoAnios ?? 0))
-                            {
-                                <i class="bi bi-check-circle-fill text-success"></i>
-                            }
-                            else
-                            {
-                                <i class="bi bi-x-circle-fill text-danger"></i>
-                            }
-                        </li>
-                        <li>
-                            <strong>Obras publicadas:</strong>
-                            @totalObras de @requisitosPromocion.FirstOrDefault()?.ObrasMinimas ?? 0 requeridas
-                            @if (totalObras >= (requisitosPromocion.FirstOrDefault()?.ObrasMinimas ?? 0))
-                            {
-                                <i class="bi bi-check-circle-fill text-success"></i>
-                            }
-                            else
-                            {
-                                <i class="bi bi-x-circle-fill text-danger"></i>
-                            }
-                        </li>
-                        <li>
-                            <strong>Puntaje evaluación:</strong>
-                            @(ultimaEvaluacion?.PuntajeFinal ?? 0)% de @requisitosPromocion.FirstOrDefault()?.PuntajeEvaluacionMinimo ?? 0 requerido
-                            @if ((ultimaEvaluacion?.PuntajeFinal ?? 0) >= (requisitosPromocion.FirstOrDefault()?.PuntajeEvaluacionMinimo ?? 0))
-                            {
-                                <i class="bi bi-check-circle-fill text-success"></i>
-                            }
-                            else
-                            {
-                                <i class="bi bi-x-circle-fill text-danger"></i>
-                            }
-                        </li>
-                        <li>
-                            <strong>Horas capacitación:</strong>
-                            @totalHorasCapacitacion de @requisitosPromocion.FirstOrDefault()?.HorasCapacitacionMin ?? 0 requeridas
-                            @if (totalHorasCapacitacion >= (requisitosPromocion.FirstOrDefault()?.HorasCapacitacionMin ?? 0))
-                            {
-                                <i class="bi bi-check-circle-fill text-success"></i>
-                            }
-                            else
-                            {
-                                <i class="bi bi-x-circle-fill text-danger"></i>
-                            }
-                        </li>
-                        @if (requisitosPromocion.FirstOrDefault()?.MesesInvestigacionMin.HasValue == true)
-                        {
+                @if (primerRequisito != null)
+                {
+                    <div class="requirements-info">
+                        <h4><i class="bi bi-card-checklist"></i> Tu progreso actual:</h4>
+                        <ul>
                             <li>
-                                <strong>Meses investigación:</strong>
-                                @totalMesesInvestigacion de @requisitosPromocion.FirstOrDefault()?.MesesInvestigacionMin ?? 0 requeridos
-                                @if (totalMesesInvestigacion >= (requisitosPromocion.FirstOrDefault()?.MesesInvestigacionMin ?? 0))
+                                <strong>Tiempo en el rol:</strong> @currentRol.AniosEnRol años de @primerRequisito.TiempoMinimoAnios requeridos
+                                @if (currentRol.AniosEnRol >= primerRequisito.TiempoMinimoAnios)
                                 {
                                     <i class="bi bi-check-circle-fill text-success"></i>
                                 }
@@ -156,35 +116,89 @@
                                     <i class="bi bi-x-circle-fill text-danger"></i>
                                 }
                             </li>
-                        }
-                    </ul>
+                            <li>
+                                <strong>Obras publicadas:</strong> @totalObras de @primerRequisito.ObrasMinimas requeridas
+                                @if (totalObras >= primerRequisito.ObrasMinimas)
+                                {
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-x-circle-fill text-danger"></i>
+                                }
+                            </li>
+                            <li>
+                                <strong>Puntaje evaluación:</strong> @(ultimaEvaluacion?.PuntajeFinal ?? 0)% de @primerRequisito.PuntajeEvaluacionMinimo requerido
+                                @if ((ultimaEvaluacion?.PuntajeFinal ?? 0) >= primerRequisito.PuntajeEvaluacionMinimo)
+                                {
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-x-circle-fill text-danger"></i>
+                                }
+                            </li>
+                            <li>
+                                <strong>Horas capacitación:</strong> @totalHorasCapacitacion de @primerRequisito.HorasCapacitacionMin requeridas
+                                @if (totalHorasCapacitacion >= primerRequisito.HorasCapacitacionMin)
+                                {
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-x-circle-fill text-danger"></i>
+                                }
+                            </li>
+                            @if (primerRequisito.MesesInvestigacionMin.HasValue)
+                            {
+                                <li>
+                                    <strong>Meses investigación:</strong> @totalMesesInvestigacion de @primerRequisito.MesesInvestigacionMin requeridos
+                                    @if (totalMesesInvestigacion >= primerRequisito.MesesInvestigacionMin)
+                                    {
+                                        <i class="bi bi-check-circle-fill text-success"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-x-circle-fill text-danger"></i>
+                                    }
+                                </li>
+                            }
+                        </ul>
 
-                    @if (puedePostular)
-                    {
-                        <button class="btn btn-primary" @onclick="Postular">
-                            <i class="bi bi-send-check"></i> Postular para promoción
-                        </button>
-                    }
-                    else
-                    {
-                        <div class="alert alert-warning">
-                            Aún no cumples con todos los requisitos para postularte.
-                        </div>
-                    }
+                        @if (puedePostular)
+                        {
+                            <button class="btn btn-primary" @onclick="Postular">
+                                <i class="bi bi-send-check"></i> Postular para promoción
+                            </button>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning mt-2">
+                                Aún no cumples con todos los requisitos para postularte.
+                            </div>
+                        }
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    No se pudo cargar tu rol actual. Por favor, verifica tu sesión o contacta al administrador.
                 </div>
             }
         }
     </div>
 </main>
+
 <footer class="footer">
     <div class="footer-info">
         <div class="footer-section">
             <h4><i class="bi bi-info-circle-fill"></i> Sobre Nosotros</h4>
-            <p>Sistema de Promoción para Docentes de la FISEI.<br>Para agilizar trámites.</p>
+            <p>Sistema de Promoción para Docentes de la FISEI.<br />Para agilizar trámites.</p>
         </div>
         <div class="footer-section">
             <h4><i class="bi bi-envelope-fill"></i> Contactos</h4>
-            <p>support@correo.com<br>+593 99 234 56789</p>
+            <p>support@correo.com<br />+593 99 234 56789</p>
         </div>
         <div class="footer-section">
             <h4><i class="bi bi-link-45deg"></i> Enlaces Rápidos</h4>
@@ -195,6 +209,7 @@
     </div>
     <p class="copyright">© 2025 Sistema de Promoción, Todos los Derechos Reservados</p>
 </footer>
+
 @code {
     private string cedulaUsuario;
     private UsuarioDto usuarioInfo;
@@ -223,11 +238,12 @@
             var loadTasks = new List<Task>
             {
                 LoadRolActual(),
-                LoadRequisitosPromocion(),
                 LoadDatosCumplimiento()
             };
 
             await Task.WhenAll(loadTasks);
+
+            await LoadRequisitosPromocion();
 
             puedePostular = requisitosPromocion.Any() &&
                             requisitosPromocion.First().CumpleRequisitos;
@@ -258,53 +274,76 @@
 
     private async Task LoadRequisitosPromocion()
     {
-        if (currentRol == null) return;
+        if (currentRol == null)
+        {
+            requisitosPromocion = new List<RequisitoPromocionDto>();
+            return;
+        }
 
         var response = await Http.GetAsync($"api/RequisitosAscensos/DesdeRol/{currentRol.Rol}");
         if (response.IsSuccessStatusCode)
         {
-            requisitosPromocion = await response.Content.ReadFromJsonAsync<List<RequisitoPromocionDto>>();
+            requisitosPromocion = await response.Content.ReadFromJsonAsync<List<RequisitoPromocionDto>>() ?? new();
 
             foreach (var req in requisitosPromocion)
             {
-                var cumple = await Http.GetFromJsonAsync<bool>(
-                    $"api/Promocion/VerificarRequisitos/{cedulaUsuario}/{req.HaciaRol}");
-                req.CumpleRequisitos = cumple;
+                try
+                {
+                    var cumple = await Http.GetFromJsonAsync<bool>($"api/Promocion/VerificarRequisitos/{cedulaUsuario}/{req.HaciaRol}");
+                    req.CumpleRequisitos = cumple;
+                }
+                catch
+                {
+                    req.CumpleRequisitos = false;
+                }
             }
+        }
+        else
+        {
+            requisitosPromocion = new List<RequisitoPromocionDto>();
         }
     }
 
     private async Task LoadDatosCumplimiento()
     {
-        var obrasResponse = await Http.GetAsync($"api/Obras/ByDocente/{cedulaUsuario}");
-        if (obrasResponse.IsSuccessStatusCode)
+        try
         {
-            var obras = await obrasResponse.Content.ReadFromJsonAsync<List<ObraDto>>();
-            totalObras = obras?.Count ?? 0;
-        }
+            var obrasResponse = await Http.GetAsync($"api/Obras/ByDocente/{cedulaUsuario}");
+            if (obrasResponse.IsSuccessStatusCode)
+            {
+                var obras = await obrasResponse.Content.ReadFromJsonAsync<List<ObraDto>>();
+                totalObras = obras?.Count ?? 0;
+            }
 
-        var evalResponse = await Http.GetAsync($"api/EvaluacionesDocentes/Ultima/{cedulaUsuario}");
-        if (evalResponse.IsSuccessStatusCode)
-        {
-            ultimaEvaluacion = await evalResponse.Content.ReadFromJsonAsync<EvaluacionDto>();
-        }
+            var evalResponse = await Http.GetAsync($"api/EvaluacionesDocentes/Ultima/{cedulaUsuario}");
+            if (evalResponse.IsSuccessStatusCode)
+            {
+                ultimaEvaluacion = await evalResponse.Content.ReadFromJsonAsync<EvaluacionDto>();
+            }
 
-        var capResponse = await Http.GetAsync($"api/Capacitaciones/HorasTotales/{cedulaUsuario}");
-        if (capResponse.IsSuccessStatusCode)
-        {
-            totalHorasCapacitacion = await capResponse.Content.ReadFromJsonAsync<int>();
-        }
+            var capResponse = await Http.GetAsync($"api/Capacitaciones/HorasTotales/{cedulaUsuario}");
+            if (capResponse.IsSuccessStatusCode)
+            {
+                totalHorasCapacitacion = await capResponse.Content.ReadFromJsonAsync<int>();
+            }
 
-        var invResponse = await Http.GetAsync($"api/Investigaciones/MesesTotales/{cedulaUsuario}");
-        if (invResponse.IsSuccessStatusCode)
+            var invResponse = await Http.GetAsync($"api/Investigaciones/MesesTotales/{cedulaUsuario}");
+            if (invResponse.IsSuccessStatusCode)
+            {
+                totalMesesInvestigacion = await invResponse.Content.ReadFromJsonAsync<int>();
+            }
+        }
+        catch (Exception ex)
         {
-            totalMesesInvestigacion = await invResponse.Content.ReadFromJsonAsync<int>();
+            Logger.LogWarning(ex, "Error cargando datos de cumplimiento");
+            // En caso de fallo, dejar valores por defecto (0)
         }
     }
 
     private async Task Postular()
     {
-        if (!puedePostular || currentRol == null || !requisitosPromocion.Any()) return;
+        if (!puedePostular || currentRol == null || !requisitosPromocion.Any())
+            return;
 
         try
         {
@@ -331,17 +370,14 @@
         }
     }
 
-    private string GetRolDescription(string rol)
+    private string GetRolDescription(string rol) => rol switch
     {
-        return rol switch
-        {
-            "D1" => "Docente Nivel 1 - Puedes postularte al nivel D2 cuando cumplas los requisitos",
-            "D2" => "Docente Nivel 2 - Puedes postularte al nivel D3 cuando cumplas los requisitos",
-            "D3" => "Docente Nivel 3 - Puedes postularte al nivel D4 cuando cumplas los requisitos",
-            "D4" => "Docente Nivel 4 - Máximo nivel alcanzable",
-            _ => "Rol no reconocido"
-        };
-    }
+        "D1" => "Docente Nivel 1 - Puedes postularte al nivel D2 cuando cumplas los requisitos",
+        "D2" => "Docente Nivel 2 - Puedes postularte al nivel D3 cuando cumplas los requisitos",
+        "D3" => "Docente Nivel 3 - Puedes postularte al nivel D4 cuando cumplas los requisitos",
+        "D4" => "Docente Nivel 4 - Máximo nivel alcanzable",
+        _ => "Rol no reconocido"
+    };
 
     // DTOs
     public class UsuarioDto
