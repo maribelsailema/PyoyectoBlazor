@@ -9,9 +9,12 @@ namespace Proyecto.Backend.UI
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Configurar DbContext
+            // ✅ Configurar DbContext para MySQL
             builder.Services.AddDbContext<PlataformaDocenteContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("connectionDB"))
+                options.UseMySql(
+                    builder.Configuration.GetConnectionString("connectionDB"),
+                    ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("connectionDB"))
+                )
             );
 
             // Configurar CORS
@@ -27,12 +30,12 @@ namespace Proyecto.Backend.UI
 
             // Agregar servicios
             builder.Services.AddControllers();
-            builder.Services.AddOpenApi(); // Solo si realmente lo usas
+            builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
 
-            // Redirecci�n a Swagger
+            // Redirección a Swagger
             app.MapGet("/", (HttpContext context) =>
             {
                 context.Response.Redirect("/swagger/index.html", permanent: false);
@@ -41,20 +44,12 @@ namespace Proyecto.Backend.UI
             // Middleware
             if (app.Environment.IsDevelopment())
             {
-                app.MapOpenApi();
-                app.UseSwaggerUI();
                 app.UseSwagger();
+                app.UseSwaggerUI();
             }
 
             app.UseHttpsRedirection();
-
-            // Usar CORS
             app.UseCors();
-
-            // Ya no se usa JWT
-            // app.UseAuthentication(); <-- Eliminar
-            // app.UseAuthorization(); <-- Eliminar si no proteges nada
-
             app.MapControllers();
 
             app.Run();
