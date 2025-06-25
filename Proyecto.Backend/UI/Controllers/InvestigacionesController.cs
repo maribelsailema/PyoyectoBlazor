@@ -69,7 +69,7 @@ namespace Proyecto.Backend.UI.Controllers
         public async Task<ActionResult<int>> GetMesesTotalesInvestigacion(string cedula)
         {
             var meses = await _context.Investigaciones
-                .Where(i => i.Cedula == cedula && i.FechaFin.HasValue)
+                .Where(i => i.Cedula == cedula )
                 .SumAsync(i => i.TiempoMeses);
 
             return Ok(meses);

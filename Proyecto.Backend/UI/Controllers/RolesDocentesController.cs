@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Proyecto.Backend.Domain.Entities.Models;
-
+using Proyecto.Shared.Models;
 namespace Proyecto.Backend.UI.Controllers
 {
     [Route("api/[controller]")]
@@ -89,28 +89,36 @@ namespace Proyecto.Backend.UI.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
-    
 
-    [HttpGet("RolActual/{cedula}")]
-        public async Task<ActionResult<object>> ObtenerRolActual(string cedula)
+
+        [HttpGet("RolActual/{cedula}")]
+        public async Task<ActionResult<RolActualDto>> ObtenerRolActual(string cedula)
         {
             var rol = await _context.RolesDocentes
                 .Where(r => r.Cedula == cedula && r.Activo)
-                .Select(r => new
-                {
-                    r.Rol,
-                    r.FechaAsignacion,
-                    AñosEnRol = EF.Functions.DateDiffYear(
-                     r.FechaAsignacion.ToDateTime(TimeOnly.MinValue),
-                      DateTime.Today)
-
-                })
+                .OrderByDescending(r => r.FechaAsignacion)
                 .FirstOrDefaultAsync();
 
-            if (rol == null) return NotFound("No se encontró un rol activo.");
+            if (rol == null)
+                return NotFound("No se encontró un rol activo.");
 
-            return Ok(rol);
+            var fechaAsignacion = rol.FechaAsignacion.ToDateTime(TimeOnly.MinValue); // Convierte DateOnly a DateTime
+
+            var aniosEnRol = DateTime.Today.Year - fechaAsignacion.Year;
+            if (DateTime.Today.Date < fechaAsignacion.AddYears(aniosEnRol)) // Ajuste si aún no ha pasado el aniversario
+                aniosEnRol--;
+
+            var resultado = new RolActualDto
+            {
+                Rol = rol.Rol,
+                FechaAsignacion = fechaAsignacion,
+                AniosEnRol = aniosEnRol
+            };
+
+            return Ok(resultado);
         }
+
+      
 
     }
 }

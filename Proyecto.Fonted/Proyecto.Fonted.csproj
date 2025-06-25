@@ -14,7 +14,9 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.12.1" />
   </ItemGroup>
 
- 
+	<ItemGroup>
+		<ProjectReference Include="..\Proyecto.Shared\Proyecto.Shared.csproj" />
+	</ItemGroup>
 
   <ItemGroup>
     <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
