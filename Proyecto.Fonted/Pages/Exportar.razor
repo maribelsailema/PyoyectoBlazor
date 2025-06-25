@@ -488,7 +488,12 @@
             }
             else
             {
-                await investigacionService.GuardarInvestigacionAsync(nuevaInvestigacion);
+                var resultado = await investigacionService.GuardarInvestigacionAsync(nuevaInvestigacion);
+                if (resultado != null)
+                {
+                    nuevaInvestigacion = resultado; //Aquí ya tiene el IdInv real
+                }
+
                 mensaje = "Investigación guardada correctamente.";
             }
 

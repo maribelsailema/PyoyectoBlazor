@@ -29,6 +29,7 @@ namespace Proyecto.Shared.Models
         public string? NombreCarrera { get; set; }
         public string Cedula { get; set; } = string.Empty;
         public int IdInv { get; set; }
+
     }
 }
 

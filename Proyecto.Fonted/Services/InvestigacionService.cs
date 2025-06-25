@@ -25,16 +25,21 @@ namespace Proyecto.Frontend.Services
                    ?? new List<Investigacion>();
         }
 
-        public async Task GuardarInvestigacionAsync(Investigacion investigacion)
+        public async Task<Investigacion?> GuardarInvestigacionAsync(Investigacion investigacion)
         {
             try
             {
+
                 var response = await _http.PostAsJsonAsync("api/Investigaciones/Guardar", investigacion);
 
-                if (!response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode)
+                {
+                    //  Lee el objeto completo devuelto, que incluye el IdInv
+                    return await response.Content.ReadFromJsonAsync<Investigacion>();
+                }
+                else
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine("Contenido del error: " + errorContent); // 🔍 Debug
                     throw new Exception($"Error al guardar la investigación: {errorContent}");
                 }
             }
@@ -42,11 +47,8 @@ namespace Proyecto.Frontend.Services
             {
                 throw new Exception($"Error de red o conexión: {httpEx.Message}");
             }
-            catch (Exception ex)
-            {
-                throw; // No volver a encapsular, para evitar mensajes repetidos
-            }
         }
+
 
         public async Task ActualizarInvestigacionAsync(Investigacion inv)
         {
@@ -54,6 +56,8 @@ namespace Proyecto.Frontend.Services
 
             try
             {
+                Console.WriteLine($"Actualizando investigación con ID: {inv.IdInv}");
+
                 var url = $"api/Investigaciones/Actualizar/{inv.IdInv}";
                 var response = await _http.PutAsJsonAsync(url, inv);
 

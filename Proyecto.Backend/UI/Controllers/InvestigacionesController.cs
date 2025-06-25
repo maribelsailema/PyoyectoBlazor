@@ -77,7 +77,7 @@ namespace Proyecto.Backend.UI.Controllers
 
             var resultado = investigaciones.Select(i => new Proyecto.Shared.Models.Investigacion
             {
-                
+                IdInv = i.IdInv,
                 Cedula = i.Cedula,
                 NombreProyecto = i.NombreProyecto,
                 TiempoMeses = i.TiempoMeses,
