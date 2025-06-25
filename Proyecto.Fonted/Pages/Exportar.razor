@@ -229,6 +229,7 @@
                             <td>@inv.FechaFin</td>
                             <td>@inv.NombreCarrera</td>
 
+
                             <td>
 
                                 @if (inv.Pdf != null && inv.Pdf.Length > 0)
@@ -243,10 +244,16 @@
                                     <span class="text-muted">Sin PDF</span>
                                 }
                             </td>
+
                             
 
 <ValidationMessage For="@(() => nuevaInvestigacion.IdCarrera)" />
-
+                            <td>
+                            <td>@inv.IdInv</td>
+                                <button class="btn btn-warning btn-sm" @onclick="() => EditarInvestigacion(inv)">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </button>
+                            </td>
 
                         </tr>
                     }
@@ -277,17 +284,30 @@
     <ValidationMessage For="@(() => nuevaInvestigacion.IdCarrera)" />
 </div> 
         </div>
+                <div class="row mb-3">
+                    <div class="col">
+                        <label>Fecha de Inicio</label>
+                        <InputDate class="form-control"
+                                   @bind-Value="nuevaInvestigacion.FechaInicio"
+                                   @onchange="CalcularTiempoMeses" />
+                    </div>
+                    <div class="col">
+                        <label>Fecha de Fin</label>
+                        <InputDate class="form-control"
+                                   @bind-Value="nuevaInvestigacion.FechaFin"
+                                   @onchange="CalcularTiempoMeses" />
+                    </div>
+                </div>
 
-        <div class="row mb-3">
-            <div class="col">
-                <label>Fecha de Inicio</label>
-                <InputDate class="form-control" @bind-Value="nuevaInvestigacion.FechaInicio" />
-            </div>
-            <div class="col">
-                <label>Fecha de Fin</label>
-                <InputDate class="form-control" @bind-Value="nuevaInvestigacion.FechaFin" />
-            </div>
-        </div>
+
+                <div class="col">
+                    <label>Duración (meses)</label>
+                    <input type="text" class="form-control" value="@nuevaInvestigacion.TiempoMeses" readonly />
+                </div>
+
+
+
+
 
         <div class="mb-3">
             <label>Subir PDF</label>
@@ -398,6 +418,10 @@
     private IBrowserFile? archivoPDF;
     private bool mostrarFormulario = false;
 
+    private bool modoEdicion = false;
+    private DateTime fechaInicioTemp;
+    private DateTime? fechaFinTemp;
+
     private async Task ImportarDatos()
 
 
@@ -448,33 +472,41 @@
         {
             nuevaInvestigacion.Cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
 
-            // Validar archivo PDF antes de continuar
-            if (archivoPDF is null)
+            // Procesar archivo PDF si es nuevo
+            if (archivoPDF is not null)
             {
-                mensaje = "Debe subir un archivo PDF.";
-                return;
+                using var stream = archivoPDF.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+                using var memory = new MemoryStream();
+                await stream.CopyToAsync(memory);
+                nuevaInvestigacion.Pdf = memory.ToArray();
             }
 
-            using var stream = archivoPDF.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
-            using var memory = new MemoryStream();
-            await stream.CopyToAsync(memory);
-            nuevaInvestigacion.Pdf = memory.ToArray();
+            if (modoEdicion)
+            {
+                await investigacionService.ActualizarInvestigacionAsync(nuevaInvestigacion);
+                mensaje = "Investigación actualizada correctamente.";
+            }
+            else
+            {
+                await investigacionService.GuardarInvestigacionAsync(nuevaInvestigacion);
+                mensaje = "Investigación guardada correctamente.";
+            }
 
-            await investigacionService.GuardarInvestigacionAsync(nuevaInvestigacion);
-
-            mensaje = "Investigación guardada correctamente.";
             mostrarFormulario = false;
+            modoEdicion = false;
             archivoPDF = null;
 
-            // Recargar investigaciones
             listaInvestigaciones = await investigacionService.ObtenerPorCedulaAsync(nuevaInvestigacion.Cedula);
+            modoEdicion = false;
+            mostrarFormulario = false;
+
         }
         catch (Exception ex)
         {
             mensaje = $"Error detallado: {ex.Message}";
-            Console.WriteLine(ex);
         }
     }
+
 
     private List<Carrera> listaCarreras = new();
 
@@ -491,6 +523,64 @@
             string base64 = Convert.ToBase64String(pdf);
             await JS.InvokeVoidAsync("openPdfFromBase64", base64);
         }
+    }
+
+    
+    private void OnFechaInicioChanged(DateTime value)
+    {
+        nuevaInvestigacion.FechaInicio = value;
+        CalcularTiempoMeses();
+    }
+
+    private void OnFechaFinChanged(DateTime? nuevaFechaFin)
+    {
+        nuevaInvestigacion.FechaFin = nuevaFechaFin;
+        CalcularTiempoMeses();
+    }
+
+
+    private void CalcularTiempoMeses()
+    {
+        if (nuevaInvestigacion.FechaFin.HasValue && nuevaInvestigacion.FechaInicio != default)
+        {
+            var inicio = nuevaInvestigacion.FechaInicio;
+            var fin = nuevaInvestigacion.FechaFin.Value;
+
+            if (fin >= inicio)
+            {
+                int meses = ((fin.Year - inicio.Year) * 12) + (fin.Month - inicio.Month);
+                if (fin.Day >= inicio.Day)
+                    meses++;
+
+                nuevaInvestigacion.TiempoMeses = meses;
+            }
+            else
+            {
+                nuevaInvestigacion.TiempoMeses = 0;
+            }
+        }
+        else
+        {
+            nuevaInvestigacion.TiempoMeses = 0;
+        }
+    }
+
+    private void EditarInvestigacion(Investigacion inv)
+    {
+        nuevaInvestigacion = new Investigacion
+            {
+                IdInv = inv.IdInv,
+                Cedula = inv.Cedula,
+                NombreProyecto = inv.NombreProyecto,
+                TiempoMeses = inv.TiempoMeses,
+                FechaInicio = inv.FechaInicio,
+                FechaFin = inv.FechaFin,
+                IdCarrera = inv.IdCarrera,
+                Pdf = inv.Pdf
+            };
+
+        mostrarFormulario = true;
+        modoEdicion = true;
     }
 
 

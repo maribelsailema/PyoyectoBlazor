@@ -48,6 +48,29 @@ namespace Proyecto.Frontend.Services
             }
         }
 
+        public async Task ActualizarInvestigacionAsync(Investigacion inv)
+        {
+
+
+            try
+            {
+                var url = $"api/Investigaciones/Actualizar/{inv.IdInv}";
+                var response = await _http.PutAsJsonAsync(url, inv);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Error al actualizar: {error}");
+                }
+            }
+            catch (HttpRequestException httpEx)
+            {
+                throw new Exception($"Error de red o conexión: {httpEx.Message}");
+            }
+        }
+
+
+
 
     }
 }
