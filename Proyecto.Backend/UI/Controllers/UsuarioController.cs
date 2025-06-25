@@ -75,6 +75,7 @@ namespace Proyecto.Backend.UI.Controllers
             return Ok(usuario);
         }
         [HttpPost("Validar")]
+[HttpPost("Validar")]
 public async Task<ActionResult<Usuario>> ValidarUsuario([FromBody] LoginDTO login)
 {
     try
@@ -92,13 +93,13 @@ public async Task<ActionResult<Usuario>> ValidarUsuario([FromBody] LoginDTO logi
             return Unauthorized("Usuario o contraseña incorrectos.");
         }
 
-        usuario.Pass = "";
+        usuario.Pass = ""; // Para no enviarla al frontend
         return Ok(usuario);
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"❌ ERROR en ValidarUsuario: {ex.Message}");
-        return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+        // Aquí se captura el error para que sea visible desde el frontend o consola
+        return StatusCode(500, $"Error: {ex.Message} - {ex.InnerException?.Message}");
     }
 }
 
