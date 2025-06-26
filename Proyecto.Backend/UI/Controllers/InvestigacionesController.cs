@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Proyecto.Backend.Domain.Entities.Models;
 
+
 namespace Proyecto.Backend.UI.Controllers
 {
     [Route("api/[controller]")]
@@ -65,5 +66,27 @@ namespace Proyecto.Backend.UI.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+
+        [HttpGet("PorCedula/{cedula}")]
+        public async Task<ActionResult<IEnumerable<Proyecto.Shared.Models.Investigacion>>> ObtenerPorCedula(string cedula)
+        {
+            var investigaciones = await _context.Investigaciones
+                .Where(i => i.Cedula == cedula)
+                .ToListAsync();
+
+            var resultado = investigaciones.Select(i => new Proyecto.Shared.Models.Investigacion
+            {
+                NombreProyecto = i.NombreProyecto,
+                TiempoMeses = i.TiempoMeses,
+                FechaInicio = i.FechaInicio.ToDateTime(TimeOnly.MinValue),
+                FechaFin = i.FechaFin?.ToDateTime(TimeOnly.MinValue),
+                Pdf = i.Pdf
+            }).ToList();
+
+            return Ok(resultado);
+        }
     }
+
+    
+
 }

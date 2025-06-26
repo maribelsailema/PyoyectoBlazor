@@ -3,6 +3,7 @@
 @inject ILogger<Login> Logger
 @inject NavigationManager Navigation
 @inject HttpClient Http
+@inject IJSRuntime JS
 
 <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
     <DataAnnotationsValidator />
@@ -92,7 +93,7 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error en login.");
-            mensajeError = "Error en la conexión al servidor.";
+            mensajeError = $"Error en la conexión al servidor: {ex.Message}";
         }
     }
 
