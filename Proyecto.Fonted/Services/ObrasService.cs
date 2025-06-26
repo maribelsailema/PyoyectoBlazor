@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using Proyecto.Backend.Domain.Entities.Models;
 using Proyecto.Shared.Models;
 
 namespace Proyecto.Frontend.Services
