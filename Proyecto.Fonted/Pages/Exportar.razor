@@ -183,7 +183,10 @@
                 </select>
             </div>
 
-
+            @if (!string.IsNullOrEmpty(mensaje))
+            {
+                <div class="alert alert-warning mt-2">@mensaje</div>
+            }
 
             <!-- Botón de Exportación -->
             <div class="export-button">
@@ -191,14 +194,82 @@
                     <i class="bi bi-download"></i> Importar
                    
                 </button>
-                @if (!string.IsNullOrEmpty(mensaje))
-                {
-                    <div class="alert alert-warning" style="margin-top: 10px;">@mensaje</div>
-                }
+                
 
             </div>
+
         </div>
 
+         @if (mostrarFormulario)
+{
+    <EditForm Model="@nuevaInvestigacion" OnValidSubmit="GuardarNuevaInvestigacion">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="row mb-3">
+            <div class="col">
+                <label>Título del Proyecto</label>
+                <InputText class="form-control" @bind-Value="nuevaInvestigacion.NombreProyecto" />
+            </div>
+            <div class="col">
+    <label>Carrera</label>
+    <select class="form-select" @bind="nuevaInvestigacion.IdCarrera">
+        <option value="">Seleccione una carrera</option>
+        @foreach (var carrera in listaCarreras)
+        {
+            <option value="@carrera.IdCarrera">@carrera.Nombre</option>
+        }
+    </select>
+    <ValidationMessage For="@(() => nuevaInvestigacion.IdCarrera)" />
+</div> 
+        </div>
+                <div class="row mb-3">
+                    <div class="col">
+                        <label>Fecha de Inicio</label>
+                        <InputDate class="form-control"
+                                   @bind-Value="nuevaInvestigacion.FechaInicio"
+                                   @onchange="CalcularTiempoMeses" />
+                    </div>
+                    <div class="col">
+                        <label>Fecha de Fin</label>
+                        <InputDate class="form-control"
+                                   @bind-Value="nuevaInvestigacion.FechaFin"
+                                   @onchange="CalcularTiempoMeses" />
+                    </div>
+                </div>
+
+
+               <div class="col">
+    <label>Duración (meses)</label>
+    <InputNumber class="form-control"
+                 @bind-Value="nuevaInvestigacion.TiempoMeses"
+                 min="0" />
+    <ValidationMessage For="@(() => nuevaInvestigacion.TiempoMeses)" />
+</div>
+
+
+
+
+
+
+        <div class="mb-3">
+            <label>Subir PDF</label>
+            <InputFile OnChange="SubirPDF" />
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-circle"></i> Guardar
+            </button>
+            <button type="button" class="btn btn-secondary" @onclick="CerrarFormulario">
+                <i class="bi bi-x-circle"></i> Cancelar
+            </button>
+        </div>
+    </EditForm>
+}
+
+<br /> 
+<br />
         @if (mostrarInvestigaciones)
         {
             <div class="mb-3">
@@ -249,7 +320,7 @@
 
 <ValidationMessage For="@(() => nuevaInvestigacion.IdCarrera)" />
                             <td>
-                            <td>@inv.IdInv</td>
+                            
                                 <button class="btn btn-warning btn-sm" @onclick="() => EditarInvestigacion(inv)">
                                     <i class="bi bi-pencil"></i> Editar
                                 </button>
@@ -261,69 +332,7 @@
             </table>
         }
 
-        @if (mostrarFormulario)
-{
-    <EditForm Model="@nuevaInvestigacion" OnValidSubmit="GuardarNuevaInvestigacion">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-
-        <div class="row mb-3">
-            <div class="col">
-                <label>Título del Proyecto</label>
-                <InputText class="form-control" @bind-Value="nuevaInvestigacion.NombreProyecto" />
-            </div>
-            <div class="col">
-    <label>Carrera</label>
-    <select class="form-select" @bind="nuevaInvestigacion.IdCarrera">
-        <option value="">Seleccione una carrera</option>
-        @foreach (var carrera in listaCarreras)
-        {
-            <option value="@carrera.IdCarrera">@carrera.Nombre</option>
-        }
-    </select>
-    <ValidationMessage For="@(() => nuevaInvestigacion.IdCarrera)" />
-</div> 
-        </div>
-                <div class="row mb-3">
-                    <div class="col">
-                        <label>Fecha de Inicio</label>
-                        <InputDate class="form-control"
-                                   @bind-Value="nuevaInvestigacion.FechaInicio"
-                                   @onchange="CalcularTiempoMeses" />
-                    </div>
-                    <div class="col">
-                        <label>Fecha de Fin</label>
-                        <InputDate class="form-control"
-                                   @bind-Value="nuevaInvestigacion.FechaFin"
-                                   @onchange="CalcularTiempoMeses" />
-                    </div>
-                </div>
-
-
-                <div class="col">
-                    <label>Duración (meses)</label>
-                    <input type="text" class="form-control" value="@nuevaInvestigacion.TiempoMeses" readonly />
-                </div>
-
-
-
-
-
-        <div class="mb-3">
-            <label>Subir PDF</label>
-            <InputFile OnChange="SubirPDF" />
-        </div>
-
-        <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary">
-                <i class="bi bi-check-circle"></i> Guardar
-            </button>
-            <button type="button" class="btn btn-secondary" @onclick="CerrarFormulario">
-                <i class="bi bi-x-circle"></i> Cancelar
-            </button>
-        </div>
-    </EditForm>
-}
+       
 
 
 

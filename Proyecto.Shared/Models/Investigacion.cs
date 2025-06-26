@@ -22,7 +22,7 @@ namespace Proyecto.Shared.Models
 
         public byte[]? Pdf { get; set; }
 
-        [Required(ErrorMessage = "La carrera es obligatoria.")]
+        [Required(ErrorMessage = "La carrera es obligatoriaaaa.")]
         public int? IdCarrera { get; set; }  // <-- Usamos IdCarrera ahora
         public string Carrera { get; set; } = string.Empty;
 
