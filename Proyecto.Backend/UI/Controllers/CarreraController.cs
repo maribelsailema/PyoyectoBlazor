@@ -19,7 +19,7 @@ namespace Proyecto.Backend.UI.Controllers
         [HttpGet("Listar")]
         public async Task<ActionResult<IEnumerable<Carrera>>> Listar()
         {
-            var car = await _context.Carreras.Include(c => c.IdFacultad).ToListAsync();
+            var car = await _context.Carreras.ToListAsync();
             return Ok(car);
         }
 

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Proyecto.Backend.Domain.Entities.Models;
 
+
 namespace Proyecto.Backend.UI.Controllers
 {
     [Route("api/[controller]")]
@@ -74,5 +75,52 @@ namespace Proyecto.Backend.UI.Controllers
 
             return Ok(meses);
         }
+
+
+        [HttpGet("PorCedula/{cedula}")]
+        public async Task<ActionResult<IEnumerable<Proyecto.Shared.Models.Investigacion>>> ObtenerPorCedula(string cedula)
+        {
+            var investigaciones = await _context.Investigaciones
+    .Include(i => i.IdCarreraNavigation)
+    .Where(i => i.Cedula == cedula)
+    .ToListAsync();
+
+            var resultado = investigaciones.Select(i => new Proyecto.Shared.Models.Investigacion
+            {
+                IdInv = i.IdInv,
+                Cedula = i.Cedula,
+                NombreProyecto = i.NombreProyecto,
+                TiempoMeses = i.TiempoMeses,
+                FechaInicio = i.FechaInicio.ToDateTime(TimeOnly.MinValue),
+                FechaFin = i.FechaFin?.ToDateTime(TimeOnly.MinValue),
+                Pdf = i.Pdf,
+                IdCarrera = i.IdCarrera,
+                NombreCarrera = i.IdCarreraNavigation?.Nombre
+
+            }).ToList();
+
+            return Ok(resultado);
+        }
+
+        [HttpGet("VerPdf/{id}")]
+        public async Task<IActionResult> VerPdf(int id)
+        {
+            var investigacion = await _context.Investigaciones.FindAsync(id);
+
+            if (investigacion == null || investigacion.Pdf == null)
+            {
+                return NotFound("PDF no encontrado");
+            }
+
+            return File(investigacion.Pdf, "application/pdf");
+        }
+
+
+
+
+
     }
+
+
+
 }
