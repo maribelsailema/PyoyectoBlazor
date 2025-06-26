@@ -21,7 +21,8 @@ public partial class Investigacione
 
     public int? IdCarrera { get; set; }
 
-    public virtual Usuario CedulaNavigation { get; set; } = null!;
+    [System.Text.Json.Serialization.JsonIgnore]
+    public virtual Usuario? CedulaNavigation { get; set; }
 
     public virtual Carrera? IdCarreraNavigation { get; set; }
 }

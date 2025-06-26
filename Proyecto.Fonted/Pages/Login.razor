@@ -5,6 +5,7 @@
 @inject HttpClient Http
 @inject IJSRuntime JS
 
+
 <style>
     .modal-overlay {
         position: fixed;
@@ -80,6 +81,7 @@
             opacity: 0;
             transform: scale(0.9);
         }
+
 
         to {
             opacity: 1;
@@ -158,11 +160,14 @@
             var response = await Http.PostAsJsonAsync("api/Usuario/Validar", datosLogin);
 
             if (response.IsSuccessStatusCode)
-            {
+
+              {
+
                 var usuario = await response.Content.ReadFromJsonAsync<Usuario>();
 
                 if (usuario is not null && !string.IsNullOrEmpty(usuario.Ced))
                 {
+
                     await JS.InvokeVoidAsync("localStorage.setItem", "cedulaUsuario", usuario.Ced);
 
                     var tipo = usuario.TipoUsuario?.ToLower();
@@ -178,11 +183,15 @@
                     {
                         mensajeError = "Tipo de usuario no reconocido.";
                     }
+
                 }
                 else
                 {
                     mensajeError = "Usuario no válido.";
                 }
+
+
+
             }
             else
             {
@@ -192,7 +201,7 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error en login.");
-            mensajeError = "Error en la conexión al servidor.";
+            mensajeError = $"Error en la conexión al servidor: {ex.Message}";
         }
     }
 
