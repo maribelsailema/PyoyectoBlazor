@@ -1,92 +1,199 @@
 ﻿@page "/promocion"
 @using System.ComponentModel.DataAnnotations
+@using Proyecto.Shared.Models
 @inject NavigationManager Navigation
 @inject ILogger<Promocion> Logger
+@inject HttpClient Http
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
 
 <header class="navbar">
     <div class="navbar-left">
-        <!-- El título de la página "Promoción Docente" o el nombre de usuario se mostraría aquí -->
         <h3>Promoción Docente</h3>
     </div>
     <nav class="navbar-right nav-links">
         <NavLink href="/inicio" class="nav-item"><i class="bi bi-house-fill"></i> Inicio</NavLink>
         <NavLink href="/promocion" class="nav-item"><i class="bi bi-bar-chart-line-fill"></i> Promoción</NavLink>
         <NavLink href="/perfil" class="nav-item"><i class="bi bi-person-fill"></i> Perfil</NavLink>
-        <NavLink href="/exportar" class="nav-item">
-            <i class="bi bi-download"></i> Exportar
-        </NavLink>
+        <NavLink href="/exportar" class="nav-item"><i class="bi bi-download"></i> Exportar</NavLink>
         <NavLink href="/" class="nav-item cerrar-sesion"><i class="bi bi-box-arrow-right"></i> Cerrar Sesión</NavLink>
     </nav>
 </header>
 
 <main class="contenido-promocion">
     <div class="container">
-        <!-- Sección de Posición Actual -->
-        <div class="current-position">
-            <h3><i class="bi bi-info-circle"></i> Tu posición actual: <strong>@currentPosition.RoleType</strong></h3>
-            <p class="text-muted">@currentPosition.Description</p>
-        </div>
+        @if (isLoading)
+        {
+            <div class="text-center mt-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p>Cargando información de promoción...</p>
+            </div>
+        }
+        else if (errorLoading)
+        {
+            <div class="alert alert-danger mt-5">
+                Error al cargar los datos. Intente nuevamente más tarde.
+            </div>
+        }
+        else
+        {
+            <!-- Posición Actual -->
+            @if (currentRol != null)
+            {
+                <div class="current-position mb-4">
+                    <h3><i class="bi bi-info-circle"></i> Tu posición actual: <strong>@currentRol.Rol</strong></h3>
+                    <p class="text-muted">@GetRolDescription(currentRol.Rol)</p>
+                    <p><strong>Fecha de asignación:</strong> @currentRol.FechaAsignacion.ToString("dd/MM/yyyy")</p>
+                    <p><strong>Años en el rol:</strong> @currentRol.AniosEnRol años</p>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning">
+                    No se pudo cargar tu rol actual. Se mostrarán los requisitos generales.
+                </div>
+            }
 
-        <!-- Tabla de Niveles de Promoción -->
-        <div class="table-responsive">
-            <table class="table table-hover promotion-table">
-                <thead>
-                    <tr>
-                        <th>Tipo de Rol</th>
-                        <th>Tiempo en Rol</th>
-                        <th># de Obras</th>
-                        <th>Puntaje Evaluación</th>
-                        <th>Cap. Cursos Aprob.</th>
-                        <th>Investigación</th>
-                        <th>Acción</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var level in promotionLevels)
-                    {
-                        <tr class="@(level.IsAvailable ? "" : "disabled-row")">
-                            <td>@level.RoleType</td>
-                            <td>@level.TimeInRole</td>
-                            <td>@level.Works</td>
-                            <td>@level.EvaluationScore</td>
-                            <td>@level.CoursesHours</td>
-                            <td>@level.ResearchMonths</td>
-                            <td>
-                                @if (level.IsAvailable && !hasPosted)
-                                {
-                                    <button class="btn-postular" @onclick="() => Postular(level.RoleType)">
-                                        <i class="bi bi-send-check"></i> Postular
-                                    </button>
-                                }
-                                else if (level.IsAvailable && hasPosted)
-                                {
-                                    <button class="btn-disabled" disabled>
-                                        <i class="bi bi-check-circle"></i> Postulación Procesando
-                                    </button>
-                                }
-                                else
-                                {
-                                    <button class="btn-disabled" disabled>
-                                        <i class="bi bi-lock"></i> No disponible
-                                    </button>
-                                }
-                            </td>
+            <!-- Tabla de Requisitos -->
+            <div class="table-responsive mb-4">
+                <h4><i class="bi bi-list-check"></i> Requisitos para el siguiente nivel:</h4>
+                <table class="table table-hover promotion-table">
+                    <thead>
+                        <tr>
+                            <th>Nivel</th>
+                            <th>Tiempo</th>
+                            <th>Obras</th>
+                            <th>Puntaje</th>
+                            <th>Capacitación</th>
+                            <th>Investigación</th>
+                            <th>Estado</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody>
+                        @if (requisitosPromocion.Any())
+                        {
+                            foreach (var req in requisitosPromocion)
+                            {
+                                <tr>
+                                    <td>@req.HaciaRol</td>
+                                    <td>@req.TiempoMinimoAnios años</td>
+                                    <td>@req.ObrasMinimas</td>
+                                    <td>@req.PuntajeEvaluacionMinimo%</td>
+                                    <td>@req.HorasCapacitacionMin horas</td>
+                                    <td>@(req.MesesInvestigacionMin.HasValue ? $"{req.MesesInvestigacionMin} meses" : "-")</td>
+                                    <td>
+                                        @if (req.CumpleRequisitos)
+                                        {
+                                            <span class="badge bg-success">Disponible</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">No disponible</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">No se encontraron requisitos de promoción.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
 
-        <!-- Sección de Requisitos para Postulación -->
-        <div class="requirements-info mt-4">
-            <h4><i class="bi bi-card-checklist"></i> Requisitos para postulación:</h4>
-            <ul>
-                @foreach (var req in requirements)
-                {
-                    <li>@req</li>
-                }
-            </ul>
-        </div>
+            <!-- Resumen de Cumplimiento -->
+            @if (currentRol != null && requisitosPromocion.Any())
+            {
+                var primerRequisito = requisitosPromocion.First();
+
+                <div class="requirements-info">
+                    <h4><i class="bi bi-card-checklist"></i> Tu progreso actual:</h4>
+                    <ul>
+                        <li>
+                            <strong>Tiempo en el rol:</strong> @currentRol.AniosEnRol años de @primerRequisito.TiempoMinimoAnios requeridos
+                            @if (currentRol.AniosEnRol >= primerRequisito.TiempoMinimoAnios)
+                            {
+                                <i class="bi bi-check-circle-fill text-success"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-x-circle-fill text-danger"></i>
+                            }
+                        </li>
+                        <li>
+                            <strong>Obras publicadas:</strong> @totalObras de @primerRequisito.ObrasMinimas requeridas
+                            @if (totalObras >= primerRequisito.ObrasMinimas)
+                            {
+                                <i class="bi bi-check-circle-fill text-success"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-x-circle-fill text-danger"></i>
+                            }
+                        </li>
+                        <li>
+                            <strong>Puntaje evaluación:</strong> @(ultimaEvaluacion?.PuntajeFinal ?? 0)% de @primerRequisito.PuntajeEvaluacionMinimo requerido
+                            @if ((ultimaEvaluacion?.PuntajeFinal ?? 0) >= primerRequisito.PuntajeEvaluacionMinimo)
+                            {
+                                <i class="bi bi-check-circle-fill text-success"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-x-circle-fill text-danger"></i>
+                            }
+                        </li>
+                        <li>
+                            <strong>Horas capacitación:</strong> @totalHorasCapacitacion de @primerRequisito.HorasCapacitacionMin requeridas
+                            @if (totalHorasCapacitacion >= primerRequisito.HorasCapacitacionMin)
+                            {
+                                <i class="bi bi-check-circle-fill text-success"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-x-circle-fill text-danger"></i>
+                            }
+                        </li>
+                        @if (primerRequisito.MesesInvestigacionMin.HasValue)
+{
+    <li>
+        <strong>Meses investigación:</strong> @totalMesesInvestigacion de @primerRequisito.MesesInvestigacionMin requeridos
+        @if (totalMesesInvestigacion >= primerRequisito.MesesInvestigacionMin)
+        {
+            <i class="bi bi-check-circle-fill text-success"></i>
+        }
+        else
+        {
+            <i class="bi bi-x-circle-fill text-danger"></i>
+        }
+    </li>
+}
+else
+{
+    <li>
+        <strong>Meses investigación:</strong> No aplica para este nivel <i class="bi bi-dash-circle text-muted"></i>
+    </li>
+}
+                    </ul>
+
+                    @if (puedePostular)
+                    {
+                        <button class="btn btn-primary" @onclick="Postular">
+                            <i class="bi bi-send-check"></i> Postular para promoción
+                        </button>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning mt-2">
+                            Aún no cumples con todos los requisitos para postularte.
+                        </div>
+                    }
+                </div>
+            }
+        }
     </div>
 </main>
 
@@ -109,124 +216,182 @@
     </div>
     <p class="copyright">© 2025 Sistema de Promoción, Todos los Derechos Reservados</p>
 </footer>
-
 @code {
-    // Modelo para la posición actual del usuario
-    private CurrentPositionModel currentPosition = new();
+    private string cedulaUsuario;
+    private RolActualDto currentRol;
+    private List<RequisitoPromocionDto> requisitosPromocion = new();
+    private int totalObras;
+    private EvaluacionDto ultimaEvaluacion;
+    private int totalHorasCapacitacion;
+    private int totalMesesInvestigacion;
+    private bool isLoading = true;
+    private bool errorLoading = false;
+    private bool puedePostular = false;
 
-    // Lista de niveles de promoción para la tabla
-    private List<PromotionLevel> promotionLevels = new();
-
-    // Lista de requisitos para la postulación
-    private List<string> requirements = new();
-
-    // Estado para controlar si el usuario ya ha postulado (simulado)
-    private bool hasPosted = false;
-
-    /// <summary>
-    /// Se ejecuta cuando el componente se inicializa.
-    /// Aquí simulamos la carga de datos que vendrían de una API.
-    /// </summary>
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        Logger.LogInformation("Componente Promocion inicializado.");
-
-        // Simulación de datos de posición actual del usuario
-        currentPosition = new CurrentPositionModel
-            {
-                RoleType = "Docente Titular 1 (DT1)",
-                Description = "Puedes postularte solo al siguiente nivel (DT2). Una vez aprobada tu promoción, podrás postularte al siguiente nivel cuando cumples los requisitos."
-            };
-
-        // Simulación de datos de niveles de promoción
-        promotionLevels = new List<PromotionLevel>
+        try
         {
-            new PromotionLevel
+            cedulaUsuario = await localStorage.GetItemAsync<string>("cedulaUsuario");
+
+            if (string.IsNullOrWhiteSpace(cedulaUsuario))
             {
-                RoleType = "DT2",
-                TimeInRole = "4 años",
-                Works = "1",
-                EvaluationScore = "75%",
-                CoursesHours = "96 horas",
-                ResearchMonths = "12 meses",
-                IsAvailable = true // Este es el nivel al que se puede postular inicialmente
-            },
-            new PromotionLevel
-            {
-                RoleType = "DT3",
-                TimeInRole = "4 años",
-                Works = "2",
-                EvaluationScore = "75%",
-                CoursesHours = "96 horas",
-                ResearchMonths = "12 meses",
-                IsAvailable = false // No disponible hasta que se cumplan los requisitos de DT2
-            },
-            new PromotionLevel
-            {
-                RoleType = "DT4",
-                TimeInRole = "4 años",
-                Works = "3",
-                EvaluationScore = "75%",
-                CoursesHours = "128 horas",
-                ResearchMonths = "24 meses",
-                IsAvailable = false // No disponible
+                Logger.LogWarning("No se encontró la cédula del usuario en localStorage.");
+                errorLoading = true;
+                return;
             }
-        };
 
-        // Simulación de datos de requisitos
-        requirements = new List<string>
+            await LoadRequisitosPromocion();
+
+            try
+            {
+                await LoadRolActual();
+                await LoadDatosCumplimiento();
+
+                puedePostular = requisitosPromocion.Any() && requisitosPromocion.First().CumpleRequisitos;
+            }
+            catch (Exception rolEx)
+            {
+                Logger.LogWarning(rolEx, "No se pudo obtener información completa del rol actual.");
+                // No lanzar error, se mostrará tabla genérica
+            }
+        }
+        catch (Exception ex)
         {
-            "Haber cumplido el tiempo mínimo en el puesto actual (4 años como DT1)",
-            "Tener al menos 1 obra publicada o equivalente",
-            "Haber obtenido un puntaje mínimo de 75% en la última evaluación",
-            "Haber completado 96 horas de capacitación aprobada",
-            "Haber participado en investigación durante al menos 12 meses"
-        };
+            errorLoading = true;
+            Logger.LogError(ex, "Error al inicializar página de promoción");
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
-    /// <summary>
-    /// Maneja la acción de postularse a un puesto.
-    /// Simula el proceso de postulación y actualiza el estado de la UI.
-    /// </summary>
-    /// <param name="roleType">El tipo de rol al que el usuario desea postularse.</param>
-    private void Postular(string roleType)
+    private async Task LoadRolActual()
     {
-        // En una aplicación real, aquí harías una llamada a tu API para procesar la postulación.
-        // Por ejemplo: await Http.PostAsJsonAsync("api/promocion/postular", new { Role = roleType });
-
-        Logger.LogInformation("Usuario intentando postularse al puesto: {RoleType}", roleType);
-
-        // Simulamos que la postulación es exitosa y se está procesando.
-        // Esto deshabilitará el botón "Postular" y mostrará "Postulación Procesando".
-        hasPosted = true;
-
-        // Opcional: Navegar a la página de perfil después de un breve retraso
-        // para que el usuario vea el estado "Procesando" antes de la navegación.
-        // await Task.Delay(2000); // Esto requeriría Postular ser async Task
-        Navigation.NavigateTo("/perfil");
+        var response = await Http.GetAsync($"api/RolesDocentes/RolActual/{cedulaUsuario}");
+        if (response.IsSuccessStatusCode)
+        {
+            currentRol = await response.Content.ReadFromJsonAsync<RolActualDto>();
+        }
+        else
+        {
+            throw new Exception("No se pudo obtener el rol actual");
+        }
     }
 
-    /// <summary>
-    /// Modelo de datos para la posición actual del docente.
-    /// </summary>
-    public class CurrentPositionModel
+    private async Task LoadRequisitosPromocion()
     {
-        public string RoleType { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
+        var response = await Http.GetAsync("api/RequisitosAscensos/Todos");
+        if (response.IsSuccessStatusCode)
+        {
+            requisitosPromocion = await response.Content.ReadFromJsonAsync<List<RequisitoPromocionDto>>() ?? new();
+
+            if (!string.IsNullOrWhiteSpace(cedulaUsuario))
+            {
+                foreach (var req in requisitosPromocion)
+                {
+                    try
+                    {
+                        var cumple = await Http.GetFromJsonAsync<bool>($"api/Promocion/VerificarRequisitos/{cedulaUsuario}/{req.HaciaRol}");
+                        req.CumpleRequisitos = cumple;
+                    }
+                    catch
+                    {
+                        req.CumpleRequisitos = false;
+                    }
+                }
+            }
+        }
     }
 
-    /// <summary>
-    /// Modelo de datos para un nivel de promoción.
-    /// </summary>
-    public class PromotionLevel
+    private async Task LoadDatosCumplimiento()
     {
-        public string RoleType { get; set; } = string.Empty;
-        public string TimeInRole { get; set; } = string.Empty;
-        public string Works { get; set; } = string.Empty;
-        public string EvaluationScore { get; set; } = string.Empty;
-        public string CoursesHours { get; set; } = string.Empty;
-        public string ResearchMonths { get; set; } = string.Empty;
-        public bool IsAvailable { get; set; }
+        try
+        {
+            var obrasResponse = await Http.GetAsync($"api/Obras/ByDocente/{cedulaUsuario}");
+            if (obrasResponse.IsSuccessStatusCode)
+            {
+                var obras = await obrasResponse.Content.ReadFromJsonAsync<List<ObraDto>>();
+                totalObras = obras?.Count ?? 0;
+            }
+
+            var evalResponse = await Http.GetAsync($"api/EvaluacionesDocentes/Ultima/{cedulaUsuario}");
+            if (evalResponse.IsSuccessStatusCode)
+            {
+                ultimaEvaluacion = await evalResponse.Content.ReadFromJsonAsync<EvaluacionDto>();
+            }
+
+            var capResponse = await Http.GetAsync($"api/Capacitaciones/HorasTotales/{cedulaUsuario}");
+            if (capResponse.IsSuccessStatusCode)
+            {
+                totalHorasCapacitacion = await capResponse.Content.ReadFromJsonAsync<int>();
+            }
+
+            var invResponse = await Http.GetAsync($"api/Investigaciones/MesesTotales/{cedulaUsuario}");
+            if (invResponse.IsSuccessStatusCode)
+            {
+                totalMesesInvestigacion = await invResponse.Content.ReadFromJsonAsync<int>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Error al obtener datos de cumplimiento");
+        }
+    }
+
+    private async Task Postular()
+    {
+        if (!puedePostular || currentRol == null || !requisitosPromocion.Any()) return;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/Promocion/Postular", new
+            {
+                Cedula = cedulaUsuario,
+                RolActual = currentRol.Rol,
+                RolSolicitado = requisitosPromocion.First().HaciaRol,
+                FechaSolicitud = DateTime.Now
+            });
+
+            if (response.IsSuccessStatusCode)
+            {
+                Navigation.NavigateTo("/perfil?postulacion=exito");
+            }
+            else
+            {
+                Logger.LogError("Error en la postulación: {StatusCode}", response.StatusCode);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error al postular");
+        }
+    }
+
+    private string GetRolDescription(string rol) => rol switch
+    {
+        "D1" => "Docente Nivel 1 - Puedes postularte al nivel D2 cuando cumplas los requisitos",
+        "D2" => "Docente Nivel 2 - Puedes postularte al nivel D3 cuando cumplas los requisitos",
+        "D3" => "Docente Nivel 3 - Puedes postularte al nivel D4 cuando cumplas los requisitos",
+        "D4" => "Docente Nivel 4 - Máximo nivel alcanzable",
+        _ => "Rol no reconocido"
+    };
+
+   
+
+
+    public class ObraDto
+    {
+        public int IdObra { get; set; }
+        public string TipoObra { get; set; }
+        public DateOnly Fecha { get; set; }
+    }
+
+    public class EvaluacionDto
+    {
+        public string Periodo { get; set; }
+        public decimal PuntajeFinal { get; set; }
+        public DateTime FechaEvaluacion { get; set; }
     }
 }
-
