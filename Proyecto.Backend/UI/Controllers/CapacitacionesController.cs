@@ -27,7 +27,7 @@ namespace Proyecto.Backend.UI.Controllers
         {
             var cap = await _context.Capacitaciones.FindAsync(id);
             if (cap == null) return NotFound();
-            return Ok(cap);
+            return Ok(cap); 
         }
 
         [HttpPost("Guardar")]
@@ -64,6 +64,19 @@ namespace Proyecto.Backend.UI.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+
+        [HttpGet("Cedula/{cedula}")]
+        public async Task<ActionResult<IEnumerable<Capacitacione>>> ObtenerPorCedula(string cedula)
+        {
+            var lista = await _context.Capacitaciones
+                .Where(c => c.Cedula == cedula)
+                .ToListAsync();
+
+            if (lista == null || !lista.Any())
+                return NotFound();
+
+            return Ok(lista);
+
         [HttpGet("HorasTotales/{cedula}")]
         public async Task<ActionResult<int>> GetHorasTotales(string cedula)
         {

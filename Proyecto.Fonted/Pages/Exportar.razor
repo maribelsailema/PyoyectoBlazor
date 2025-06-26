@@ -1,8 +1,130 @@
 ﻿@page "/exportar"
+@using Proyecto.Frontend.Services
+@inject IJSRuntime JS
+@inject InvestigacionService investigacionService
+@inject CapacitacionesService capacitacionesService
+
+@using Proyecto.Shared
+@using Proyecto.Shared.Models
+
+
 
 <style>
     /* Estilos específicos para la página de exportación */
     .export-container {
+    max-width: 1200px;
+    margin: var(--spacing-xl) auto;
+    padding: 0 var(--spacing-md);
+    }
+
+    .export-title {
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-lg);
+    font-size: 1.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    }
+
+    .export-card {
+    background-color: var(--card-bg-color);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
+    }
+
+    .export-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    }
+
+    .filter-group {
+    margin-bottom: var(--spacing-md);
+    }
+
+    .filter-label {
+    display: block;
+    margin-bottom: var(--spacing-xs);
+    font-weight: 500;
+    color: var(--dark-text-color);
+    }
+
+    .form-select, .form-control {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    font-size: 1rem;
+    transition: var(--transition-normal);
+    background-color: var(--light-bg-color);
+    }
+
+    .form-select:focus, .form-control:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 4px rgba(41, 128, 185, 0.2);
+    outline: none;
+    background-color: var(--card-bg-color);
+    }
+
+    .export-button {
+    display: flex;
+    align-items: flex-end;
+    }
+
+    .btn {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: none;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: var(--transition-normal);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    text-decoration: none;
+    box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary {
+    background-color: var(--secondary-color);
+    color: white;
+    }
+
+    .btn-primary:hover {
+    background-color: darken(var(--secondary-color), 8%);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    }
+
+    .additional-filters {
+    background-color: var(--light-bg-color);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+    }
+
+    .filter-section h6 {
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-md);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    }
+
+    .filter-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+    }
+
+    .filter-item {
+    margin-bottom: var(--spacing-sm);
         max-width: 1200px;
         margin: var(--spacing-xl) auto;
         padding: 0 var(--spacing-md);
@@ -120,11 +242,14 @@
 
     /* Ocultar filtros específicos inicialmente */
     .usuario-filters, .evaluacion-filters {
-        display: none;
+
+    display: none;
+
     }
 
     /* Mostrar filtros según la selección (esto se manejaría con JS) */
     select.form-select[value="Usuarios"] ~ .additional-filters .usuario-filters {
+
         display: grid;
     }
 
@@ -163,6 +288,7 @@
         <div class="export-filters">
             <!-- Selector de Tabla -->
             <div class="filter-group">
+
                 <label class="filter-label">Tabla a Exportar</label>
                 <select class="form-select">
                     <option value="">Seleccione una tabla</option>
@@ -174,15 +300,163 @@
                 </select>
             </div>
 
-            <!-- Selector de Formato -->
-            <div class="filter-group">
-                <label class="filter-label">Formato de Exportación</label>
-                <select class="form-select">
-                    <option value="Excel">Excel (.xlsx)</option>
-                    <option value="CSV">CSV (.csv)</option>
-                    <option value="PDF">PDF (.pdf)</option>
-                </select>
+
+
+            <!-- Botón de Exportación -->
+            <div class="export-button">
+                <button class="btn btn-primary" @onclick="ImportarDatos">
+                    <i class="bi bi-download"></i> Importar
+                   
+                </button>
+                @if (!string.IsNullOrEmpty(mensaje))
+                {
+                    <div class="alert alert-warning" style="margin-top: 10px;">@mensaje</div>
+                }
+
             </div>
+        </div>
+
+        @if (mostrarInvestigaciones)
+        {
+            <h4>Investigaciones</h4>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Tiempo</th>
+                        <th>Fecha Inicio</th>
+                        <th>Fecha Fin</th>
+                        <th>PDF</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var inv in listaInvestigaciones)
+                    {
+                        <tr>
+                            <td>@inv.NombreProyecto</td>
+                            <td>@inv.TiempoMeses</td>
+                            <td>@inv.FechaInicio</td>
+                            <td>@inv.FechaFin</td>
+                            <td>@inv.Pdf</td>
+
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        @if (mostrarCapacitaciones)
+{
+    <h4>Capacitaciones</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Curso</th>
+                <th>Duración (horas)</th>
+                <th>Fecha </th>
+                <th>PDF</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cap in listaCapacitaciones)
+            {
+                <tr>
+                    <td>@cap.NombreCurso</td>
+                    <td>@cap.DuracionHoras</td>
+                    <td>@cap.FechaInicio</td>
+                    <td>
+                        @if (cap.Pdf != null)
+                        {
+                     <a href="#" onclick="openPdf('@Convert.ToBase64String(cap.Pdf)'); return false;" style="cursor:pointer; color:blue; text-decoration:underline;">
+                    Ver PDF
+            </a>
+
+            <script>
+function openPdf(base64) {
+    const byteCharacters = atob(base64);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: 'application/pdf' });
+    const blobUrl = URL.createObjectURL(blob);
+    window.open(blobUrl);
+}
+</script>
+
+                        }
+                        else
+                        {
+                            <span>No PDF</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+<button class="btn btn-primary" @onclick="MostrarFormulario">Subir Capacitación</button>
+
+}
+
+@if (mostrarFormularioCapacitacion)
+{
+    <div class="export-card">
+        <h4>Nueva Capacitación</h4>
+
+        <EditForm Model="@nuevaCapacitacion" OnValidSubmit="GuardarCapacitacion">
+            <div class="export-filters">
+                <!-- Curso -->
+                <div class="filter-group">
+                    <label class="filter-label">Nombre del Curso</label>
+                    <input type="text"
+                           class="form-control"
+                           @bind="nuevaCapacitacion.NombreCurso"
+                           required />
+                </div>
+
+                <!-- Duración -->
+                <div class="filter-group">
+                    <label class="filter-label">Duración (horas)</label>
+                    <input type="number"
+                           class="form-control"
+                           @bind="nuevaCapacitacion.DuracionHoras"
+                           required />
+                </div>
+
+                <!-- Fecha (DateOnly) -->
+                <div class="filter-group">
+                    <label class="filter-label">Fecha de Inicio</label>
+                    <input type="date"
+                           class="form-control"
+                           @bind-value="fechaInicio"
+                           @bind-value:event="onchange"   />
+                </div>
+
+                <!-- PDF -->
+                <div class="filter-group">
+                    <label class="filter-label">Seleccionar PDF</label>
+                    <InputFile OnChange="CargarPdf" />
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Guardar Capacitación</button>
+        </EditForm>
+
+        @if (!string.IsNullOrEmpty(mensajeGuardar))
+        {
+            <div class="alert alert-info mt-2">@mensajeGuardar</div>
+        }
+    </div>
+}
+
+
+
+
+
+
+
+
 
             <!-- Botón de Exportación -->
             <div class="export-button">
@@ -256,3 +530,143 @@
     </div>
     <p class="copyright">© 2025 Sistema de Promoción, Todos los Derechos Reservados</p>
 </footer>
+
+@code {
+    private List<Investigacion> listaInvestigaciones = new();
+    private bool mostrarInvestigaciones = false;
+    private string tablaSeleccionada = "";
+    private string mensaje = " ";
+    private List<Capacitacione> listaCapacitaciones = new();
+    private bool mostrarCapacitaciones = false;
+    private bool mostrarFormularioCapacitacion = false;
+
+    // -- NUEVO --
+    private DateOnly? fechaInicio;        // << ahora es DateOnly?
+    private IBrowserFile? archivoPdf;
+
+    private string mensajeGuardar = "";
+    private Capacitacione nuevaCapacitacion = new();
+
+    [Inject] private HttpClient http { get; set; } = default!;
+
+ private void MostrarFormulario()
+    {
+        mostrarFormularioCapacitacion = true;
+        mensajeGuardar = "";
+        _ = CargarCedulaDesdeLocalStorage();   // auto-carga cédula
+    }
+
+  private async Task CargarPdf(InputFileChangeEventArgs e)
+    {
+        archivoPdf = e.File;
+    }
+
+ private async Task GuardarCapacitacion()
+    {
+        try
+        {
+            // --- PDF a byte[] ---
+            if (archivoPdf is not null)
+            {
+                var buffer = new byte[archivoPdf.Size];
+                await archivoPdf.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024)
+                                .ReadAsync(buffer);
+                nuevaCapacitacion.Pdf = buffer;
+            }
+
+            // --- Fecha ---
+            if (fechaInicio is null)
+            {
+                mensajeGuardar = "Selecciona la fecha de inicio.";
+                return;
+            }
+            nuevaCapacitacion.FechaInicio = fechaInicio.Value;
+
+            // --- POST al API ---
+            var resp = await http.PostAsJsonAsync("api/capacitaciones/guardar", nuevaCapacitacion);
+
+            if (resp.IsSuccessStatusCode)
+            {
+                mensajeGuardar = "Capacitación guardada correctamente.";
+                mostrarFormularioCapacitacion = false;
+                nuevaCapacitacion = new();      // limpia
+                fechaInicio = null;
+                archivoPdf = null;
+                await ImportarDatos();          // refresca la tabla
+            }
+            else
+            {
+                mensajeGuardar = $"Error ({(int)resp.StatusCode}): no se pudo guardar.";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensajeGuardar = $"Error: {ex.Message}";
+        }
+    }
+
+
+
+    private async Task ImportarDatos()
+
+
+    {
+        mensaje = "";
+
+        if (string.IsNullOrEmpty(tablaSeleccionada))
+        {
+            mensaje = "Por favor seleccione una tabla antes de importar.";
+            return;
+        }
+
+        if (tablaSeleccionada == "Investigaciones")
+        {
+            var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+
+            if (!string.IsNullOrEmpty(cedula))
+            {
+                listaInvestigaciones = await investigacionService.ObtenerPorCedulaAsync(cedula);
+                mostrarInvestigaciones = true;
+            }
+        }
+        else
+        {
+            mostrarInvestigaciones = false; // Ocultar si no es investigaciones
+        }
+        if (tablaSeleccionada == "Capacitaciones")
+        {
+            var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+
+            if (!string.IsNullOrEmpty(cedula))
+            {
+                listaCapacitaciones = await capacitacionesService.ObtenerPorCedulaAsync(cedula);
+                mostrarCapacitaciones = true;
+            }
+        }
+        else
+        {
+            mostrarCapacitaciones = false;
+        }
+
+    }
+
+
+
+
+   
+private async Task CargarCedulaDesdeLocalStorage()
+{
+    var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+    if (!string.IsNullOrWhiteSpace(cedula))
+    {
+        nuevaCapacitacion.Cedula = cedula;
+    }
+}
+
+
+
+
+
+  
+}
+
