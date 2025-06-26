@@ -1,0 +1,83 @@
+﻿@page "/importar-bd"
+@inject HttpClient Http
+@inject IJSRuntime JS
+
+<h2>Importar Datos a la Base de Datos</h2>
+
+
+<div class="card importar-contenedor">
+    <div class="form-group">
+        <label for="tablaSeleccionada">Seleccionar tabla de destino:</label>
+        <select @bind="tablaSeleccionada" class="form-control" id="tablaSeleccionada">
+            <option value="">-- Seleccione una tabla --</option>
+            <option value="Usuarios">Usuarios</option>
+            <option value="EvaluacionesDocentes">Evaluaciones Docentes</option>
+            <option value="Capacitaciones">Capacitaciones</option>
+            <option value="Obras">Obras</option>
+            <option value="Investigaciones">Investigaciones</option>
+            <option value="Facultades">Facultades</option>
+            <option value="Carreras">Carreras</option>
+            <option value="RequisitosAscenso">Requisitos de Ascenso</option>
+            <option value="RolesDocente">Roles de Docente</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="archivo">Seleccionar archivo (.xlsx o .csv):</label>
+        <InputFile OnChange="CargarArchivo" />
+    </div>
+
+    <button class="btn btn-primary" @onclick="ImportarDatos" disabled="@(!puedeImportar)">Importar</button>
+
+    @if (!string.IsNullOrWhiteSpace(mensaje))
+    {
+        <div class="alert alert-info mt-3">@mensaje</div>
+    }
+</div>
+
+@code {
+    private string tablaSeleccionada = string.Empty;
+    private IBrowserFile? archivoSeleccionado;
+    private string mensaje = "";
+    private bool puedeImportar => archivoSeleccionado != null && !string.IsNullOrEmpty(tablaSeleccionada);
+
+    private void CargarArchivo(InputFileChangeEventArgs e)
+    {
+        archivoSeleccionado = e.File;
+        mensaje = "";
+    }
+
+    private async Task ImportarDatos()
+    {
+        if (archivoSeleccionado == null || string.IsNullOrEmpty(tablaSeleccionada))
+        {
+            mensaje = "Debe seleccionar una tabla y un archivo.";
+            return;
+        }
+
+        var contenido = new MultipartFormDataContent();
+        var archivoContent = new StreamContent(archivoSeleccionado.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024));
+        archivoContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(archivoSeleccionado.ContentType);
+
+        contenido.Add(archivoContent, "archivo", archivoSeleccionado.Name);
+        contenido.Add(new StringContent(tablaSeleccionada), "tabla");
+
+        try
+        {
+            var respuesta = await Http.PostAsync("https://tu-api.com/api/importar", contenido);
+
+            if (respuesta.IsSuccessStatusCode)
+            {
+                mensaje = "✅ Importación realizada con éxito.";
+            }
+            else
+            {
+                mensaje = $"❌ Error al importar: {respuesta.ReasonPhrase}";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"❌ Excepción: {ex.Message}";
+        }
+    }
+}

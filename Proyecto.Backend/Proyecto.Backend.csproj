@@ -4,9 +4,11 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>907375f3-fbfb-411b-801e-a6ab48541986</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.5" />
@@ -16,6 +18,11 @@
     </PackageReference>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.4" />
     <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="8.1.4" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.12.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Proyecto.Shared\Proyecto.Shared.csproj" />
   </ItemGroup>
 
 </Project>
