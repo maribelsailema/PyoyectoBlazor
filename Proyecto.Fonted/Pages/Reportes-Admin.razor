@@ -3,11 +3,23 @@
 @inject HttpClient Http
 @inject IJSRuntime JS
 
+
 <Header_Admin />
 
 <main class="contenido">
     <div class="reportes-admin">
-        <h1>Generador de Reportes</h1>
+
+        <!-- Navegación de Tabs -->
+        <nav class="tabs">
+            <button class="@GetTabClass("reportes")" @onclick="@(() => CambiarTab("reportes"))">📊 Reportes</button>
+            <button class="@GetTabClass("postulantes")" @onclick="@(() => CambiarTab("postulantes"))">📋 Postulantes</button>
+
+        </nav>
+
+        @if (TabSeleccionado == "reportes")
+        {
+            <h1>Generador de Reportes</h1>
+            <section>
 
         <div class="filtros">
             <div class="filtro">
@@ -61,77 +73,87 @@
         <div class="acciones">
             <button @onclick="GenerateReport">Generar Reporte</button>
         </div>
+            </section>
+            <!-- Resultados -->
+            <section class="resultados">
+                <h2>Resultados del Reporte</h2>
+                @if (ReportResults.Any())
+                {
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Docente</th>
+                                <th>Tipo</th>
+                                <th>Detalle</th>
+                                <th>Fecha</th>
+                                <th>Valor/Puntaje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var result in ReportResults)
+                            {
+                                <tr>
+                                    <td>@result.Docente</td>
+                                    <td>@result.Tipo</td>
+                                    <td>@result.Detalle</td>
+                                    <td>@result.Fecha.ToString("yyyy-MM-dd")</td>
+                                    <td>@result.ValorPuntaje</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    <div class="exportar">
+                        <button @onclick="ExportToPdf">📥 Exportar a PDF</button>
+                    </div>
+                }
+                else
+                {
+                    <p>No hay resultados para mostrar. Ajusta los filtros.</p>
+                }
+            </section>
+        }
 
-        <section class="resultados">
-            <h2>Resultados del Reporte</h2>
-            @if (ReportResults.Any())
-            {
+        @if (TabSeleccionado == "postulantes")
+        {
+            <h1>Gestión de Postulantes</h1>
+
+            <!-- Tabla de Postulantes -->
+            <section class="postulantes">
                 <table>
                     <thead>
                         <tr>
-                            <th>Docente</th>
-                            <th>Tipo</th>
-                            <th>Detalle</th>
-                            <th>Fecha</th>
-                            <th>Valor/Puntaje</th>
+                            <th>Cédula</th>
+                            <th>Nombre</th>
+                            <th>Facultad</th>
+                            <th>Carrera</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var result in ReportResults)
+                        @foreach (var docente in DocentesPostulantes)
                         {
                             <tr>
-                                <td>@result.Docente</td>
-                                <td>@result.Tipo</td>
-                                <td>@result.Detalle</td>
-                                <td>@result.Fecha.ToString("yyyy-MM-dd")</td>
-                                <td>@result.ValorPuntaje</td>
+                                <td>
+                                    <button class="link-button" @onclick="() => VerDetalles(docente.Cedula)">
+                                        @docente.Cedula
+                                    </button>
+                                </td>
+                                <td>@docente.NombreCompleto</td>
+                                <td>@docente.Facultad</td>
+                                <td>@docente.Carrera</td>
+                                <td><span class="@GetEstadoColor(docente.EstadoPostulacion)">@docente.EstadoPostulacion</span></td>
+                                <td>
+                                    <button @onclick="() => ExportResumenPdf(docente.Cedula)">📄 Resumen</button>
+                                </td>
                             </tr>
                         }
                     </tbody>
                 </table>
-                <div class="exportar">
-                    <button @onclick="ExportToPdf">Exportar a PDF</button>
-                </div>
-            }
-            else
-            {
-                <p>No hay resultados para mostrar. Ajusta los filtros.</p>
-            }
-        </section>
+            </section>
+        }
 
-        <section class="postulantes">
-            <h2>Postulantes Registrados</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Cédula</th>
-                        <th>Nombre</th>
-                        <th>Facultad</th>
-                        <th>Carrera</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var docente in DocentesPostulantes)
-                    {
-                        <tr>
-                            <td>
-                                <a href="#" @onclick="() => VerDetalles(docente.Cedula)">@docente.Cedula</a>
-                            </td>
-                            <td>@docente.NombreCompleto</td>
-                            <td>@docente.Facultad</td>
-                            <td>@docente.Carrera</td>
-                            <td><span class="@GetEstadoColor(docente.EstadoPostulacion)">@docente.EstadoPostulacion</span></td>
-                            <td>
-                                <button @onclick="() => ExportResumenPdf(docente.Cedula)">📄 Resumen</button>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </section>
-
+        <!-- Modal -->
         @if (MostrarModal && DocenteSeleccionado != null)
         {
             <div class="modal-backdrop" @onclick="() => MostrarModal = false"></div>
@@ -154,6 +176,7 @@
 
 <Footer_Admin />
 
+
 @code {
     private string SelectedReportType { get; set; } = string.Empty;
     private string CedulaDocente { get; set; } = string.Empty;
@@ -171,6 +194,18 @@
         "Investigaciones por Docente",
         "Roles y Antigüedad"
     };
+
+
+    private string TabSeleccionado = "reportes";
+
+    private void CambiarTab(string tab)
+    {
+        TabSeleccionado = tab;
+    }
+
+    private string GetTabClass(string tab) =>
+        TabSeleccionado == tab ? "tab-active" : "";
+
 
     private List<string> Facultades { get; set; } = new()
     {
@@ -202,20 +237,22 @@
         MostrarModal = true;
     }
 
-    private void AceptarPostulacion()
+    private async void AceptarPostulacion()
     {
         if (DocenteSeleccionado != null)
             DocenteSeleccionado.EstadoPostulacion = "ACEPTADO";
 
         MostrarModal = false;
+        await JS.InvokeVoidAsync("alert", "Postulación aceptada.");
     }
 
-    private void RechazarPostulacion()
+    private async void RechazarPostulacion()
     {
         if (DocenteSeleccionado != null)
             DocenteSeleccionado.EstadoPostulacion = "RECHAZADO";
 
         MostrarModal = false;
+        await JS.InvokeVoidAsync("alert", "Postulación rechazada.");
     }
 
     private string GetEstadoColor(string estado) => estado switch
@@ -227,7 +264,6 @@
 
     private async Task GenerateReport()
     {
-        // Simulación de generación de reportes - reemplazar con llamada real API
         ReportResults = new List<ReporteResultado>
         {
             new() { Docente = "Juan Pérez", Tipo = "Evaluación Docente", Detalle = "Período 2024-1", Fecha = new DateTime(2024, 6, 15), ValorPuntaje = "92.50" },
@@ -238,13 +274,11 @@
 
     private async Task ExportToPdf()
     {
-        // Aquí la llamada para exportar el reporte en PDF
         await JS.InvokeVoidAsync("alert", "Exportando reporte a PDF...");
     }
 
     private async Task ExportResumenPdf(string cedula)
     {
-        // Exportar resumen PDF de un postulante específico
         await JS.InvokeVoidAsync("alert", $"Exportando resumen PDF para cédula: {cedula}");
     }
 

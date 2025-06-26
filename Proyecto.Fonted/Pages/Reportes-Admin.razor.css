@@ -227,3 +227,34 @@ body {
     font-weight: 600;
     font-style: italic;
 }
+.link-button {
+    background: none;
+    border: none;
+    color: #2563eb;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0;
+}
+.tabs {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+    .tabs button {
+        padding: 0.6rem 1.2rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        background-color: #e2e8f0;
+        color: #1e293b;
+        transition: background-color 0.3s, color 0.3s;
+    }
+
+    .tabs .tab-active {
+        background-color: #3b82f6;
+        color: white;
+    }
