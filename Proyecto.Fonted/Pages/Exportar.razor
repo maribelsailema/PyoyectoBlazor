@@ -278,42 +278,62 @@ function openPdf(base64) {
             }
         </tbody>
     </table>
+<button class="btn btn-primary" @onclick="MostrarFormulario">Subir Capacitación</button>
 
-    <button class="btn btn-primary" @onclick="ToggleFormularioCapacitacion">
-    <i class="bi bi-upload"></i> @(mostrarFormularioCap ? "Cancelar" : "Subir a BD")
-</button>
+}
 
-@if (mostrarFormularioCap)
+@if (mostrarFormularioCapacitacion)
 {
-    <EditForm Model="@nuevaCapacitacion" OnValidSubmit="EnviarCapacitacion">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+    <div class="export-card">
+        <h4>Nueva Capacitación</h4>
 
-        
-        <div class="mb-3">
-            <label>Nombre del Curso</label>
-            <InputText class="form-control" @bind-Value="nuevaCapacitacion.NombreCurso" />
-        </div>
-        <div class="mb-3">
-            <label>Duración (horas)</label>
-            <InputNumber class="form-control" @bind-Value="nuevaCapacitacion.DuracionHoras" />
-        </div>
-        <div class="mb-3">
-            <label>Fecha de Inicio</label>
-            <InputDate class="form-control" @bind-Value="nuevaCapacitacion.FechaInicio" />
-        </div>
-        <div class="mb-3">
-            <label>Archivo PDF</label>
-            <InputFile OnChange="CargarArchivoPdf" />
-        </div>
+        <EditForm Model="@nuevaCapacitacion" OnValidSubmit="GuardarCapacitacion">
+            <div class="export-filters">
+                <!-- Curso -->
+                <div class="filter-group">
+                    <label class="filter-label">Nombre del Curso</label>
+                    <input type="text"
+                           class="form-control"
+                           @bind="nuevaCapacitacion.NombreCurso"
+                           required />
+                </div>
 
-        <button class="btn btn-success" type="submit">
-            <i class="bi bi-check-circle"></i> Enviar Capacitación
-        </button>
-    </EditForm>
+                <!-- Duración -->
+                <div class="filter-group">
+                    <label class="filter-label">Duración (horas)</label>
+                    <input type="number"
+                           class="form-control"
+                           @bind="nuevaCapacitacion.DuracionHoras"
+                           required />
+                </div>
+
+                <!-- Fecha (DateOnly) -->
+                <div class="filter-group">
+                    <label class="filter-label">Fecha de Inicio</label>
+                    <input type="date"
+                           class="form-control"
+                           @bind-value="fechaInicio"
+                           @bind-value:event="onchange"   />
+                </div>
+
+                <!-- PDF -->
+                <div class="filter-group">
+                    <label class="filter-label">Seleccionar PDF</label>
+                    <InputFile OnChange="CargarPdf" />
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Guardar Capacitación</button>
+        </EditForm>
+
+        @if (!string.IsNullOrEmpty(mensajeGuardar))
+        {
+            <div class="alert alert-info mt-2">@mensajeGuardar</div>
+        }
+    </div>
 }
 
-}
+
 
 
 
@@ -392,9 +412,73 @@ function openPdf(base64) {
     private string mensaje = " ";
     private List<Capacitacione> listaCapacitaciones = new();
     private bool mostrarCapacitaciones = false;
-    private bool mostrarFormularioCap = false;
-private Capacitacione nuevaCapacitacion = new();
-private IBrowserFile? archivoPdf = null;
+    private bool mostrarFormularioCapacitacion = false;
+
+    // -- NUEVO --
+    private DateOnly? fechaInicio;        // << ahora es DateOnly?
+    private IBrowserFile? archivoPdf;
+
+    private string mensajeGuardar = "";
+    private Capacitacione nuevaCapacitacion = new();
+
+    [Inject] private HttpClient http { get; set; } = default!;
+
+ private void MostrarFormulario()
+    {
+        mostrarFormularioCapacitacion = true;
+        mensajeGuardar = "";
+        _ = CargarCedulaDesdeLocalStorage();   // auto-carga cédula
+    }
+
+  private async Task CargarPdf(InputFileChangeEventArgs e)
+    {
+        archivoPdf = e.File;
+    }
+
+ private async Task GuardarCapacitacion()
+    {
+        try
+        {
+            // --- PDF a byte[] ---
+            if (archivoPdf is not null)
+            {
+                var buffer = new byte[archivoPdf.Size];
+                await archivoPdf.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024)
+                                .ReadAsync(buffer);
+                nuevaCapacitacion.Pdf = buffer;
+            }
+
+            // --- Fecha ---
+            if (fechaInicio is null)
+            {
+                mensajeGuardar = "Selecciona la fecha de inicio.";
+                return;
+            }
+            nuevaCapacitacion.FechaInicio = fechaInicio.Value;
+
+            // --- POST al API ---
+            var resp = await http.PostAsJsonAsync("api/capacitaciones/guardar", nuevaCapacitacion);
+
+            if (resp.IsSuccessStatusCode)
+            {
+                mensajeGuardar = "Capacitación guardada correctamente.";
+                mostrarFormularioCapacitacion = false;
+                nuevaCapacitacion = new();      // limpia
+                fechaInicio = null;
+                archivoPdf = null;
+                await ImportarDatos();          // refresca la tabla
+            }
+            else
+            {
+                mensajeGuardar = $"Error ({(int)resp.StatusCode}): no se pudo guardar.";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensajeGuardar = $"Error: {ex.Message}";
+        }
+    }
+
 
 
     private async Task ImportarDatos()
@@ -439,72 +523,11 @@ private IBrowserFile? archivoPdf = null;
         }
 
     }
-    private async Task CargarArchivoPdf(InputFileChangeEventArgs e)
-{
-    archivoPdf = e.File;
-    if (archivoPdf != null)
-    {
-        using var stream = archivoPdf.OpenReadStream(10_000_000); // 10 MB
-        using var ms = new MemoryStream();
-        await stream.CopyToAsync(ms);
-        nuevaCapacitacion.Pdf = ms.ToArray();
-    }
-}
-
-private async Task EnviarCapacitacion()
-{
-    try
-    {
-        if (nuevaCapacitacion.Pdf != null)
-        {
-            if (string.IsNullOrWhiteSpace(nuevaCapacitacion.Cedula))
-            {
-                var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
-                if (!string.IsNullOrWhiteSpace(cedula))
-                {
-                    nuevaCapacitacion.Cedula = cedula;
-                }
-                else
-                {
-                    mensaje = "No se pudo obtener la cédula del usuario.";
-                    return;
-                }
-            }
-
-            await capacitacionesService.GuardarAsync(nuevaCapacitacion);
-            mensaje = "Capacitación registrada correctamente.";
-
-            // Resetear el formulario
-            nuevaCapacitacion = new();
-            archivoPdf = null;
-            mostrarFormularioCap = false;
-        }
-        else
-        {
-            mensaje = "Debe adjuntar un archivo PDF.";
-        }
-    }
-    catch (Exception ex)
-    {
-        mensaje = $"Error al guardar capacitación: {ex.Message}";
-        Console.Error.WriteLine(ex);
-    }
-}
 
 
-    private async Task SubirCapacitaciones()
-{
-    if (listaCapacitaciones.Any())
-    {
-        await capacitacionesService.GuardarAsync(listaCapacitaciones.First());
-        mensaje = "Capacitación subida correctamente.";
-    }
-    else
-    {
-        mensaje = "No hay capacitaciones para subir.";
-    }
 
-}
+
+   
 private async Task CargarCedulaDesdeLocalStorage()
 {
     var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
@@ -514,15 +537,7 @@ private async Task CargarCedulaDesdeLocalStorage()
     }
 }
 
-private async Task ToggleFormularioCapacitacion()
-{
-    mostrarFormularioCap = !mostrarFormularioCap;
 
-    if (mostrarFormularioCap)
-    {
-        await CargarCedulaDesdeLocalStorage(); // Cargar cédula automáticamente
-    }
-}
 
 
 

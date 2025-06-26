@@ -19,9 +19,7 @@ namespace Proyecto.Frontend.Services
         }
 
 
-        public async Task GuardarAsync(Capacitacione cap)
-        {
-            await _http.PostAsJsonAsync("api/Capacitaciones/Guardar", cap);
-        }
+        
+
     }
 }
