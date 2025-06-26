@@ -2,10 +2,12 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Proyecto.Frontend.Services;
 using System.Net.Http;
-using Proyecto.Fonted; // o el namespace real donde esté App.razor
+using Proyecto.Fonted; // o el namespace real donde estï¿½ App.razor
 
 
 
+
+using Blazored.LocalStorage;
 namespace Proyecto.Fonted
 {
     public class Program
@@ -21,6 +23,8 @@ namespace Proyecto.Fonted
             builder.Services.AddScoped<InvestigacionService>();
             builder.Services.AddScoped<CapacitacionesService>();
 
+
+            builder.Services.AddBlazoredLocalStorage();
             await builder.Build().RunAsync();
         }
     }

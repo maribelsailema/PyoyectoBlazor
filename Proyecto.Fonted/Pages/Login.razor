@@ -5,9 +5,105 @@
 @inject HttpClient Http
 @inject IJSRuntime JS
 
-<EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+
+<style>
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+    }
+
+    .modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #fff;
+        padding: 1.5rem 2rem;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 400px;
+        max-height: 300px; /* Limita la altura */
+        overflow-y: auto; /* Agrega scroll si el contenido lo necesita */
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        z-index: 10000;
+        box-sizing: border-box;
+        font-family: sans-serif;
+        animation: fadeIn 0.3s ease-in-out;
+        position: relative;
+    }
+
+
+        .modal h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+            color: #333;
+        }
+
+        .modal ul.validation-errors {
+            text-align: left;
+            color: red;
+            padding-left: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+ 
+
+    .btn-close-top {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: transparent;
+        border: none;
+        font-size: 1.2rem;
+        cursor: pointer;
+        color: #999;
+        transition: color 0.2s ease;
+    }
+
+        .btn-close-top:hover {
+            color: #dc3545;
+        }
+    .error-message {
+        color: red;
+        text-align: center;
+        margin-top: 1rem;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+</style>
+
+
+
+@if (showValidationModal)
+{
+    <div class="modal-overlay">
+        <div class="modal">
+            <h3>Errores de validación</h3>
+            <ValidationSummary class="validation-errors" />
+            <button class="btn-close-top" @onclick="() => showValidationModal = false" title="Cerrar">✖</button>
+        </div>
+    </div>
+}
+
+<EditForm Model="@loginModel" OnValidSubmit="HandleLogin" OnInvalidSubmit="MostrarErroresValidacion">
     <DataAnnotationsValidator />
-    <ValidationSummary />
 
     <div class="login-container">
         <div class="login-form">
@@ -37,7 +133,6 @@
             <button class="btn-login" type="submit">
                 <i class="fas fa-sign-in-alt"></i> Ingresar
             </button>
-
         </div>
     </div>
 </EditForm>
@@ -45,9 +140,12 @@
 @code {
     private LoginModel loginModel = new();
     private string mensajeError = "";
+    private bool showValidationModal = false;
 
     private async Task HandleLogin()
     {
+        mensajeError = "";
+        showValidationModal = false;
         Logger.LogInformation("Intentando login con usuario: {Usuario}", loginModel.Usuario);
 
         var datosLogin = new
@@ -66,11 +164,22 @@
 
                 if (usuario is not null && !string.IsNullOrEmpty(usuario.Ced))
                 {
-                   //guarda la ced para consumir después
+
                     await JS.InvokeVoidAsync("localStorage.setItem", "cedulaUsuario", usuario.Ced);
 
-                    // Redirigir con la cédula como query string
-                    Navigation.NavigateTo($"/inicio?ced={usuario.Ced}");
+                    var tipo = usuario.TipoUsuario?.ToLower();
+                    if (tipo == "docente")
+                    {
+                        Navigation.NavigateTo($"/inicio?ced={usuario.Ced}");
+                    }
+                    else if (tipo == "admin")
+                    {
+                        Navigation.NavigateTo($"/inicio-admin?ced={usuario.Ced}");
+                    }
+                    else
+                    {
+                        mensajeError = "Tipo de usuario no reconocido.";
+                    }
                 }
                 else
                 {
@@ -87,6 +196,11 @@
             Logger.LogError(ex, "Error en login.");
             mensajeError = $"Error en la conexión al servidor: {ex.Message}";
         }
+    }
+
+    private void MostrarErroresValidacion(EditContext context)
+    {
+        showValidationModal = true;
     }
 
     public class LoginModel
@@ -110,3 +224,4 @@
         public string FechaIngreso { get; set; }
     }
 }
+

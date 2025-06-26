@@ -63,5 +63,24 @@ namespace Proyecto.Backend.UI.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+        [HttpGet("Ultima/{cedula}")]
+        public async Task<ActionResult<EvaluacionesDocente>> GetUltimaEvaluacion(string cedula)
+        {
+            var evaluacion = await _context.EvaluacionesDocentes
+                .Where(e => e.Cedula == cedula)
+                .OrderByDescending(e => e.FechaEvaluacion)
+                .Select(e => new EvaluacionesDocente
+                {
+                    Periodo = e.Periodo,
+                    PuntajeFinal = e.PuntajeFinal,
+                    FechaEvaluacion = e.FechaEvaluacion
+                })
+                .FirstOrDefaultAsync();
+
+            if (evaluacion == null)
+                return NotFound();
+
+            return Ok(evaluacion);
+        }
     }
 }

@@ -64,6 +64,7 @@ namespace Proyecto.Backend.UI.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+
         [HttpGet("Cedula/{cedula}")]
         public async Task<ActionResult<IEnumerable<Capacitacione>>> ObtenerPorCedula(string cedula)
         {
@@ -75,6 +76,15 @@ namespace Proyecto.Backend.UI.Controllers
                 return NotFound();
 
             return Ok(lista);
+
+        [HttpGet("HorasTotales/{cedula}")]
+        public async Task<ActionResult<int>> GetHorasTotales(string cedula)
+        {
+            var totalHoras = await _context.Capacitaciones
+                .Where(c => c.Cedula == cedula)
+                .SumAsync(c => (int?)c.DuracionHoras) ?? 0;
+
+            return Ok(totalHoras);
         }
 
     }
