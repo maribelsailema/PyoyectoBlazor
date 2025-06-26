@@ -75,24 +75,34 @@ namespace Proyecto.Backend.UI.Controllers
             return Ok(usuario);
         }
         [HttpPost("Validar")]
-        public async Task<ActionResult<Usuario>> ValidarUsuario([FromBody] LoginDTO login)
+[HttpPost("Validar")]
+public async Task<ActionResult<Usuario>> ValidarUsuario([FromBody] LoginDTO login)
+{
+    try
+    {
+        if (login == null || string.IsNullOrWhiteSpace(login.Usuari) || string.IsNullOrWhiteSpace(login.Pass))
         {
-            if (login == null || string.IsNullOrWhiteSpace(login.Usuari) || string.IsNullOrWhiteSpace(login.Pass))
-            {
-                return BadRequest("Usuario y contraseña son obligatorios.");
-            }
-
-            var usuario = await _context.Usuarios
-                .FirstOrDefaultAsync(u => u.Usuari == login.Usuari && u.Pass == login.Pass);
-
-            if (usuario == null)
-            {
-                return Unauthorized("Usuario o contraseña incorrectos.");
-            }
-
-            usuario.Pass = ""; // Evitar enviar la contraseña al frontend
-            return Ok(usuario);
+            return BadRequest("Usuario y contraseña son obligatorios.");
         }
+
+        var usuario = await _context.Usuarios
+            .FirstOrDefaultAsync(u => u.Usuari == login.Usuari && u.Pass == login.Pass);
+
+        if (usuario == null)
+        {
+            return Unauthorized("Usuario o contraseña incorrectos.");
+        }
+
+        usuario.Pass = ""; // Para no enviarla al frontend
+        return Ok(usuario);
+    }
+    catch (Exception ex)
+    {
+        // Aquí se captura el error para que sea visible desde el frontend o consola
+        return StatusCode(500, $"Error: {ex.Message} - {ex.InnerException?.Message}");
+    }
+}
+
 
     }
 }
