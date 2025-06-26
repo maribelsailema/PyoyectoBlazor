@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Proyecto.Backend.Domain.Entities.Models;
-
+using Proyecto.Shared.Models;
 namespace Proyecto.Backend.UI.Controllers
 {
     [Route("api/[controller]")]
@@ -67,5 +67,27 @@ namespace Proyecto.Backend.UI.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+
+        // RequisitosAscensosController.cs
+        [HttpGet("Todos")]
+        public async Task<ActionResult<IEnumerable<RequisitoPromocionDto>>> GetTodos()
+        {
+            var requisitos = await _context.RequisitosAscensos
+                .Select(r => new RequisitoPromocionDto
+                {
+                    DesdeRol = r.DesdeRol,
+                    HaciaRol = r.HaciaRol,
+                    TiempoMinimoAnios = r.TiempoMinimoAnios,
+                    ObrasMinimas = r.ObrasMinimas,
+                    PuntajeEvaluacionMinimo = r.PuntajeEvaluacionMinimo,
+                    HorasCapacitacionMin = r.HorasCapacitacionMin,
+                    MesesInvestigacionMin = r.MesesInvestigacionMin
+                })
+                .ToListAsync();
+
+            return Ok(requisitos);
+        }
+
+
     }
 }

@@ -2,8 +2,11 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Proyecto.Frontend.Services;
 using System.Net.Http;
+
+using Blazored.LocalStorage;
+
 using Proyecto.Fonted;
-using Proyecto.Fonted.Services; // o el namespace real donde esté App.razor
+using Proyecto.Fonted.Services; // o el namespace real donde estÃ© App.razor
 
 
 
@@ -20,8 +23,12 @@ namespace Proyecto.Fonted
 
             // Cambiar BaseAddress al URL del backend API
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7201/") });
+
+            builder.Services.AddBlazoredLocalStorage();
+
             builder.Services.AddScoped<InvestigacionService>();
             builder.Services.AddScoped<CarreraService>();
+
 
             await builder.Build().RunAsync();
         }

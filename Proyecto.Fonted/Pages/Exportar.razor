@@ -1,4 +1,5 @@
 ﻿@page "/exportar"
+
 @using Proyecto.Fonted.Services
 @using Proyecto.Frontend.Services
 @inject IJSRuntime JS
@@ -8,10 +9,124 @@
 @inject IJSRuntime JS
 @inject CarreraService carreraService
 
-
 <style>
     /* Estilos específicos para la página de exportación */
     .export-container {
+
+        max-width: 1200px;
+        margin: var(--spacing-xl) auto;
+        padding: 0 var(--spacing-md);
+    }
+
+    .export-title {
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-lg);
+        font-size: 1.8rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .export-card {
+        background-color: var(--card-bg-color);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        padding: var(--spacing-xl);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .export-filters {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: var(--spacing-lg);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .filter-group {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .filter-label {
+        display: block;
+        margin-bottom: var(--spacing-xs);
+        font-weight: 500;
+        color: var(--dark-text-color);
+    }
+
+    .form-select, .form-control {
+        width: 100%;
+        padding: var(--spacing-sm) var(--spacing-md);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+        font-size: 1rem;
+        transition: var(--transition-normal);
+        background-color: var(--light-bg-color);
+    }
+
+        .form-select:focus, .form-control:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 4px rgba(41, 128, 185, 0.2);
+            outline: none;
+            background-color: var(--card-bg-color);
+        }
+
+    .export-button {
+        display: flex;
+        align-items: flex-end;
+    }
+
+    .btn {
+        padding: var(--spacing-sm) var(--spacing-md);
+        border: none;
+        border-radius: var(--border-radius-md);
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: var(--transition-normal);
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        text-decoration: none;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary {
+        background-color: var(--secondary-color);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            background-color: darken(var(--secondary-color), 8%);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+    .additional-filters {
+        background-color: var(--light-bg-color);
+        border-radius: var(--border-radius-md);
+        padding: var(--spacing-md);
+        margin-top: var(--spacing-lg);
+    }
+
+    .filter-section h6 {
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-md);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+    }
+
+    .filter-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--spacing-md);
+    }
+
+    .filter-item {
+        margin-bottom: var(--spacing-sm);
+
     max-width: 1200px;
     margin: var(--spacing-xl) auto;
     padding: 0 var(--spacing-md);
@@ -129,11 +244,14 @@
 
     /* Ocultar filtros específicos inicialmente */
     .usuario-filters, .evaluacion-filters {
+
+
     display: none;
     }
 
     /* Mostrar filtros según la selección (esto se manejaría con JS) */
     select.form-select[value="Usuarios"] ~ .additional-filters .usuario-filters {
+
     display: grid;
     }
 
@@ -172,6 +290,9 @@
         <div class="export-filters">
             <!-- Selector de Tabla -->
             <div class="filter-group">
+                <label class="filter-label">Tabla a Exportar</label>
+                <select class="form-select">
+
                 <label class="filter-label">Tabla a Importar</label>
                 <select class="form-select" @bind="tablaSeleccionada">
                     <option value="">Seleccione una tabla</option>
@@ -182,6 +303,24 @@
                     <option value="Investigaciones">Investigaciones</option>
                 </select>
             </div>
+
+            <!-- Selector de Formato -->
+            <div class="filter-group">
+                <label class="filter-label">Formato de Exportación</label>
+                <select class="form-select">
+                    <option value="Excel">Excel (.xlsx)</option>
+                    <option value="CSV">CSV (.csv)</option>
+                    <option value="PDF">PDF (.pdf)</option>
+                </select>
+            </div>
+
+            <!-- Botón de Exportación -->
+            <div class="export-button">
+                <button class="btn btn-primary">
+                    <i class="bi bi-download"></i> Exportar
+                </button>
+            </div>
+        </div>
 
             @if (!string.IsNullOrEmpty(mensaje))
             {
@@ -401,6 +540,7 @@
         </div>
     </div>
     <p class="copyright">© 2025 Sistema de Promoción, Todos los Derechos Reservados</p>
+
 </footer>
 <script>
     function openPdf(base64) {

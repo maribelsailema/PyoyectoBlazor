@@ -66,6 +66,16 @@ namespace Proyecto.Backend.UI.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+        [HttpGet("MesesTotales/{cedula}")]
+        public async Task<ActionResult<int>> GetMesesTotalesInvestigacion(string cedula)
+        {
+            var meses = await _context.Investigaciones
+                .Where(i => i.Cedula == cedula )
+                .SumAsync(i => i.TiempoMeses);
+
+            return Ok(meses);
+        }
+
 
         [HttpGet("PorCedula/{cedula}")]
         public async Task<ActionResult<IEnumerable<Proyecto.Shared.Models.Investigacion>>> ObtenerPorCedula(string cedula)
