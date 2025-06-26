@@ -85,7 +85,7 @@
                                     <td>
                                         @if (req.CumpleRequisitos)
                                         {
-                                            <span class="badge bg-success">Disponible</span>
+                                            <span class="badge bg-success">Postular</span>
                                         }
                                         else
                                         {
@@ -108,7 +108,8 @@
             <!-- Resumen de Cumplimiento -->
             @if (currentRol != null && requisitosPromocion.Any())
             {
-                var primerRequisito = requisitosPromocion.First();
+                var primerRequisito = requisitosPromocion.FirstOrDefault(r => r.DesdeRol == currentRol.Rol);
+
 
                 <div class="requirements-info">
                     <h4><i class="bi bi-card-checklist"></i> Tu progreso actual:</h4>
@@ -160,8 +161,8 @@
                         @if (primerRequisito.MesesInvestigacionMin.HasValue)
 {
     <li>
-        <strong>Meses investigación:</strong> @totalMesesInvestigacion de @primerRequisito.MesesInvestigacionMin requeridos
-        @if (totalMesesInvestigacion >= primerRequisito.MesesInvestigacionMin)
+        <strong>Meses investigación:</strong> @totalMesesInvestigacion de @primerRequisito.MesesInvestigacionMin.Value requeridos
+        @if (totalMesesInvestigacion >= primerRequisito.MesesInvestigacionMin.Value)
         {
             <i class="bi bi-check-circle-fill text-success"></i>
         }
@@ -171,6 +172,7 @@
         }
     </li>
 }
+
 else
 {
     <li>
@@ -248,7 +250,9 @@ else
                 await LoadRolActual();
                 await LoadDatosCumplimiento();
 
-                puedePostular = requisitosPromocion.Any() && requisitosPromocion.First().CumpleRequisitos;
+                var requisitoActual = requisitosPromocion.FirstOrDefault(r => r.DesdeRol == currentRol.Rol);
+                puedePostular = requisitoActual?.CumpleRequisitos == true;
+
             }
             catch (Exception rolEx)
             {
