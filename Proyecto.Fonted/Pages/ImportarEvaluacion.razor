@@ -1,33 +1,4 @@
 ﻿@page "/importar-evaluacion"
 @inject HttpClient Http
 
-<h3>Importar Evaluación Docente</h3>
-
-<InputFile OnChange="HandleFileSelected" />
-<p>@mensaje</p>
-
-@code {
-    private string mensaje = "";
-
-    private async Task HandleFileSelected(InputFileChangeEventArgs e)
-    {
-        var archivo = e.File;
-
-        using var content = new MultipartFormDataContent();
-        var fileContent = new StreamContent(archivo.OpenReadStream(maxAllowedSize: 10_000_000));
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(archivo.ContentType);
-
-        content.Add(content: fileContent, name: "archivo", fileName: archivo.Name);
-
-        var response = await Http.PostAsync("https://localhost:7201/api/evaluacion/importar", content);
-
-        if (response.IsSuccessStatusCode)
-        {
-            mensaje = "Archivo cargado con éxito.";
-        }
-        else
-        {
-            mensaje = $"Error al subir: {response.StatusCode}";
-        }
-    }
-}
+<Component1 />
