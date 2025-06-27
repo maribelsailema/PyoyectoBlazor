@@ -20,14 +20,8 @@ namespace Proyecto.Shared.Models
 
         [Required(ErrorMessage = "La fecha de publicación es obligatoria")]
         public DateTime FechaPublicacion { get; set; }
-
-        public string Editorial { get; set; }
-        public string ISBN { get; set; }
-        public string DOI { get; set; }
         public byte[] Documento { get; set; }
         public string NombreArchivo { get; set; }
 
-       // Propiedad de navegación (opcional)
-        public Carrera Carrera { get; set; }
     }
 }

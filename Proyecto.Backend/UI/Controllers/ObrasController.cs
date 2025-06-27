@@ -15,27 +15,38 @@ namespace Proyecto.Server.Controllers
         {
             _context = context;
         }
-
         [HttpGet("por-cedula/{cedula}")]
-        public async Task<ActionResult<List<Obra>>> ObtenerPorCedula(string cedula)
-        {
-            return await _context.Obras
-                .Include(o => o.Carrera)
-                .Where(o => o.Cedula == cedula)
-                .ToListAsync();
-        }
+public async Task<ActionResult<List<ObraS>>> ObtenerPorCedula(string cedula)
+{
+    var obras = await _context.Obras
+        .Where(o => o.Cedula == cedula)
+        .ToListAsync();
+
+    // MAPEAR Obra → ObraS
+    var resultado = obras.Select(o => new ObraS
+    {
+        IdObra = o.IdObra,
+        Cedula = o.Cedula,
+        Titulo = "", // <-- puedes obtenerlo si lo tienes, o dejarlo vacío
+        TipoObra = o.TipoObra,
+        FechaPublicacion = DateTime.Parse(o.Fecha.ToString()),
+        Documento = o.Pdf ?? new byte[0],
+        NombreArchivo = "archivo.pdf", // por defecto o uno real
+    }).ToList();
+
+    return Ok(resultado);
+}
 
         [HttpGet]
         public async Task<ActionResult<List<Obra>>> ObtenerTodos()
         {
-            return await _context.Obras.Include(o => o.Carrera).ToListAsync();
+            return await _context.Obras.ToListAsync();
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Obra>> ObtenerPorId(int id)
         {
             var obra = await _context.Obras
-                .Include(o => o.Carrera)
                 .FirstOrDefaultAsync(o => o.IdObra == id);
 
             if (obra == null)
@@ -47,13 +58,22 @@ namespace Proyecto.Server.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Obra>> Crear(Obra obra)
+        public async Task<ActionResult<Obra>> Crear(ObraS obraS)
         {
+            var obra = new Obra
+            {
+                Cedula = obraS.Cedula,
+                TipoObra = obraS.TipoObra,
+                Fecha = DateOnly.FromDateTime(obraS.FechaPublicacion),
+                Pdf = obraS.Documento,
+            };
+
             _context.Obras.Add(obra);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(ObtenerPorId), new { id = obra.IdObra }, obra);
         }
+
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Actualizar(int id, Obra obra)
