@@ -545,17 +545,21 @@ private bool modoEdicionCap = false;
 private IBrowserFile? archivoPDFCap;
 
 //capacitaciones
+private string? cedulaUsuario;
+
 // ----- CAPACITACIONES -----
 private void MostrarFormCap()
 {
     nuevaCapacitacion = new Capacitacione
     {
-        FechaInicio = DateOnly.FromDateTime(DateTime.Today)   // ← nuevo
+        Cedula      = cedulaUsuario ?? string.Empty,       // ← AÑADIDO
+        FechaInicio = DateOnly.FromDateTime(DateTime.Today)
     };
     mostrarFormCap  = true;
     modoEdicionCap  = false;
     archivoPDFCap   = null;
 }
+    
 
 
 private async Task SubirPdfCap(InputFileChangeEventArgs e)
@@ -567,8 +571,7 @@ private async Task GuardarCapacitacion()
 {
     try
     {
-        nuevaCapacitacion.Cedula =
-            await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+       
 
         if (archivoPDFCap is not null)
         {
@@ -672,7 +675,7 @@ else
     {
         archivoPDF = e.File;
     }
-
+    //capacitaciones
     private async Task GuardarNuevaInvestigacion()
     {
         try
@@ -725,6 +728,9 @@ else
     protected override async Task OnInitializedAsync()
     {
         listaCarreras = await carreraService.ObtenerCarrerasAsync();
+            cedulaUsuario = await JS.InvokeAsync<string>(
+        "localStorage.getItem", "cedulaUsuario");
+
     }
 
     
