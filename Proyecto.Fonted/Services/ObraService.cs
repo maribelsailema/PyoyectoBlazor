@@ -29,10 +29,5 @@ namespace Proyecto.Frontend.Services
         {
             await _httpClient.PutAsJsonAsync($"api/Obra/{obra.IdObra}", obra);
         }
-
-        public async Task EliminarObraAsync(int id)
-        {
-            await _httpClient.DeleteAsync($"api/Obra/{id}");
-        }
     }
 }
