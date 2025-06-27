@@ -5,6 +5,7 @@
 @inject HttpClient Http
 @inject IJSRuntime JS
 
+
 <style>
     .modal-overlay {
         position: fixed;
@@ -163,6 +164,7 @@
 
                 if (usuario is not null && !string.IsNullOrEmpty(usuario.Ced))
                 {
+
                     await JS.InvokeVoidAsync("localStorage.setItem", "cedulaUsuario", usuario.Ced);
 
                     var tipo = usuario.TipoUsuario?.ToLower();
@@ -192,7 +194,7 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error en login.");
-            mensajeError = "Error en la conexión al servidor.";
+            mensajeError = $"Error en la conexión al servidor: {ex.Message}";
         }
     }
 
