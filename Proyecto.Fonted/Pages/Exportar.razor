@@ -247,11 +247,6 @@
     <ValidationMessage For="@(() => nuevaInvestigacion.TiempoMeses)" />
 </div>
 
-
-
-
-
-
         <div class="mb-3">
             <label>Subir PDF</label>
             <InputFile OnChange="SubirPDF" />
@@ -332,9 +327,93 @@
             </table>
         }
 
-       
+       <!--Obras-->
+@if (mostrarObras)
+{
+    <div class="mb-3">
+        <button class="btn btn-success" @onclick="MostrarFormularioObra">
+            <i class="bi bi-plus-circle"></i> Agregar Obra
+        </button>
+    </div>
+
+    <h4>Obras</h4>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Tipo</th>
+                <th>Fecha</th>
+                <th>Archivo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var obra in listaObras)
+            {
+                <tr>
+                    <td>@obra.Titulo</td>
+                    <td>@obra.TipoObra</td>
+                    <td>@obra.FechaPublicacion.ToShortDateString()</td>
+                    <td>
+                        @if (obra.Documento != null && obra.Documento.Length > 0)
+                        {
+                            <a href="#" @onclick="() => AbrirDocumento(obra.Documento)" style="cursor:pointer; color:blue; text-decoration:underline;">
+                                Ver Documento
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Sin archivo</span>
+                        }
+                    </td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" @onclick="() => EditarObra(obra)">
+                            <i class="bi bi-pencil"></i> Editar
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 
 
+@if (mostrarFormularioObra)
+{
+    <EditForm Model="@nuevaObra" OnValidSubmit="GuardarNuevaObra">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label>Título</label>
+            <InputText class="form-control" @bind-Value="nuevaObra.Titulo" />
+        </div>
+
+        <div class="mb-3">
+            <label>Tipo de Obra</label>
+            <InputText class="form-control" @bind-Value="nuevaObra.TipoObra" />
+        </div>
+
+        <div class="mb-3">
+            <label>Fecha de Publicación</label>
+            <InputDate class="form-control" @bind-Value="nuevaObra.FechaPublicacion" />
+        </div>
+
+        <div class="mb-3">
+            <label>Documento (PDF)</label>
+            <InputFile OnChange="SubirDocumentoObra" />
+            @if (!string.IsNullOrEmpty(nombreArchivoObra))
+            {
+                <small>Archivo seleccionado: @nombreArchivoObra</small>
+            }
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <button type="button" class="btn btn-secondary" @onclick="CerrarFormularioObra">Cancelar</button>
+        </div>
+    </EditForm>
+}
 
 
 
@@ -415,6 +494,7 @@
         window.open(blobUrl, '_blank');
     }
 </script>
+
 
 
 @code {
@@ -613,15 +693,16 @@
     // Variables para Obras
 private List<ObraS> listaObras = new();
 private bool mostrarObras = false;
+
 private ObraS nuevaObra = new();
 private bool mostrarFormularioObra = false;
 private bool modoEdicionObra = false;
+
 private IBrowserFile? archivoObra;
 private string nombreArchivoObra = string.Empty;
 
-
 // Métodos para Obras
-private async Task MostrarFormularioObra()
+private void MostrarFormularioObra()
 {
     nuevaObra = new ObraS();
     mostrarFormularioObra = true;
@@ -629,17 +710,20 @@ private async Task MostrarFormularioObra()
     nombreArchivoObra = string.Empty;
 }
 
+
 private void CerrarFormularioObra()
 {
     mostrarFormularioObra = false;
     archivoObra = null;
+    nombreArchivoObra = string.Empty;
 }
+
 
 private async Task SubirDocumentoObra(InputFileChangeEventArgs e)
 {
     archivoObra = e.File;
     nombreArchivoObra = archivoObra.Name;
-    
+
     using var stream = archivoObra.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
     using var memoryStream = new MemoryStream();
     await stream.CopyToAsync(memoryStream);
@@ -647,12 +731,14 @@ private async Task SubirDocumentoObra(InputFileChangeEventArgs e)
     nuevaObra.NombreArchivo = nombreArchivoObra;
 }
 
+
 private async Task GuardarNuevaObra()
 {
     try
     {
+        // Obtener cédula usuario desde localStorage
         nuevaObra.Cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
-        
+
         if (modoEdicionObra)
         {
             await obraService.ActualizarObraAsync(nuevaObra);
@@ -663,11 +749,12 @@ private async Task GuardarNuevaObra()
             var resultado = await obraService.GuardarObraAsync(nuevaObra);
             if (resultado != null)
             {
-                nuevaObra = resultado;
+                nuevaObra = resultado; // Aquí ya incluye Id real
             }
             mensaje = "Obra guardada correctamente.";
         }
-        
+
+        // Recargar lista
         listaObras = await obraService.ObtenerPorCedulaAsync(nuevaObra.Cedula);
         mostrarFormularioObra = false;
         modoEdicionObra = false;
@@ -679,6 +766,7 @@ private async Task GuardarNuevaObra()
         mensaje = $"Error al guardar la obra: {ex.Message}";
     }
 }
+
 
 private void EditarObra(ObraS obra)
 {
@@ -692,7 +780,7 @@ private void EditarObra(ObraS obra)
         Documento = obra.Documento,
         NombreArchivo = obra.NombreArchivo
     };
-    
+
     nombreArchivoObra = obra.NombreArchivo ?? "Documento cargado";
     mostrarFormularioObra = true;
     modoEdicionObra = true;
@@ -703,9 +791,8 @@ private async Task AbrirDocumento(byte[] documento)
     if (documento != null && documento.Length > 0)
     {
         var base64 = Convert.ToBase64String(documento);
-        await JS.InvokeVoidAsync("openPdfFromBase64", base64);
+        await JS.InvokeVoidAsync("openPdf", base64);
     }
 }
-
   
 }
