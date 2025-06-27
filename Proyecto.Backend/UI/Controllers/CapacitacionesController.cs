@@ -48,6 +48,7 @@ namespace Proyecto.Backend.UI.Controllers
             existente.NombreCurso = cap.NombreCurso;
             existente.DuracionHoras = cap.DuracionHoras;
             existente.FechaInicio = cap.FechaInicio;
+                
 
 
             await _context.SaveChangesAsync();
@@ -74,5 +75,8 @@ namespace Proyecto.Backend.UI.Controllers
             return Ok(totalHoras);
         }
 
+        //capacitacion
+
+        //capacitacion
     }
 }
