@@ -26,7 +26,7 @@ public class Capacitacione
     public int DuracionHoras { get; set; }
 
     [Required(ErrorMessage = "La fecha de inicio es obligatoria")]
-    public DateOnly FechaInicio { get; set; }
+public DateTime FechaInicio { get; set; }  // Cambia DateOnly por DateTime
 
     public byte[]? Pdf { get; set; }
 }

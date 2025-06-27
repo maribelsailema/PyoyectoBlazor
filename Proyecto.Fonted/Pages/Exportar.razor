@@ -367,9 +367,7 @@
         <div class="row mb-3">
             <div class="col">
                 <label>Fecha de Inicio</label>
-                <InputDate TValue="DateOnly"
-           class="form-control"
-           @bind-Value="nuevaCapacitacion.FechaInicio" />
+               <InputDate TValue="DateTime" @bind-Value="nuevaCapacitacion.FechaInicio" />
             </div>
         </div>
 
@@ -552,12 +550,12 @@ private void MostrarFormCap()
 {
     nuevaCapacitacion = new Capacitacione
     {
-        Cedula      = cedulaUsuario ?? string.Empty,       // ← AÑADIDO
-        FechaInicio = DateOnly.FromDateTime(DateTime.Today)
+        Cedula = cedulaUsuario ?? string.Empty,
+        FechaInicio = DateTime.Today // Cambiado de DateOnly a DateTime
     };
-    mostrarFormCap  = true;
-    modoEdicionCap  = false;
-    archivoPDFCap   = null;
+    mostrarFormCap = true;
+    modoEdicionCap = false;
+    archivoPDFCap = null;
 }
     
 
