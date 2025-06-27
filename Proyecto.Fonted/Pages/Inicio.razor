@@ -1,9 +1,14 @@
 @page "/inicio"
 @using System.ComponentModel.DataAnnotations
+@using System.Net.Http.Json
+@using Proyecto.Backend.Domain.Entities.Models
+@using Proyecto.Shared.Models
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject HttpClient Http
 
 <header class="navbar">
     <div class="navbar-left">
-        <h3>Bienvenido, @usuario.Nombre</h3>
+        <h3>Bienvenido, @usuario.NombreCompleto</h3>
     </div>
     <nav class="navbar-right nav-links">
         <NavLink href="/inicio" class="nav-item">
@@ -59,13 +64,24 @@
 @code {
     private UsuarioModel usuario = new();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        usuario = new UsuarioModel { Nombre = "Usuario" }; // Simulación
+        try
+        {
+            var cedula = await localStorage.GetItemAsync<string>("cedulaUsuario");
+
+            if (!string.IsNullOrWhiteSpace(cedula))
+            {
+                var response = await Http.GetFromJsonAsync<UsuarioModel>($"api/Usuario/porCedula/{cedula}");
+                if (response != null)
+                    usuario = response;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error cargando datos del usuario: {ex.Message}");
+        }
     }
 
-    public class UsuarioModel
-    {
-        public string Nombre { get; set; } = string.Empty;
-    }
+
 }
