@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Proyecto.Backend.Domain.Entities.Models;
+using Proyecto.Shared.Dtos;
 
 namespace Proyecto.Backend.UI.Controllers
 {
@@ -48,6 +49,7 @@ namespace Proyecto.Backend.UI.Controllers
             existente.NombreCurso = cap.NombreCurso;
             existente.DuracionHoras = cap.DuracionHoras;
             existente.FechaInicio = cap.FechaInicio;
+                
 
 
             await _context.SaveChangesAsync();
@@ -74,5 +76,42 @@ namespace Proyecto.Backend.UI.Controllers
             return Ok(totalHoras);
         }
 
+        //capacitacion
+        [HttpPost("GuardarDto")]
+        public async Task<ActionResult<Capacitacione>> GuardarDto(CapacitacionCreateDto dto)
+        {
+            var entidad = new Capacitacione
+            {
+                Cedula = dto.Cedula,
+                NombreCurso = dto.NombreCurso,
+                DuracionHoras = dto.DuracionHoras,
+                FechaInicio = DateOnly.FromDateTime(dto.FechaInicio), // ← conversión
+                Pdf = dto.Pdf
+            };
+
+            _context.Capacitaciones.Add(entidad);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(Buscar), new { id = entidad.IdCap }, entidad);
+        }
+
+        [HttpPut("ActualizarDto/{id}")]
+        public async Task<IActionResult> ActualizarDto(int id, CapacitacionCreateDto dto)
+        {
+            var entidad = await _context.Capacitaciones.FindAsync(id);
+            if (entidad is null) return NotFound();
+
+            entidad.Cedula = dto.Cedula;
+            entidad.NombreCurso = dto.NombreCurso;
+            entidad.DuracionHoras = dto.DuracionHoras;
+            entidad.FechaInicio = DateOnly.FromDateTime(dto.FechaInicio);
+            entidad.Pdf = dto.Pdf;
+
+            await _context.SaveChangesAsync();
+            return Ok(entidad);
+        }
+
+
+        //capacitacion
     }
 }
