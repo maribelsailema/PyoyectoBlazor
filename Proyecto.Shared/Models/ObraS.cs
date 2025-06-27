@@ -21,7 +21,7 @@ namespace Proyecto.Shared.Models
         [Required(ErrorMessage = "La fecha de publicación es obligatoria")]
         public DateTime FechaPublicacion { get; set; }
         public byte[] Documento { get; set; }
-        public string NombreArchivo { get; set; }
+        public string NombreArchivo { get; set; }= string.Empty;
 
     }
 }

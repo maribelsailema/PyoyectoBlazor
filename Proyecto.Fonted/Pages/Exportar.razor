@@ -9,66 +9,161 @@
 @inject CapacitacionesService capacitacionesService
 @inject ObraService obraService
 
+
 <style>
     /* Estilos específicos para la página de exportación */
     .export-container {
-        max-width: 1200px;
-        margin: var(--spacing-xl) auto;
-        padding: 0 var(--spacing-md);
+    max-width: 1200px;
+    margin: var(--spacing-xl) auto;
+    padding: 0 var(--spacing-md);
     }
 
     .export-title {
-        color: var(--primary-color);
-        margin-bottom: var(--spacing-lg);
-        font-size: 1.8rem;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-lg);
+    font-size: 1.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
     }
 
     .export-card {
-        background-color: var(--card-bg-color);
-        border-radius: var(--border-radius-lg);
-        box-shadow: var(--shadow-md);
-        padding: var(--spacing-xl);
-        margin-bottom: var(--spacing-lg);
+    background-color: var(--card-bg-color);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
     }
 
     .export-filters {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: var(--spacing-lg);
-        margin-bottom: var(--spacing-lg);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    }
+
+    .filter-group {
+    margin-bottom: var(--spacing-md);
     }
 
     .filter-label {
-        font-weight: 500;
-        margin-bottom: var(--spacing-xs);
+    display: block;
+    margin-bottom: var(--spacing-xs);
+    font-weight: 500;
+    color: var(--dark-text-color);
+    }
+
+    .form-select, .form-control {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    font-size: 1rem;
+    transition: var(--transition-normal);
+    background-color: var(--light-bg-color);
+    }
+
+    .form-select:focus, .form-control:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 4px rgba(41, 128, 185, 0.2);
+    outline: none;
+    background-color: var(--card-bg-color);
+    }
+
+    .export-button {
+    display: flex;
+    align-items: flex-end;
     }
 
     .btn {
-        padding: var(--spacing-sm) var(--spacing-md);
-        border-radius: var(--border-radius-md);
-        cursor: pointer;
-        font-size: 1rem;
-        font-weight: 600;
-        transition: var(--transition-normal);
-        display: inline-flex;
-        align-items: center;
-        gap: var(--spacing-xs);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: none;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: var(--transition-normal);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    text-decoration: none;
+    box-shadow: var(--shadow-sm);
     }
 
     .btn-primary {
-        background-color: var(--secondary-color);
-        color: white;
+    background-color: var(--secondary-color);
+    color: white;
     }
 
     .btn-primary:hover {
-        background-color: darken(var(--secondary-color), 8%);
-        transform: translateY(-2px);
+    background-color: darken(var(--secondary-color), 8%);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    }
+
+    .additional-filters {
+    background-color: var(--light-bg-color);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+    }
+
+    .filter-section h6 {
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-md);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    }
+
+    .filter-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+    }
+
+    .filter-item {
+    margin-bottom: var(--spacing-sm);
+    }
+
+    /* Ocultar filtros específicos inicialmente */
+    .usuario-filters, .evaluacion-filters {
+    display: none;
+    }
+
+    /* Mostrar filtros según la selección (esto se manejaría con JS) */
+    select.form-select[value="Usuarios"] ~ .additional-filters .usuario-filters {
+    display: grid;
+    }
+
+    select.form-select[value="EvaluacionesDocentes"] ~ .additional-filters .evaluacion-filters {
+    display: grid;
     }
 </style>
+<header class="navbar">
+    <div class="navbar-left">
+        <h3>Bienvenido</h3>
+    </div>
+    <nav class="navbar-right nav-links">
+        <NavLink href="/inicio" class="nav-item">
+            <i class="bi bi-house-fill"></i> Inicio
+        </NavLink>
+        <NavLink href="/promocion" class="nav-item">
+            <i class="bi bi-bar-chart-line-fill"></i> Promoción
+        </NavLink>
+        <NavLink href="/perfil" class="nav-item">
+            <i class="bi bi-person-fill"></i> Perfil
+        </NavLink>
+        <NavLink href="/exportar" class="nav-item active">
+            <i class="bi bi-download"></i> Exportar
+        </NavLink>
+        <NavLink href="/" class="nav-item cerrar-sesion">
+            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+        </NavLink>
+    </nav>
+</header>
 
 <div class="export-container">
     <h3 class="export-title"><i class="bi bi-download"></i> Exportar Datos</h3>
@@ -173,11 +268,9 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>Título</th>
+                    <th># de Obra</th>
                     <th>Tiempo</th>
                     <th>Inicio</th>
-                    <th>Fin</th>
-                    <th>Carrera</th>
                     <th>PDF</th>
                 </tr>
             </thead>
@@ -185,15 +278,14 @@
                 @foreach (var obra in listaObras)
                 {
                     <tr>
-                        <td>@obra.NombreObra</td>
-                        <td>@obra.TiempoMeses</td>
-                        <td>@obra.FechaInicio.ToShortDateString()</td>
-                        <td>@obra.FechaFin?.ToShortDateString()</td>
-                        <td>@obra.NombreCarrera</td>
+                        <td>@obra.IdObra</td>
+                        <td>@obra.TipoObra</td>
+                        <td>@obra.FechaPublicacion.ToShortDateString()</td>
+                        <td>@obra.Documento</td>
                         <td>
-                            @if (obra.Pdf is not null && obra.Pdf.Length > 0)
+                            @if (obra.Documento is not null && obra.Documento.Length > 0)
                             {
-                                <a href="#" @onclick="() => AbrirPdf(obra.Pdf)">Ver PDF</a>
+                                <a href="#" @onclick="() => AbrirPdf(obra.Documento)">Ver PDF</a>
                             }
                             else
                             {
@@ -206,6 +298,40 @@
         </table>
     }
 </div>
+<footer class="footer">
+    <div class="footer-info">
+        <div class="footer-section">
+            <h4><i class="bi bi-info-circle-fill"></i> Sobre Nosotros</h4>
+            <p>Sistema de Promoción para Docentes de la FISEI.<br>Para agilizar trámites.</p>
+        </div>
+        <div class="footer-section">
+            <h4><i class="bi bi-envelope-fill"></i> Contactos</h4>
+            <p>support@correo.com<br>+593 99 234 56789</p>
+        </div>
+        <div class="footer-section">
+            <h4><i class="bi bi-link-45deg"></i> Enlaces Rápidos</h4>
+            <NavLink href="/inicio"><i class="bi bi-house-fill"></i> Inicio</NavLink><br />
+            <NavLink href="/promocion"><i class="bi bi-bar-chart-line-fill"></i> Promoción</NavLink><br />
+            <NavLink href="/exportar"><i class="bi bi-backpack4"></i>Exportar Datos</NavLink><br />
+            <NavLink href="/perfil"><i class="bi bi-person-fill"></i> Perfil</NavLink>
+        </div>
+    </div>
+    <p class="copyright">© 2025 Sistema de Promoción, Todos los Derechos Reservados</p>
+</footer>
+
+<script>
+    function openPdf(base64) {
+        const byteCharacters = atob(base64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, '_blank');
+    }
+</script>
 
 @code {
     private string tablaSeleccionada = string.Empty;
@@ -217,7 +343,7 @@
 
     private List<Investigacion> listaInvestigaciones = new();
     private List<Capacitacione> listaCapacitaciones = new();
-    private List<Obra> listaObras = new();
+    private List<ObraS> listaObras = new();
 
     protected override async Task OnInitializedAsync()
     {
