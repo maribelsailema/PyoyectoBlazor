@@ -14,7 +14,7 @@ namespace Proyecto.Frontend.Services
 
         public async Task<List<ObraS>> ObtenerPorCedulaAsync(string cedula)
         {
-            return await _httpClient.GetFromJsonAsync<List<ObraS>>($"api/Obra/por-cedula/{cedula}");
+            return await _httpClient.GetFromJsonAsync<List<ObraS>>($"api/Obra/buscar/{cedula}");
         }
 
         public async Task<ObraS> GuardarObraAsync(ObraS obra)
