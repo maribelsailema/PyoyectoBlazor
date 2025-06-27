@@ -15,5 +15,7 @@ public partial class Obra
 
     public byte[]? Pdf { get; set; }
 
+    public Carrera Carrera { get; set; }
+
     public virtual Usuario CedulaNavigation { get; set; } = null!;
 }

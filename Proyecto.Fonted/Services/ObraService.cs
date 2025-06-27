@@ -1,25 +1,41 @@
-﻿using Proyecto.Backend.Domain.Entities.Models;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using Proyecto.Shared.Models;
 
-public class ObraService
+namespace Proyecto.Frontend.Services
 {
-    private readonly HttpClient _http;
-    public ObraService(HttpClient http) => _http = http;
-
-    public async Task<List<Obra>> ObtenerPorCedulaAsync(string cedula)
+    public class ObraService
     {
-        var resp = await _http.GetAsync($"api/Obras/buscar/{cedula}");
-        return resp.IsSuccessStatusCode
-            ? await resp.Content.ReadFromJsonAsync<List<Obra>>() ?? new List<Obra>()
-            : new List<Obra>();
-    }
+        private readonly HttpClient _httpClient;
 
-    public async Task<Obra?> GuardarObraAsync(Obra obra)
-    {
-        var resp = await _http.PostAsJsonAsync("api/Obras", obra);
-        return resp.IsSuccessStatusCode
-            ? await resp.Content.ReadFromJsonAsync<Obra>()
-            : null;
+        public ObraService(HttpClient httpClient)
+        {
+            _httpClient = httpClient;
+        }
+
+        public async Task<List<ObraS>> ObtenerPorCedulaAsync(string cedula)
+        {
+            return await _httpClient.GetFromJsonAsync<List<ObraS>>($"api/Obra/por-cedula/{cedula}");
+        }
+
+        public async Task<ObraS> GuardarObraAsync(ObraS obra)
+        {
+            var response = await _httpClient.PostAsJsonAsync("api/Obra", obra);
+            return await response.Content.ReadFromJsonAsync<ObraS>();
+        }
+
+        public async Task ActualizarObraAsync(ObraS obra)
+        {
+            await _httpClient.PutAsJsonAsync($"api/Obra/{obra.IdObra}", obra);
+        }
+
+        public async Task EliminarObraAsync(int id)
+        {
+            await _httpClient.DeleteAsync($"api/Obra/{id}");
+        }
+
+        public async Task<List<Carrera>> ObtenerCarrerasAsync()
+        {
+            return await _httpClient.GetFromJsonAsync<List<Carrera>>("api/Carrera");
+        }
     }
 }

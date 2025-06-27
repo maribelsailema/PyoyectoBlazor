@@ -1,275 +1,715 @@
 ﻿@page "/exportar"
 @using Proyecto.Fonted.Services
 @using Proyecto.Frontend.Services
+@inject InvestigacionService investigacionService
+@using Proyecto.Shared
 @using Proyecto.Shared.Models
 @inject IJSRuntime JS
-@inject InvestigacionService investigacionService
 @inject CarreraService carreraService
 @inject ObraService obraService
 
+
 <style>
-    /* Estilos simplificados */
+    /* Estilos específicos para la página de exportación */
     .export-container {
-        max-width: 1200px;
-        margin: 20px auto;
-        padding: 0 15px;
+    max-width: 1200px;
+    margin: var(--spacing-xl) auto;
+    padding: 0 var(--spacing-md);
     }
 
     .export-title {
-        color: #2c3e50;
-        margin-bottom: 20px;
-        font-size: 1.8rem;
-        font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-lg);
+    font-size: 1.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    }
+
+    .export-card {
+    background-color: var(--card-bg-color);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
+    }
+
+    .export-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    }
+
+    .filter-group {
+    margin-bottom: var(--spacing-md);
+    }
+
+    .filter-label {
+    display: block;
+    margin-bottom: var(--spacing-xs);
+    font-weight: 500;
+    color: var(--dark-text-color);
     }
 
     .form-select, .form-control {
-        width: 100%;
-        padding: 8px 12px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    font-size: 1rem;
+    transition: var(--transition-normal);
+    background-color: var(--light-bg-color);
+    }
+
+    .form-select:focus, .form-control:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 4px rgba(41, 128, 185, 0.2);
+    outline: none;
+    background-color: var(--card-bg-color);
+    }
+
+    .export-button {
+    display: flex;
+    align-items: flex-end;
+    }
+
+    .btn {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: none;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: var(--transition-normal);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    text-decoration: none;
+    box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary {
+    background-color: var(--secondary-color);
+    color: white;
+    }
+
+    .btn-primary:hover {
+    background-color: darken(var(--secondary-color), 8%);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    }
+
+    .additional-filters {
+    background-color: var(--light-bg-color);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+    }
+
+    .filter-section h6 {
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-md);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    }
+
+    .filter-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+    }
+
+    .filter-item {
+    margin-bottom: var(--spacing-sm);
+    }
+
+    /* Ocultar filtros específicos inicialmente */
+    .usuario-filters, .evaluacion-filters {
+    display: none;
+    }
+
+    /* Mostrar filtros según la selección (esto se manejaría con JS) */
+    select.form-select[value="Usuarios"] ~ .additional-filters .usuario-filters {
+    display: grid;
+    }
+
+    select.form-select[value="EvaluacionesDocentes"] ~ .additional-filters .evaluacion-filters {
+    display: grid;
     }
 </style>
 
-<h3>Exportar Datos</h3>
+<header class="navbar">
+    <div class="navbar-left">
+        <h3>Bienvenido</h3>
+    </div>
+    <nav class="navbar-right nav-links">
+        <NavLink href="/inicio" class="nav-item">
+            <i class="bi bi-house-fill"></i> Inicio
+        </NavLink>
+        <NavLink href="/promocion" class="nav-item">
+            <i class="bi bi-bar-chart-line-fill"></i> Promoción
+        </NavLink>
+        <NavLink href="/perfil" class="nav-item">
+            <i class="bi bi-person-fill"></i> Perfil
+        </NavLink>
+        <NavLink href="/exportar" class="nav-item active">
+            <i class="bi bi-download"></i> Exportar
+        </NavLink>
+        <NavLink href="/" class="nav-item cerrar-sesion">
+            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+        </NavLink>
+    </nav>
+</header>
 
-<div class="mb-3">
-    <label>Tabla:</label>
-    <select @bind="tablaSeleccionada" class="form-select d-inline-block w-auto">
-        <option value="">-- seleccione --</option>
-        <option value="Investigaciones">Investigaciones</option>
-        <option value="Obras">Obras</option>
-    </select>
+<div class="export-container">
+    <h3 class="export-title"><i class="bi bi-download"></i> Exportar Datos</h3>
 
-    <button class="btn btn-primary ms-2" @onclick="AbrirModalImportar" disabled="@(string.IsNullOrEmpty(tablaSeleccionada))">
-        Importar
-    </button>
-    <button class="btn btn-secondary ms-2" @onclick="AbrirModalAgregar" disabled="@(string.IsNullOrEmpty(tablaSeleccionada))">
-        Agregar
-    </button>
-</div>
+    <div class="export-card">
+        <div class="export-filters">
+            <!-- Selector de Tabla -->
+            <div class="filter-group">
+                <label class="filter-label">Tabla a Importar</label>
+                <select class="form-select" @bind="tablaSeleccionada">
+                    <option value="">Seleccione una tabla</option>
+                    <option value="Usuarios">Usuarios</option>
+                    <option value="EvaluacionesDocentes">Evaluaciones Docentes</option>
+                    <option value="Capacitaciones">Capacitaciones</option>
+                    <option value="Obras">Obras</option>
+                    <option value="Investigaciones">Investigaciones</option>
+                </select>
+            </div>
 
-@if (!string.IsNullOrEmpty(mensaje))
-{
-    <div class="alert alert-warning">@mensaje</div>
-}
-
-@if (mostrarRegistros)
-{
-    <h5>@tablaSeleccionada</h5>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                @if (tablaSeleccionada == "Investigaciones")
-                {
-                    <th>Título</th>
-                    <th>Tiempo</th>
-                    <th>Fechas</th>
-                    <th>PDF</th>
-                }
-                else
-                {
-                    <th>Tipo</th>
-                    <th>Fecha</th>
-                    <th>PDF</th>
-                }
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var reg in registros)
+            @if (!string.IsNullOrEmpty(mensaje))
             {
-                <tr>
-                    <Component1 />  
-                </tr>
+                <div class="alert alert-warning mt-2">@mensaje</div>
             }
-        </tbody>
-    </table>
+
+            <!-- Botón de Exportación -->
+            <div class="export-button">
+                <button class="btn btn-primary" @onclick="ImportarDatos">
+                    <i class="bi bi-download"></i> Importar
+                   
+                </button>
+                
+
+            </div>
+
+        </div>
+
+         @if (mostrarFormulario)
+{
+    <EditForm Model="@nuevaInvestigacion" OnValidSubmit="GuardarNuevaInvestigacion">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="row mb-3">
+            <div class="col">
+                <label>Título del Proyecto</label>
+                <InputText class="form-control" @bind-Value="nuevaInvestigacion.NombreProyecto" />
+            </div>
+            <div class="col">
+    <label>Carrera</label>
+    <select class="form-select" @bind="nuevaInvestigacion.IdCarrera">
+        <option value="">Seleccione una carrera</option>
+        @foreach (var carrera in listaCarreras)
+        {
+            <option value="@carrera.IdCarrera">@carrera.Nombre</option>
+        }
+    </select>
+    <ValidationMessage For="@(() => nuevaInvestigacion.IdCarrera)" />
+</div> 
+        </div>
+                <div class="row mb-3">
+                    <div class="col">
+                        <label>Fecha de Inicio</label>
+                        <InputDate class="form-control"
+                                   @bind-Value="nuevaInvestigacion.FechaInicio"
+                                   @onchange="CalcularTiempoMeses" />
+                    </div>
+                    <div class="col">
+                        <label>Fecha de Fin</label>
+                        <InputDate class="form-control"
+                                   @bind-Value="nuevaInvestigacion.FechaFin"
+                                   @onchange="CalcularTiempoMeses" />
+                    </div>
+                </div>
+
+
+               <div class="col">
+    <label>Duración (meses)</label>
+    <InputNumber class="form-control"
+                 @bind-Value="nuevaInvestigacion.TiempoMeses"
+                 min="0" />
+    <ValidationMessage For="@(() => nuevaInvestigacion.TiempoMeses)" />
+</div>
+
+
+
+
+
+
+        <div class="mb-3">
+            <label>Subir PDF</label>
+            <InputFile OnChange="SubirPDF" />
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-circle"></i> Guardar
+            </button>
+            <button type="button" class="btn btn-secondary" @onclick="CerrarFormulario">
+                <i class="bi bi-x-circle"></i> Cancelar
+            </button>
+        </div>
+    </EditForm>
 }
 
-<!-- Modal Importar -->
-<div class="modal fade" tabindex="-1" id="modalImportar">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5>Importar @tablaSeleccionada</h5>
-                <button type="button" class="btn-close" @onclick="CerrarModalImportar"></button>
-            </div>
-            <div class="modal-body">
-                <p>¿Desea cargar los registros?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" @onclick="CerrarModalImportar">Cancelar</button>
-                <button type="button" class="btn btn-primary" @onclick="ConfirmarImportar">Cargar</button>
+<br /> 
+<br />
+        @if (mostrarInvestigaciones)
+        {
+            <div class="mb-3">
+    <button class="btn btn-success" @onclick="MostrarFormulario">
+        <i class="bi bi-plus-circle"></i> Agregar Investigación
+    </button>
+</div>
+
+            <h4>Investigaciones</h4>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Tiempo</th>
+                        <th>Fecha Inicio</th>
+                        <th>Fecha Fin</th>
+                        <th>PDF</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var inv in listaInvestigaciones)
+                    {
+                        <tr>
+                            <td>@inv.NombreProyecto</td>
+                            <td>@inv.TiempoMeses</td>
+                            <td>@inv.FechaInicio</td>
+                            <td>@inv.FechaFin</td>
+                            <td>@inv.NombreCarrera</td>
+
+
+                            <td>
+
+                                @if (inv.Pdf != null && inv.Pdf.Length > 0)
+                                {
+                                    <a href="#" onclick="openPdf('@Convert.ToBase64String(inv.Pdf)'); return false;"
+                                       style="cursor:pointer; color:blue; text-decoration:underline;">
+                                        Ver PDF
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Sin PDF</span>
+                                }
+                            </td>
+
+                            
+
+<ValidationMessage For="@(() => nuevaInvestigacion.IdCarrera)" />
+                            <td>
+                            
+                                <button class="btn btn-warning btn-sm" @onclick="() => EditarInvestigacion(inv)">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </button>
+                            </td>
+
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+       
+
+
+
+
+
+        <!-- Filtros Adicionales -->
+        <div class="additional-filters">
+            <div class="filter-section">
+                <h6><i class="bi bi-funnel"></i> Filtros Adicionales</h6>
+
+                <!-- Filtros para Usuarios -->
+                <div class="filter-row usuario-filters">
+                    <div class="filter-item">
+                        <label class="filter-label">Tipo de Usuario</label>
+                        <select class="form-select">
+                            <option value="">Todos</option>
+                            <option value="admin">Administradores</option>
+                            <option value="docente">Docentes</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label class="filter-label">Fecha Desde</label>
+                        <input type="date" class="form-control">
+                    </div>
+
+                    <div class="filter-item">
+                        <label class="filter-label">Fecha Hasta</label>
+                        <input type="date" class="form-control">
+                    </div>
+                </div>
+
+                <!-- Filtros para Evaluaciones -->
+                <div class="filter-row evaluacion-filters">
+                    <div class="filter-item">
+                        <label class="filter-label">Período</label>
+                        <input type="text" class="form-control" placeholder="Ej: 2023-1">
+                    </div>
+
+                    <div class="filter-item">
+                        <label class="filter-label">Puntaje Mínimo</label>
+                        <input type="number" step="0.01" class="form-control">
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal Agregar -->
-<div class="modal fade" tabindex="-1" id="modalAgregar">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5>Agregar @tablaSeleccionada</h5>
-                <button type="button" class="btn-close" @onclick="CerrarModalAgregar"></button>
-            </div>
-            <div class="modal-body">
-                @if (tablaSeleccionada == "Investigaciones")
-                {
-                    <EditForm Model="modeloNuevoInv" OnValidSubmit="GuardarInvestigacion">
-                        <InputText @bind-Value="modeloNuevoInv.NombreProyecto" placeholder="Título" class="form-control mb-2" />
-                        <InputDate @bind-Value="modeloNuevoInv.FechaInicio" class="form-control mb-2" />
-                        <InputDate @bind-Value="modeloNuevoInv.FechaFin" class="form-control mb-2" />
-                        <InputFile OnChange="HandlePdfNuevoInv" class="form-control mb-2" />
-                    </EditForm>
-                }
-                else
-                {
-                    <EditForm Model="modeloNuevaObra" OnValidSubmit="GuardarObra">
-                        <InputText @bind-Value="modeloNuevaObra.TipoObra" placeholder="Tipo de obra" class="form-control mb-2" />
-                        <InputDate @bind-Value="modeloNuevaObra.Fecha" class="form-control mb-2" />
-                        <InputFile OnChange="HandlePdfNuevaObra" class="form-control mb-2" />
-                    </EditForm>
-                }
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" @onclick="CerrarModalAgregar">Cancelar</button>
-                <button type="button" class="btn btn-primary" @onclick="GuardarNuevoRegistro">Guardar</button>
-            </div>
+<footer class="footer">
+    <div class="footer-info">
+        <div class="footer-section">
+            <h4><i class="bi bi-info-circle-fill"></i> Sobre Nosotros</h4>
+            <p>Sistema de Promoción para Docentes de la FISEI.<br>Para agilizar trámites.</p>
+        </div>
+        <div class="footer-section">
+            <h4><i class="bi bi-envelope-fill"></i> Contactos</h4>
+            <p>support@correo.com<br>+593 99 234 56789</p>
+        </div>
+        <div class="footer-section">
+            <h4><i class="bi bi-link-45deg"></i> Enlaces Rápidos</h4>
+            <NavLink href="/inicio"><i class="bi bi-house-fill"></i> Inicio</NavLink><br />
+            <NavLink href="/promocion"><i class="bi bi-bar-chart-line-fill"></i> Promoción</NavLink><br />
+            <NavLink href="/exportar"><i class="bi bi-backpack4"></i>Exportar Datos</NavLink><br />
+            <NavLink href="/perfil"><i class="bi bi-person-fill"></i> Perfil</NavLink>
         </div>
     </div>
-</div>
+    <p class="copyright">© 2025 Sistema de Promoción, Todos los Derechos Reservados</p>
+</footer>
+<script>
+    function openPdf(base64) {
+        const byteCharacters = atob(base64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, '_blank');
+    }
+</script>
+
 
 @code {
+    private List<Investigacion> listaInvestigaciones = new();
+    private bool mostrarInvestigaciones = false;
     private string tablaSeleccionada = "";
-    private string mensaje = "";
-    private bool mostrarRegistros = false;
-    private List<object> registros = new();
+    private string mensaje = " ";
 
-    private Investigacion modeloNuevoInv = new();
-    private IBrowserFile? pdfNuevoInv;
+    private Investigacion nuevaInvestigacion = new();
+    private IBrowserFile? archivoPDF;
+    private bool mostrarFormulario = false;
 
-    private Obra modeloNuevaObra = new();
-    private IBrowserFile? pdfNuevaObra;
+    private bool modoEdicion = false;
+    private DateTime fechaInicioTemp;
+    private DateTime? fechaFinTemp;
 
-    private async Task AbrirModalImportar()
+    public async Task ImportarDatos()
+{
+    mensaje = "";
+
+    if (string.IsNullOrEmpty(tablaSeleccionada))
     {
-        await JS.InvokeVoidAsync("eval", "new bootstrap.Modal(document.getElementById('modalImportar')).show()");
+        mensaje = "Por favor seleccione una tabla antes de importar.";
+        return;
     }
 
-    private async Task CerrarModalImportar()
+    var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+    
+    if (string.IsNullOrEmpty(cedula))
     {
-        await JS.InvokeVoidAsync("eval", "new bootstrap.Modal(document.getElementById('modalImportar')).hide()");
+        mensaje = "No se pudo obtener la cédula del usuario.";
+        return;
     }
 
-    private async Task AbrirModalAgregar()
+    switch (tablaSeleccionada)
     {
-        await JS.InvokeVoidAsync("eval", "new bootstrap.Modal(document.getElementById('modalAgregar')).show()");
+        case "Investigaciones":
+            listaInvestigaciones = await investigacionService.ObtenerPorCedulaAsync(cedula);
+            mostrarInvestigaciones = true;
+            mostrarObras = false;
+            break;
+            
+        case "Obras":
+            listaObras = await obraService.ObtenerPorCedulaAsync(cedula);
+            mostrarObras = true;
+            mostrarInvestigaciones = false;
+            break;
+            
+        default:
+            mostrarInvestigaciones = false;
+            mostrarObras = false;
+            mensaje = $"La tabla {tablaSeleccionada} aún no está implementada.";
+            break;
+    }
+}
+
+    private async Task MostrarFormulario()
+    {
+        nuevaInvestigacion = new Investigacion();
+        mostrarFormulario = true;
     }
 
-    private async Task CerrarModalAgregar()
+    private void CerrarFormulario()
     {
-        await JS.InvokeVoidAsync("eval", "new bootstrap.Modal(document.getElementById('modalAgregar')).hide()");
+        mostrarFormulario = false;
     }
 
-    private async Task ConfirmarImportar()
+    private async Task SubirPDF(InputFileChangeEventArgs e)
     {
-        await CerrarModalImportar();
-        await CargarRegistros();
+        archivoPDF = e.File;
     }
 
-    private async Task CargarRegistros()
+    private async Task GuardarNuevaInvestigacion()
     {
         try
         {
-            mostrarRegistros = true;
-            registros.Clear();
+            nuevaInvestigacion.Cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
 
-            var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
-
-            if (tablaSeleccionada == "Investigaciones")
+            // Procesar archivo PDF si es nuevo
+            if (archivoPDF is not null)
             {
-                var investigaciones = await investigacionService.ObtenerPorCedulaAsync(cedula);
-                registros.AddRange(investigaciones.Cast<object>());
+                using var stream = archivoPDF.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+                using var memory = new MemoryStream();
+                await stream.CopyToAsync(memory);
+                nuevaInvestigacion.Pdf = memory.ToArray();
+            }
+
+            if (modoEdicion)
+            {
+                await investigacionService.ActualizarInvestigacionAsync(nuevaInvestigacion);
+                mensaje = "Investigación actualizada correctamente.";
             }
             else
             {
-                var obras = await obraService.ObtenerPorCedulaAsync(cedula);
-                registros.AddRange(obras.Cast<object>());
+                var resultado = await investigacionService.GuardarInvestigacionAsync(nuevaInvestigacion);
+                if (resultado != null)
+                {
+                    nuevaInvestigacion = resultado; //Aquí ya tiene el IdInv real
+                }
+
+                mensaje = "Investigación guardada correctamente.";
             }
+
+            mostrarFormulario = false;
+            modoEdicion = false;
+            archivoPDF = null;
+
+            listaInvestigaciones = await investigacionService.ObtenerPorCedulaAsync(nuevaInvestigacion.Cedula);
+            modoEdicion = false;
+            mostrarFormulario = false;
+
         }
         catch (Exception ex)
         {
-            mensaje = $"Error al cargar registros: {ex.Message}";
+            mensaje = $"Error detallado: {ex.Message}";
         }
     }
 
-    private async Task GuardarNuevoRegistro()
+
+    private List<Carrera> listaCarreras = new();
+
+    protected override async Task OnInitializedAsync()
     {
-        if (tablaSeleccionada == "Investigaciones")
+        listaCarreras = await carreraService.ObtenerCarrerasAsync();
+    }
+
+    
+    private async Task AbrirPdf(byte[]? pdf)
+    {
+        if (pdf != null && pdf.Length > 0)
         {
-            await GuardarInvestigacion();
+            string base64 = Convert.ToBase64String(pdf);
+            await JS.InvokeVoidAsync("openPdfFromBase64", base64);
+        }
+    }
+
+    
+    private void OnFechaInicioChanged(DateTime value)
+    {
+        nuevaInvestigacion.FechaInicio = value;
+        CalcularTiempoMeses();
+    }
+
+    private void OnFechaFinChanged(DateTime? nuevaFechaFin)
+    {
+        nuevaInvestigacion.FechaFin = nuevaFechaFin;
+        CalcularTiempoMeses();
+    }
+
+
+    private void CalcularTiempoMeses()
+    {
+        if (nuevaInvestigacion.FechaFin.HasValue && nuevaInvestigacion.FechaInicio != default)
+        {
+            var inicio = nuevaInvestigacion.FechaInicio;
+            var fin = nuevaInvestigacion.FechaFin.Value;
+
+            if (fin >= inicio)
+            {
+                int meses = ((fin.Year - inicio.Year) * 12) + (fin.Month - inicio.Month);
+                if (fin.Day >= inicio.Day)
+                    meses++;
+
+                nuevaInvestigacion.TiempoMeses = meses;
+            }
+            else
+            {
+                nuevaInvestigacion.TiempoMeses = 0;
+            }
         }
         else
         {
-            await GuardarObra();
+            nuevaInvestigacion.TiempoMeses = 0;
         }
-        await CerrarModalAgregar();
-        await CargarRegistros();
     }
 
-    private async Task HandlePdfNuevoInv(InputFileChangeEventArgs e)
+    private void EditarInvestigacion(Investigacion inv)
     {
-        pdfNuevoInv = e.File;
-        using var stream = e.File.OpenReadStream();
-        using var memoryStream = new MemoryStream();
-        await stream.CopyToAsync(memoryStream);
-        modeloNuevoInv.Pdf = memoryStream.ToArray();
+        nuevaInvestigacion = new Investigacion
+            {
+                IdInv = inv.IdInv,
+                Cedula = inv.Cedula,
+                NombreProyecto = inv.NombreProyecto,
+                TiempoMeses = inv.TiempoMeses,
+                FechaInicio = inv.FechaInicio,
+                FechaFin = inv.FechaFin,
+                IdCarrera = inv.IdCarrera,
+                Pdf = inv.Pdf
+            };
+
+        mostrarFormulario = true;
+        modoEdicion = true;
     }
 
-    private async Task HandlePdfNuevaObra(InputFileChangeEventArgs e)
-    {
-        pdfNuevaObra = e.File;
-        using var stream = e.File.OpenReadStream();
-        using var memoryStream = new MemoryStream();
-        await stream.CopyToAsync(memoryStream);
-        modeloNuevaObra.Pdf = memoryStream.ToArray();
-    }
+    <!--Obras-->
+    // Variables para Obras
+private List<ObraS> listaObras = new();
+private bool mostrarObras = false;
+private ObraS nuevaObra = new();
+private bool mostrarFormularioObra = false;
+private bool modoEdicionObra = false;
+private IBrowserFile? archivoObra;
+private string nombreArchivoObra = string.Empty;
 
-    private async Task GuardarInvestigacion()
+
+// Métodos para Obras
+private async Task MostrarFormularioObra()
+{
+    nuevaObra = new ObraS();
+    mostrarFormularioObra = true;
+    modoEdicionObra = false;
+    nombreArchivoObra = string.Empty;
+}
+
+private void CerrarFormularioObra()
+{
+    mostrarFormularioObra = false;
+    archivoObra = null;
+}
+
+private async Task SubirDocumentoObra(InputFileChangeEventArgs e)
+{
+    archivoObra = e.File;
+    nombreArchivoObra = archivoObra.Name;
+    
+    using var stream = archivoObra.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+    using var memoryStream = new MemoryStream();
+    await stream.CopyToAsync(memoryStream);
+    nuevaObra.Documento = memoryStream.ToArray();
+    nuevaObra.NombreArchivo = nombreArchivoObra;
+}
+
+private async Task GuardarNuevaObra()
+{
+    try
     {
-        try
+        nuevaObra.Cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+        
+        if (modoEdicionObra)
         {
-            modeloNuevoInv.Cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
-            await investigacionService.GuardarInvestigacionAsync(modeloNuevoInv);
-            mensaje = "Investigación guardada";
-            modeloNuevoInv = new();
-            pdfNuevoInv = null;
+            await obraService.ActualizarObraAsync(nuevaObra);
+            mensaje = "Obra actualizada correctamente.";
         }
-        catch (Exception ex)
+        else
         {
-            mensaje = $"Error al guardar investigación: {ex.Message}";
+            var resultado = await obraService.GuardarObraAsync(nuevaObra);
+            if (resultado != null)
+            {
+                nuevaObra = resultado;
+            }
+            mensaje = "Obra guardada correctamente.";
         }
+        
+        listaObras = await obraService.ObtenerPorCedulaAsync(nuevaObra.Cedula);
+        mostrarFormularioObra = false;
+        modoEdicionObra = false;
+        archivoObra = null;
+        nombreArchivoObra = string.Empty;
     }
-
-    private async Task GuardarObra()
+    catch (Exception ex)
     {
-        try
-        {
-            modeloNuevaObra.Cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
-            await obraService.GuardarObraAsync(modeloNuevaObra);
-            mensaje = "Obra guardada";
-            modeloNuevaObra = new();
-            pdfNuevaObra = null;
-        }
-        catch (Exception ex)
-        {
-            mensaje = $"Error al guardar obra: {ex.Message}";
-        }
+        mensaje = $"Error al guardar la obra: {ex.Message}";
     }
+}
 
-    private async Task VerPdf(byte[] pdf)
+private void EditarObra(ObraS obra)
+{
+    nuevaObra = new ObraS
     {
-        var base64 = Convert.ToBase64String(pdf);
-        await JS.InvokeVoidAsync("window.open", $"data:application/pdf;base64,{base64}", "_blank");
+        IdObra = obra.IdObra,
+        Cedula = obra.Cedula,
+        Titulo = obra.Titulo,
+        TipoObra = obra.TipoObra,
+        FechaPublicacion = obra.FechaPublicacion,
+        Editorial = obra.Editorial,
+        ISBN = obra.ISBN,
+        DOI = obra.DOI,
+        Documento = obra.Documento,
+        NombreArchivo = obra.NombreArchivo,
+        IdCarrera = obra.IdCarrera
+    };
+    
+    nombreArchivoObra = obra.NombreArchivo ?? "Documento cargado";
+    mostrarFormularioObra = true;
+    modoEdicionObra = true;
+}
+
+private async Task AbrirDocumento(byte[] documento)
+{
+    if (documento != null && documento.Length > 0)
+    {
+        var base64 = Convert.ToBase64String(documento);
+        await JS.InvokeVoidAsync("openPdfFromBase64", base64);
     }
+}
+
+  
 }
