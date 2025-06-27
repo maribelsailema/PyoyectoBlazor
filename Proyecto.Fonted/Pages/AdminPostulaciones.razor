@@ -17,15 +17,10 @@
             <i class="bi bi-clipboard-check-fill"></i> Ver Postulantes
         </NavLink>
 
-        <NavLink href="/reportes" class="nav-item">
+        <NavLink href="/reportes-admin" class="nav-item">
             <i class="bi bi-bar-chart-line-fill"></i> Reportes
         </NavLink>
-        <NavLink href="/gestion-bd" class="nav-item">
-            <i class="bi bi-database-fill-gear"></i> Gestión de BD
-        </NavLink>
-        <NavLink href="/importar-bd" class="nav-item">
-            <i class="bi bi-upload"></i> Importar BD
-        </NavLink>
+
         <NavLink href="/" class="nav-item cerrar-sesion">
             <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
         </NavLink>
@@ -130,9 +125,8 @@
         <div class="footer-section">
             <h4><i class="bi bi-link-45deg"></i> Accesos Rápidos</h4>
             <NavLink href="/verificar"><i class="bi bi-clipboard-check-fill"></i> Verificación</NavLink><br />
-            <NavLink href="/reportes"><i class="bi bi-bar-chart-line-fill"></i> Reportes</NavLink><br />
-            <NavLink href="/gestion-bd"><i class="bi bi-database-fill-gear"></i> BD</NavLink><br />
-            <NavLink href="/importar-bd"><i class="bi bi-cloud-arrow-up-fill"></i> Importar</NavLink>
+            <NavLink href="/reportes-admin"><i class="bi bi-bar-chart-line-fill"></i> Reportes</NavLink><br />
+
         </div>
     </div>
     <p class="copyright">© 2025 Sistema de Promoción, Todos los Derechos Reservados</p>
@@ -141,6 +135,8 @@
     private List<PostulacionDto> postulaciones;
     private UsuarioModel usuario = new();
     private bool isLoading = true;
+
+
 
     protected override async Task OnInitializedAsync()
     {
