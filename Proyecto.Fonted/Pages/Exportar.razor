@@ -8,6 +8,8 @@
 @inject IJSRuntime JS
 @inject CarreraService carreraService
 
+@inject CapacitacionesService capacitacionesService  
+
 
 <style>
     /* Estilos específicos para la página de exportación */
@@ -333,7 +335,99 @@
         }
 
        
+         @if (mostrarCapacitaciones)
+{
+    <div class="mb-3">
+        <button class="btn btn-success" @onclick="MostrarFormCap">
+            <i class="bi bi-plus-circle"></i> Agregar Capacitación
+        </button>
+    </div>
+}
 
+@if (mostrarFormCap)
+{
+    <EditForm Model="@nuevaCapacitacion" OnValidSubmit="GuardarCapacitacion">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="row mb-3">
+            <div class="col">
+                <label>Nombre del Curso</label>
+                <InputText class="form-control" @bind-Value="nuevaCapacitacion.NombreCurso" />
+            </div>
+            <div class="col">
+                <label>Duración (horas)</label>
+                <InputNumber class="form-control" @bind-Value="nuevaCapacitacion.DuracionHoras" />
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col">
+                <label>Fecha de Inicio</label>
+               <InputDate TValue="DateTime" @bind-Value="nuevaCapacitacion.FechaInicio" />
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label>Subir PDF</label>
+            <InputFile OnChange="SubirPdfCap" />
+        </div>
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary">
+                <i class="bi bi-check-circle"></i> Guardar
+            </button>
+            <button type="button" class="btn btn-secondary"
+                    @onclick="() => mostrarFormCap = false">
+                <i class="bi bi-x-circle"></i> Cancelar
+            </button>
+        </div>
+    </EditForm>
+}
+
+@if (mostrarCapacitaciones)
+{
+    <h4>Capacitaciones</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Curso</th>
+                <th>Horas</th>
+                <th>Fecha Inicio</th>
+                <th>PDF</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cap in listaCapacitaciones)
+            {
+                <tr>
+                    <td>@cap.NombreCurso</td>
+                    <td>@cap.DuracionHoras</td>
+                    <td>@cap.FechaInicio.ToShortDateString()</td>
+                    <td>
+                        @if (cap.Pdf is not null && cap.Pdf.Length > 0)
+                        {
+                            <a href="#" onclick="openPdf('@Convert.ToBase64String(cap.Pdf)'); return false;">
+                                Ver PDF
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Sin PDF</span>
+                        }
+                    </td>
+                    <td>
+                        <button class="btn btn-warning btn-sm"
+                                @onclick="() => EditarCapacitacion(cap)">
+                            <i class="bi bi-pencil"></i> Editar
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 
 
 
@@ -430,6 +524,87 @@
     private bool modoEdicion = false;
     private DateTime fechaInicioTemp;
     private DateTime? fechaFinTemp;
+      // ————— Capacitaciones —————
+private List<Capacitacione> listaCapacitaciones = new();
+private Capacitacione nuevaCapacitacion = new();
+private bool mostrarCapacitaciones = false;
+private bool mostrarFormCap = false;
+private bool modoEdicionCap = false;
+private IBrowserFile? archivoPDFCap;
+
+//capacitaciones
+private string? cedulaUsuario;
+
+// ----- CAPACITACIONES -----
+private void MostrarFormCap()
+{
+    nuevaCapacitacion = new Capacitacione
+    {
+        Cedula = cedulaUsuario ?? string.Empty,
+        FechaInicio = DateTime.Today // Cambiado de DateOnly a DateTime
+    };
+    mostrarFormCap = true;
+    modoEdicionCap = false;
+    archivoPDFCap = null;
+}
+    
+
+
+private async Task SubirPdfCap(InputFileChangeEventArgs e)
+{
+    archivoPDFCap = e.File;
+}
+
+private async Task GuardarCapacitacion()
+{
+    try
+    {
+       
+
+        if (archivoPDFCap is not null)
+        {
+            using var stream = archivoPDFCap.OpenReadStream(10 * 1024 * 1024);
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            nuevaCapacitacion.Pdf = ms.ToArray();
+        }
+
+        if (modoEdicionCap)
+            await capacitacionesService.ActualizarAsync(nuevaCapacitacion);
+        else
+            nuevaCapacitacion =
+                await capacitacionesService.GuardarAsync(nuevaCapacitacion) ?? new Capacitacione();
+
+        listaCapacitaciones =
+            await capacitacionesService.ObtenerPorCedulaAsync(nuevaCapacitacion.Cedula);
+
+        mostrarFormCap = false;
+        modoEdicionCap = false;
+        archivoPDFCap = null;
+    }
+    catch (Exception ex)
+    {
+        mensaje = $"Error: {ex.Message}";
+    }
+}
+
+private void EditarCapacitacion(Capacitacione cap)
+{
+    nuevaCapacitacion = new Capacitacione
+    {
+        IdCap         = cap.IdCap,
+        Cedula        = cap.Cedula,
+        NombreCurso   = cap.NombreCurso,
+        DuracionHoras = cap.DuracionHoras,
+        FechaInicio   = cap.FechaInicio,
+        Pdf           = cap.Pdf
+    };
+
+    mostrarFormCap = true;
+    modoEdicionCap = true;
+}
+
+//capacitaciones
 
     private async Task ImportarDatos()
 
@@ -457,6 +632,22 @@
         {
             mostrarInvestigaciones = false; // Ocultar si no es investigaciones
         }
+
+                if (tablaSeleccionada == "Capacitaciones")//capacitaciones
+{
+    var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+    if (!string.IsNullOrEmpty(cedula))
+    {
+        listaCapacitaciones = await capacitacionesService.ObtenerPorCedulaAsync(cedula);
+        mostrarCapacitaciones = true;
+    }
+}
+else
+{
+    mostrarCapacitaciones = false;
+}
+
+
     }
 
     private async Task MostrarFormulario()
@@ -527,6 +718,8 @@
     protected override async Task OnInitializedAsync()
     {
         listaCarreras = await carreraService.ObtenerCarrerasAsync();
+            cedulaUsuario = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+
     }
 
     
