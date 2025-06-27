@@ -29,6 +29,7 @@ namespace Proyecto.Fonted
             builder.Services.AddScoped<InvestigacionService>();
             builder.Services.AddScoped<CarreraService>();
             builder.Services.AddScoped<CapacitacionesService>();
+            builder.Services.AddScoped<ObraService>();
 
 
             await builder.Build().RunAsync();
