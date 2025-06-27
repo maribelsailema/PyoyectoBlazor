@@ -340,7 +340,6 @@
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>Título</th>
                 <th>Tipo</th>
                 <th>Fecha</th>
                 <th>Archivo</th>
@@ -351,7 +350,6 @@
             @foreach (var obra in listaObras)
             {
                 <tr>
-                    <td>@obra.Titulo</td>
                     <td>@obra.TipoObra</td>
                     <td>@obra.FechaPublicacion.ToShortDateString()</td>
                     <td>
@@ -383,12 +381,6 @@
     <EditForm Model="@nuevaObra" OnValidSubmit="GuardarNuevaObra">
         <DataAnnotationsValidator />
         <ValidationSummary />
-
-        <div class="mb-3">
-            <label>Título</label>
-            <InputText class="form-control" @bind-Value="nuevaObra.Titulo" />
-        </div>
-
         <div class="mb-3">
             <label>Tipo de Obra</label>
             <InputText class="form-control" @bind-Value="nuevaObra.TipoObra" />
