@@ -32,4 +32,8 @@ public partial class Usuario
     public virtual ICollection<Obra> Obras { get; set; } = new List<Obra>();
 
     public virtual ICollection<RolesDocente> RolesDocentes { get; set; } = new List<RolesDocente>();
+
+    //añadido para postulantes 
+    public virtual ICollection<SolicitudAscenso> SolicitudesAscenso { get; set; } = new List<SolicitudAscenso>();
+
 }

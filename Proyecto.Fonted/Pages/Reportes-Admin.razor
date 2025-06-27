@@ -1,5 +1,381 @@
-﻿<h3>Reportes_Admin</h3>
+﻿@page "/reportes-admin"
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject IJSRuntime JS
+
+<header class="navbar">
+    <div class="navbar-left">
+        <h3>Bienvenido,(Administrador)</h3>
+    </div>
+    <nav class="navbar-right nav-links">
+        <NavLink href="/inicio-admin" class="nav-item">
+            <i class="bi bi-house-fill"></i> Inicio
+        </NavLink>
+        <NavLink href="/verificar" class="nav-item">
+            <i class="bi bi-clipboard-check-fill"></i> Verificar Requisitos
+        </NavLink>
+        <NavLink href="/reportes-admin" class="nav-item">
+            <i class="bi bi-bar-chart-line-fill"></i> Reportes
+        </NavLink>
+        <NavLink href="/gestion-bd" class="nav-item">
+            <i class="bi bi-database-fill-gear"></i> Gestión de BD
+        </NavLink>
+        <NavLink href="/importar-bd" class="nav-item">
+            <i class="bi bi-upload"></i> Importar BD
+        </NavLink>
+        <NavLink href="/" class="nav-item cerrar-sesion">
+            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+        </NavLink>
+    </nav>
+</header>
+
+<main class="contenido">
+    <div class="reportes-admin">
+
+        <!-- Navegación de Tabs -->
+        <nav class="tabs">
+            <button class="@GetTabClass("reportes")" @onclick="@(() => CambiarTab("reportes"))">📊 Reportes</button>
+            <button class="@GetTabClass("postulantes")" @onclick="@(() => CambiarTab("postulantes"))">📋 Postulantes</button>
+        </nav>
+
+        @if (TabSeleccionado == "reportes")
+        {
+            <h1>Generador de Reportes</h1>
+            <section>
+                <div class="filtros">
+                    <div class="filtro">
+                        <label for="reportType">Tipo de Reporte:</label>
+                        <select id="reportType" @bind="SelectedReportType">
+                            <option value="">Seleccione un tipo</option>
+                            @foreach (var type in ReportTypes)
+                            {
+                                <option value="@type">@type</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="filtro">
+                        <label for="cedulaDocente">Cédula del Docente:</label>
+                        <input type="text" id="cedulaDocente" @bind="CedulaDocente" placeholder="Ingrese cédula del docente" />
+                    </div>
+                    <div class="filtro" style="display:@(SelectedReportType == "Evaluaciones Docentes" ? "block" : "none")">
+                        <label for="periodo">Período:</label>
+                        <input type="text" id="periodo" @bind="SelectedPeriod" placeholder="Ingrese período (ej. 2024-1)" />
+                    </div>
+                </div>
+
+                <div class="acciones">
+                    <button @onclick="GenerateReport" disabled="@(!ValidarFiltros())">Generar Reporte</button>
+                </div>
+            </section>
+
+            <!-- Resultados -->
+            <section class="resultados">
+                <h2>Resultados del Reporte</h2>
+                @if (ReportResults.Any())
+                {
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Docente</th>
+                                <th>Tipo</th>
+                                <th>Detalle</th>
+                                <th>Fecha</th>
+                                <th>Valor/Puntaje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var result in ReportResults)
+                            {
+                                <tr>
+                                    <td>@result.Docente</td>
+                                    <td>@result.Tipo</td>
+                                    <td>@result.Detalle</td>
+                                    <td>@result.Fecha.ToString("yyyy-MM-dd")</td>
+                                    <td>@result.ValorPuntaje</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    <div class="exportar">
+                        <button @onclick="ExportToPdf">📥 Exportar a PDF</button>
+                    </div>
+                }
+                else
+                {
+                    <p>No hay resultados para mostrar. Ajusta los filtros.</p>
+                }
+            </section>
+        }
+
+        @if (TabSeleccionado == "postulantes")
+        {
+            <h1>Gestión de Postulantes</h1>
+            <section class="postulantes">
+                @if (DocentesPostulantes.Any())
+                {
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Cédula</th>
+                                <th>Nombre</th>
+                                <th>Facultad</th>
+                                <th>Carrera</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var docente in DocentesPostulantes)
+                            {
+                                <tr>
+                                    <td>
+                                        <button class="link-button" @onclick="() => VerDetalles(docente.Cedula)">
+                                            @docente.Cedula
+                                        </button>
+                                    </td>
+                                    <td>@docente.NombreCompleto</td>
+                                    <td>@docente.Facultad</td>
+                                    <td>@docente.Carrera</td>
+                                    <td><span class="@GetEstadoColor(docente.EstadoPostulacion)">@docente.EstadoPostulacion</span></td>
+                                    <td>
+                                        <button @onclick="() => ExportResumenPdf(docente.Cedula)">📄 Resumen</button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p>No hay postulantes para mostrar.</p>
+                }
+            </section>
+        }
+
+        @if (MostrarModal && DocenteSeleccionado != null)
+        {
+            <div class="modal-backdrop" @onclick="() => MostrarModal = false"></div>
+            <div class="modal-detalle">
+                <h3>Detalle del Docente</h3>
+                <p><strong>Cédula:</strong> @DocenteSeleccionado.Cedula</p>
+                <p><strong>Nombre:</strong> @DocenteSeleccionado.NombreCompleto</p>
+                <p><strong>Facultad:</strong> @DocenteSeleccionado.Facultad</p>
+                <p><strong>Carrera:</strong> @DocenteSeleccionado.Carrera</p>
+                <p><strong>Estado:</strong> @DocenteSeleccionado.EstadoPostulacion</p>
+
+                <div class="modal-acciones">
+                    <button @onclick="AceptarPostulacion" class="btn-aceptar">✅ Aceptar</button>
+                    <button @onclick="RechazarPostulacion" class="btn-rechazar">❌ Rechazar</button>
+                </div>
+            </div>
+        }
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="footer-info">
+        <div class="footer-section">
+            <h4><i class="bi bi-info-circle-fill"></i> Acerca del Sistema</h4>
+            <p>Módulo administrativo del Sistema de Promoción Docente FISEI.</p>
+        </div>
+        <div class="footer-section">
+            <h4><i class="bi bi-envelope-fill"></i> Soporte Técnico</h4>
+            <p>admin@fisei.edu.ec<br>+593 98 765 4321</p>
+        </div>
+        <div class="footer-section">
+            <h4><i class="bi bi-link-45deg"></i> Accesos Rápidos</h4>
+            <NavLink href="/verificar"><i class="bi bi-clipboard-check-fill"></i> Verificación</NavLink><br />
+            <NavLink href="/reportes-admin"><i class="bi bi-bar-chart-line-fill"></i> Reportes</NavLink><br />
+            <NavLink href="/gestion-bd"><i class="bi bi-database-fill-gear"></i> BD</NavLink><br />
+            <NavLink href="/importar-bd"><i class="bi bi-cloud-arrow-up-fill"></i> Importar</NavLink>
+        </div>
+    </div>
+    <p class="copyright">© 2025 Sistema de Promoción, Todos los Derechos Reservados</p>
+</footer>
 
 @code {
+    private string SelectedReportType { get; set; } = string.Empty;
+    private string CedulaDocente { get; set; } = string.Empty;
+    private string SelectedPeriod { get; set; } = string.Empty;
 
+    private string TabSeleccionado = "reportes";
+
+    private List<string> ReportTypes { get; set; } = new()
+    {
+        "Evaluaciones Docentes",
+        "Capacitaciones por Docente",
+        "Obras por Docente",
+        "Investigaciones por Docente",
+        "Roles y Antigüedad"
+    };
+
+    private List<ReporteResultado> ReportResults { get; set; } = new();
+
+    private List<DocentePostulanteModel> DocentesPostulantes { get; set; } = new();
+
+    private DocentePostulanteModel? DocenteSeleccionado;
+    private bool MostrarModal = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarPostulantes();
+    }
+
+    private async Task CargarPostulantes()
+    {
+        try
+        {
+            DocentesPostulantes = await Http.GetFromJsonAsync<List<DocentePostulanteModel>>("api/Postulaciones")
+                ?? new List<DocentePostulanteModel>();
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("alert", $"Error cargando postulantes: {ex.Message}");
+            DocentesPostulantes = new List<DocentePostulanteModel>();
+        }
+    }
+
+
+    private void CambiarTab(string tab)
+    {
+        TabSeleccionado = tab;
+    }
+
+    private string GetTabClass(string tab) =>
+        TabSeleccionado == tab ? "tab-active" : "";
+
+    private bool ValidarFiltros()
+    {
+        if (string.IsNullOrWhiteSpace(SelectedReportType) || string.IsNullOrWhiteSpace(CedulaDocente))
+            return false;
+        if (SelectedReportType == "Evaluaciones Docentes" && string.IsNullOrWhiteSpace(SelectedPeriod))
+            return false;
+        return true;
+    }
+
+    private async Task GenerateReport()
+    {
+        ReportResults.Clear();
+
+        try
+        {
+            switch (SelectedReportType)
+            {
+                case "Evaluaciones Docentes":
+                    if (string.IsNullOrWhiteSpace(SelectedPeriod)) return;
+                    ReportResults = await Http.GetFromJsonAsync<List<ReporteResultado>>(
+                        $"api/Reportes/Evaluaciones/{CedulaDocente}/{SelectedPeriod}");
+                    break;
+
+                case "Capacitaciones por Docente":
+                    ReportResults = await Http.GetFromJsonAsync<List<ReporteResultado>>(
+                        $"api/Reportes/Capacitaciones/{CedulaDocente}");
+                    break;
+
+                case "Obras por Docente":
+                    ReportResults = await Http.GetFromJsonAsync<List<ReporteResultado>>(
+                        $"api/Reportes/Obras/{CedulaDocente}");
+                    break;
+
+                case "Investigaciones por Docente":
+                    ReportResults = await Http.GetFromJsonAsync<List<ReporteResultado>>(
+                        $"api/Reportes/Investigaciones/{CedulaDocente}");
+                    break;
+
+                case "Roles y Antigüedad":
+                    var rolResult = await Http.GetFromJsonAsync<RolAntiguedad>(
+                        $"api/Reportes/RolYAntiguedad/{CedulaDocente}");
+                    if (rolResult != null)
+                    {
+                        ReportResults.Add(new ReporteResultado
+                        {
+                            Docente = rolResult.Nombre,
+                            Tipo = "Rol y Antigüedad",
+                            Detalle = rolResult.Rol,
+                            Fecha = DateTime.Now,
+                            ValorPuntaje = $"Antigüedad: {rolResult.Antiguedad} años"
+                        });
+                    }
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("alert", $"Error al obtener datos: {ex.Message}");
+        }
+        StateHasChanged();
+    }
+
+    private async Task ExportToPdf()
+    {
+        await JS.InvokeVoidAsync("alert", "Funcionalidad de exportar a PDF no implementada.");
+    }
+
+    private async Task ExportResumenPdf(string cedula)
+    {
+        await JS.InvokeVoidAsync("alert", $"Exportando resumen PDF para cédula: {cedula}");
+    }
+
+    private void VerDetalles(string cedula)
+    {
+        DocenteSeleccionado = DocentesPostulantes.FirstOrDefault(d => d.Cedula == cedula);
+        MostrarModal = true;
+    }
+
+    private async Task AceptarPostulacion()
+    {
+        if (DocenteSeleccionado != null)
+        {
+            await Http.PutAsync($"api/Postulaciones/aceptar/{DocenteSeleccionado.Cedula}", null);
+            DocenteSeleccionado.EstadoPostulacion = "Aceptado";
+            await JS.InvokeVoidAsync("alert", "Postulación aceptada.");
+        }
+        MostrarModal = false;
+        await CargarPostulantes(); // refresca lista
+    }
+
+    private async Task RechazarPostulacion()
+    {
+        if (DocenteSeleccionado != null)
+        {
+            await Http.PutAsync($"api/Postulaciones/rechazar/{DocenteSeleccionado.Cedula}", null);
+            DocenteSeleccionado.EstadoPostulacion = "Rechazado";
+            await JS.InvokeVoidAsync("alert", "Postulación rechazada.");
+        }
+        MostrarModal = false;
+        await CargarPostulantes(); // refresca lista
+    }
+
+    private string GetEstadoColor(string estado) => estado switch
+    {
+        "ACEPTADO" => "estado-aceptado",
+        "RECHAZADO" => "estado-rechazado",
+        _ => "estado-espera"
+    };
+
+    public class DocentePostulanteModel
+    {
+        public string Cedula { get; set; } = string.Empty;
+        public string NombreCompleto { get; set; } = string.Empty;
+        public string Facultad { get; set; } = string.Empty;
+        public string Carrera { get; set; } = string.Empty;
+        public string EstadoPostulacion { get; set; } = "EN ESPERA";
+    }
+
+    public class ReporteResultado
+    {
+        public string Docente { get; set; } = string.Empty;
+        public string Tipo { get; set; } = string.Empty;
+        public string Detalle { get; set; } = string.Empty;
+        public DateTime Fecha { get; set; }
+        public string ValorPuntaje { get; set; } = string.Empty;
+    }
+
+    public class RolAntiguedad
+    {
+        public string Cedula { get; set; } = string.Empty;
+        public string Nombre { get; set; } = string.Empty;
+        public string Rol { get; set; } = string.Empty;
+        public int Antiguedad { get; set; }
+    }
 }

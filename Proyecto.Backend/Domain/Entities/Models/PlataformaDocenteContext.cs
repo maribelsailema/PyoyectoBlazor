@@ -188,4 +188,8 @@ public partial class PlataformaDocenteContext : DbContext
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+    
+    //añadido para ppostulantes 
+    public virtual DbSet<SolicitudAscenso> SolicitudesAscenso { get; set; } = null!;
+
 }
