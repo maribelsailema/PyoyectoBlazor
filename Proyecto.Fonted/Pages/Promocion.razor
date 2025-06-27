@@ -6,6 +6,8 @@
 @inject HttpClient Http
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 
+
+
 <header class="navbar">
     <div class="navbar-left">
         <h3>Promoción Docente</h3>
@@ -83,14 +85,22 @@
                                     <td>
                                         @if (req.CumpleRequisitos)
                                         {
-                                            <button class="btn btn-sm btn-primary" @onclick="Postular">
-                                                <i class="bi bi-send-check"></i> Postular
-                                            </button>
+                                            if (postulacionActual == null || postulacionActual.RolSolicitado != req.HaciaRol)
+                                            {
+                                                <button class="btn btn-sm btn-primary" @onclick="Postular">
+                                                    <i class="bi bi-send-check"></i> Postular
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-info text-dark">Ya postulado</span>
+                                            }
                                         }
                                         else
                                         {
                                             <span class="badge bg-secondary">No disponible</span>
                                         }
+
                                     </td>
                                 </tr>
                             }
@@ -110,20 +120,44 @@
                 var primerRequisito = requisitosPromocion.FirstOrDefault(r => r.DesdeRol == currentRol.Rol);
                 <div class="requirements-info">
                     <h4><i class="bi bi-card-checklist"></i> Tu progreso actual:</h4>
-                    <ul>
-                        <li><strong>Tiempo en el rol:</strong> @currentRol.AniosEnRol años de @primerRequisito.TiempoMinimoAnios requeridos @((currentRol.AniosEnRol >= primerRequisito.TiempoMinimoAnios) ? "✔" : "✖")</li>
-                        <li><strong>Obras publicadas:</strong> @totalObras de @primerRequisito.ObrasMinimas requeridas @((totalObras >= primerRequisito.ObrasMinimas) ? "✔" : "✖")</li>
-                        <li><strong>Puntaje evaluación:</strong> @(ultimaEvaluacion?.PuntajeFinal ?? 0)% de @primerRequisito.PuntajeEvaluacionMinimo requerido @(((ultimaEvaluacion?.PuntajeFinal ?? 0) >= primerRequisito.PuntajeEvaluacionMinimo) ? "✔" : "✖")</li>
-                        <li><strong>Horas capacitación:</strong> @totalHorasCapacitacion de @primerRequisito.HorasCapacitacionMin requeridas @((totalHorasCapacitacion >= primerRequisito.HorasCapacitacionMin) ? "✔" : "✖")</li>
+                    <ul class="list-unstyled ms-3">
+                        <li>
+                            <i class="bi bi-clock-history text-primary me-2"></i>
+                            <strong>Tiempo en el rol:</strong> @currentRol.AniosEnRol años de @primerRequisito.TiempoMinimoAnios requeridos
+                            @(currentRol.AniosEnRol >= primerRequisito.TiempoMinimoAnios ? " ✔" : " ✖")
+                        </li>
+                        <li>
+                            <i class="bi bi-journal-richtext text-success me-2"></i>
+                            <strong>Obras publicadas:</strong> @totalObras de @primerRequisito.ObrasMinimas requeridas
+                            @(totalObras >= primerRequisito.ObrasMinimas ? " ✔" : " ✖")
+                        </li>
+                        <li>
+                            <i class="bi bi-award-fill text-warning me-2"></i>
+                            <strong>Puntaje evaluación:</strong> @(ultimaEvaluacion?.PuntajeFinal ?? 0)% de @primerRequisito.PuntajeEvaluacionMinimo requerido
+                            @(((ultimaEvaluacion?.PuntajeFinal ?? 0) >= primerRequisito.PuntajeEvaluacionMinimo) ? " ✔" : " ✖")
+                        </li>
+                        <li>
+                            <i class="bi bi-person-video2 text-info me-2"></i>
+                            <strong>Horas capacitación:</strong> @totalHorasCapacitacion de @primerRequisito.HorasCapacitacionMin requeridas
+                            @(totalHorasCapacitacion >= primerRequisito.HorasCapacitacionMin ? " ✔" : " ✖")
+                        </li>
                         @if (primerRequisito.MesesInvestigacionMin.HasValue)
                         {
-                            <li><strong>Meses investigación:</strong> @totalMesesInvestigacion de @primerRequisito.MesesInvestigacionMin.Value requeridos @((totalMesesInvestigacion >= primerRequisito.MesesInvestigacionMin.Value) ? "✔" : "✖")</li>
+                            <li>
+                                <i class="bi bi-search text-secondary me-2"></i>
+                                <strong>Meses investigación:</strong> @totalMesesInvestigacion de @primerRequisito.MesesInvestigacionMin.Value requeridos
+                                @(totalMesesInvestigacion >= primerRequisito.MesesInvestigacionMin.Value ? " ✔" : " ✖")
+                            </li>
                         }
                         else
                         {
-                            <li><strong>Meses investigación:</strong> No aplica para este nivel</li>
+                            <li>
+                                <i class="bi bi-dash-circle text-muted me-2"></i>
+                                <strong>Meses investigación:</strong> No aplica para este nivel
+                            </li>
                         }
                     </ul>
+
 
                     @if (postulacionActual == null)
                     {
@@ -143,8 +177,12 @@
                     else
                     {
                         <div class="alert alert-info mt-2">
-                            Ya te has postulado para el rol <strong>@postulacionActual.RolSolicitado</strong>. Estado: <strong>@postulacionActual.Estado</strong>.
+                            Ya te has postulado para el rol
+                            <strong class="ms-1 me-2">@postulacionActual.RolSolicitado</strong>
+                            Estado:
+                            <strong class="ms-1">@postulacionActual.Estado</strong>.
                         </div>
+
                     }
                 </div>
             }
