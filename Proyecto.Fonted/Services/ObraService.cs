@@ -14,7 +14,7 @@ namespace Proyecto.Frontend.Services
 
         public async Task<List<ObraS>> ObtenerPorCedulaAsync(string cedula)
         {
-            return await _httpClient.GetFromJsonAsync<List<ObraS>>($"api/Obra/buscar/{cedula}");
+            return await _httpClient.GetFromJsonAsync<List<ObraS>>($"api/Obra/por-cedula/{cedula}");
         }
 
         public async Task<ObraS> GuardarObraAsync(ObraS obra)
@@ -31,11 +31,6 @@ namespace Proyecto.Frontend.Services
         public async Task EliminarObraAsync(int id)
         {
             await _httpClient.DeleteAsync($"api/Obra/{id}");
-        }
-
-        public async Task<List<Carrera>> ObtenerCarrerasAsync()
-        {
-            return await _httpClient.GetFromJsonAsync<List<Carrera>>("api/Carrera");
         }
     }
 }

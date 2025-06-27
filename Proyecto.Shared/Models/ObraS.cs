@@ -9,13 +9,14 @@ namespace Proyecto.Shared.Models
         public int IdObra { get; set; }
 
         [Required(ErrorMessage = "La cédula es obligatoria")]
-        public string Cedula { get; set; }
+        public string Cedula { get; set; } = string.Empty;
+
 
         [Required(ErrorMessage = "El título de la obra es obligatorio")]
-        public string Titulo { get; set; }
+        public string Titulo { get; set; }= string.Empty;
 
         [Required(ErrorMessage = "El tipo de obra es obligatorio")]
-        public string TipoObra { get; set; }
+        public string TipoObra { get; set; }= string.Empty;
 
         [Required(ErrorMessage = "La fecha de publicación es obligatoria")]
         public DateTime FechaPublicacion { get; set; }
@@ -26,10 +27,7 @@ namespace Proyecto.Shared.Models
         public byte[] Documento { get; set; }
         public string NombreArchivo { get; set; }
 
-        [Required(ErrorMessage = "La carrera es obligatoria")]
-        public int IdCarrera { get; set; }
-
-        // Propiedad de navegación (opcional)
+       // Propiedad de navegación (opcional)
         public Carrera Carrera { get; set; }
     }
 }
