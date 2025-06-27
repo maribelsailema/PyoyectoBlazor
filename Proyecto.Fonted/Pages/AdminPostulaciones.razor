@@ -1,0 +1,189 @@
+﻿@page "/adminPostulaciones"
+@inject HttpClient Http
+@using Proyecto.Shared.Models
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
+<header class="navbar">
+    <div class="navbar-left">
+        <div class="navbar-left">
+            <h3>Bienvenido, @usuario.NombreCompleto (Administrador)</h3>
+        </div>
+    </div>
+    <nav class="navbar-right nav-links">
+        <NavLink href="/inicio-admin" class="nav-item">
+            <i class="bi bi-house-fill"></i> Inicio
+        </NavLink>
+        <NavLink href="/adminPostulaciones" class="nav-item">
+            <i class="bi bi-clipboard-check-fill"></i> Ver Postulantes
+        </NavLink>
+
+        <NavLink href="/reportes" class="nav-item">
+            <i class="bi bi-bar-chart-line-fill"></i> Reportes
+        </NavLink>
+        <NavLink href="/gestion-bd" class="nav-item">
+            <i class="bi bi-database-fill-gear"></i> Gestión de BD
+        </NavLink>
+        <NavLink href="/importar-bd" class="nav-item">
+            <i class="bi bi-upload"></i> Importar BD
+        </NavLink>
+        <NavLink href="/" class="nav-item cerrar-sesion">
+            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+        </NavLink>
+    </nav>
+</header>
+<main class="contenido-promocion">
+    <div class="container">
+
+        <div class="text-center mb-4">
+            <h2 class="titulo-admin">
+                <i class="bi bi-person-lines-fill"></i> Solicitudes de Postulación
+            </h2>
+            <p class="text-muted">Revisa y gestiona las solicitudes enviadas por los docentes.</p>
+        </div>
+
+        @if (postulaciones == null)
+        {
+            <div class="text-center mt-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2">Cargando postulaciones...</p>
+            </div>
+        }
+        else if (!postulaciones.Any())
+        {
+            <div class="alert alert-info text-center">No hay solicitudes de postulación.</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-striped table-hover shadow-sm text-center">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>Cédula</th>
+                            <th>Rol Actual</th>
+                            <th>Rol Solicitado</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in postulaciones)
+                        {
+                            <tr>
+                                <td>@p.Cedula</td>
+                                <td>@p.RolActual</td>
+                                <td>@p.RolSolicitado</td>
+                                <td>@p.FechaSolicitud.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    @if (p.Estado == "Aceptada")
+                                    {
+                                        <span class="badge bg-success">Aceptada</span>
+                                    }
+                                    else if (p.Estado == "Rechazada")
+                                    {
+                                        <span class="badge bg-danger">Rechazada</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">Pendiente</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (p.Estado == "Pendiente")
+                                    {
+                                        <button class="btn btn-sm btn-success me-2"
+                                                title="Aceptar solicitud"
+                                                @onclick="() => CambiarEstadoAceptada(p.Id)">
+                                            <i class="bi bi-check-circle"></i> Aceptar
+                                        </button>
+                                        <button class="btn btn-sm btn-danger"
+                                                title="Rechazar solicitud"
+                                                @onclick="() => CambiarEstadoRechazada(p.Id)">
+                                            <i class="bi bi-x-circle"></i> Rechazar
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Sin acciones</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</main>
+<footer class="footer">
+    <div class="footer-info">
+        <div class="footer-section">
+            <h4><i class="bi bi-info-circle-fill"></i> Acerca del Sistema</h4>
+            <p>Módulo administrativo del Sistema de Promoción Docente FISEI.</p>
+        </div>
+        <div class="footer-section">
+            <h4><i class="bi bi-envelope-fill"></i> Soporte Técnico</h4>
+            <p>admin@fisei.edu.ec<br>+593 98 765 4321</p>
+        </div>
+        <div class="footer-section">
+            <h4><i class="bi bi-link-45deg"></i> Accesos Rápidos</h4>
+            <NavLink href="/verificar"><i class="bi bi-clipboard-check-fill"></i> Verificación</NavLink><br />
+            <NavLink href="/reportes"><i class="bi bi-bar-chart-line-fill"></i> Reportes</NavLink><br />
+            <NavLink href="/gestion-bd"><i class="bi bi-database-fill-gear"></i> BD</NavLink><br />
+            <NavLink href="/importar-bd"><i class="bi bi-cloud-arrow-up-fill"></i> Importar</NavLink>
+        </div>
+    </div>
+    <p class="copyright">© 2025 Sistema de Promoción, Todos los Derechos Reservados</p>
+</footer>
+@code {
+    private List<PostulacionDto> postulaciones;
+    private UsuarioModel usuario = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Cargar usuario
+            var cedula = await localStorage.GetItemAsync<string>("cedulaUsuario");
+            if (!string.IsNullOrWhiteSpace(cedula))
+            {
+                var response = await Http.GetFromJsonAsync<UsuarioModel>($"api/Usuario/porCedula/{cedula}");
+                if (response != null)
+                    usuario = response;
+            }
+
+            // Cargar postulaciones
+            postulaciones = await Http.GetFromJsonAsync<List<PostulacionDto>>("api/Promocion/Todas");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error cargando datos: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task CambiarEstadoAceptada(int id) => await CambiarEstado(id, "Aceptada");
+    private async Task CambiarEstadoRechazada(int id) => await CambiarEstado(id, "Rechazada");
+
+    private async Task CambiarEstado(int id, string nuevoEstado)
+    {
+        var response = await Http.PutAsJsonAsync($"api/Promocion/CambiarEstado/{id}", nuevoEstado);
+        if (response.IsSuccessStatusCode)
+        {
+            postulaciones = await Http.GetFromJsonAsync<List<PostulacionDto>>("api/Promocion/Todas");
+            StateHasChanged();
+        }
+        else
+        {
+            Console.WriteLine($"Error al actualizar estado: {response.StatusCode}");
+        }
+    }
+}
+
+}

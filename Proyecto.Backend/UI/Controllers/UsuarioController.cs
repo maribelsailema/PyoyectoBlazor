@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Proyecto.Backend.Domain.Entities.Models;
+using Proyecto.Shared.Models;
 
 namespace Proyecto.Backend.UI.Controllers
 {
@@ -93,6 +94,24 @@ namespace Proyecto.Backend.UI.Controllers
             usuario.Pass = ""; // Evitar enviar la contraseña al frontend
             return Ok(usuario);
         }
+
+        [HttpGet("porCedula/{cedula}")]
+        public async Task<ActionResult<UsuarioDto>> GetUsuarioPorCedula(string cedula)
+        {
+            var user = await _context.Usuarios
+                .Where(u => u.Ced == cedula)
+                .Select(u => new UsuarioDto
+                {
+                    Nom1 = u.Nom1,
+                    Ape1 = u.Ape1
+                })
+                .FirstOrDefaultAsync();
+
+            if (user == null) return NotFound();
+
+            return Ok(user);
+        }
+
 
     }
 }

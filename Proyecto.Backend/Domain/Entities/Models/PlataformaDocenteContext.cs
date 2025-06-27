@@ -33,6 +33,8 @@ public partial class PlataformaDocenteContext : DbContext
 
     public virtual DbSet<Usuario> Usuarios { get; set; }
 
+    public DbSet<Postulacion> Postulaciones { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Capacitacione>(entity =>
@@ -183,6 +185,32 @@ public partial class PlataformaDocenteContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.Usuari).HasMaxLength(100);
         });
+
+        modelBuilder.Entity<Postulacion>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Cedula)
+                .HasMaxLength(10)
+                .IsUnicode(false);
+
+            entity.Property(e => e.RolActual)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+
+            entity.Property(e => e.RolSolicitado)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+
+            entity.Property(e => e.FechaSolicitud)
+                .HasColumnType("datetime");
+
+            entity.Property(e => e.Estado)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+
+        });
+
 
         OnModelCreatingPartial(modelBuilder);
     }

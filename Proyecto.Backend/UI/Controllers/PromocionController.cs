@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Proyecto.Backend.Domain.Entities.Models;
+using Proyecto.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
@@ -55,21 +56,88 @@ namespace Proyecto.Backend.UI.Controllers
             return Ok(cumple);
         }
 
+        [HttpGet("Todas")]
+        public async Task<ActionResult<IEnumerable<PostulacionDto>>> GetTodas()
+        {
+            var postulaciones = await _context.Postulaciones
+                .Select(p => new PostulacionDto
+                {
+                    Id = p.Id,
+                    Cedula = p.Cedula,
+                    RolActual = p.RolActual,
+                    RolSolicitado = p.RolSolicitado,
+                    FechaSolicitud = p.FechaSolicitud,
+                    Estado = p.Estado
+                })
+                .ToListAsync();
+
+            return Ok(postulaciones);
+        }
+      
+       [HttpPut("CambiarEstado/{id}")]
+        public async Task<IActionResult> CambiarEstado(int id, [FromBody] string nuevoEstado)
+        {
+            var postulacion = await _context.Postulaciones.FindAsync(id);
+            if (postulacion == null)
+                return NotFound();
+
+            postulacion.Estado = nuevoEstado;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+
         [HttpPost("Postular")]
-        public async Task<IActionResult> Postular([FromBody] PostulacionDto data)
+        public async Task<IActionResult> Postular([FromBody] PostulacionDto dto)
         {
-            // Aquí podrías registrar la postulación en una tabla si existe
-            // por ahora solo simula éxito
-            return Ok(new { mensaje = "Postulación recibida" });
+            if (dto == null || string.IsNullOrWhiteSpace(dto.Cedula) || string.IsNullOrWhiteSpace(dto.RolActual) || string.IsNullOrWhiteSpace(dto.RolSolicitado))
+            {
+                return BadRequest("Datos inválidos.");
+            }
+
+            var nueva = new Postulacion
+            {
+                Cedula = dto.Cedula,
+                RolActual = dto.RolActual,
+                RolSolicitado = dto.RolSolicitado,
+                FechaSolicitud = dto.FechaSolicitud != DateTime.MinValue ? dto.FechaSolicitud : DateTime.Now,
+                Estado = "Pendiente"
+            };
+
+            _context.Postulaciones.Add(nueva);
+            await _context.SaveChangesAsync();
+
+            return Ok();
         }
 
-        public class PostulacionDto
+
+        [HttpGet("PostulacionPorCedula/{cedula}")]
+        public async Task<ActionResult<PostulacionDto>> GetPostulacionPorCedula(string cedula)
         {
-            public string Cedula { get; set; }
-            public string RolActual { get; set; }
-            public string RolSolicitado { get; set; }
-            public DateTime FechaSolicitud { get; set; }
+            var postulacion = await _context.Postulaciones
+                .Where(p => p.Cedula == cedula && p.Estado == "Pendiente")  // O puedes quitar estado para obtener la última o todas
+                .OrderByDescending(p => p.FechaSolicitud)
+                .FirstOrDefaultAsync();
+
+            if (postulacion == null)
+                return NotFound();
+
+            var dto = new PostulacionDto
+            {
+                Id = postulacion.Id,
+                Cedula = postulacion.Cedula,
+                RolActual = postulacion.RolActual,
+                RolSolicitado = postulacion.RolSolicitado,
+                FechaSolicitud = postulacion.FechaSolicitud,
+                Estado = postulacion.Estado
+            };
+
+            return Ok(dto);
         }
+
+
     }
-
 }
+
+

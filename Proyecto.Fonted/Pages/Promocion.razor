@@ -38,7 +38,6 @@
         }
         else
         {
-            <!-- Posición Actual -->
             @if (currentRol != null)
             {
                 <div class="current-position mb-4">
@@ -55,7 +54,6 @@
                 </div>
             }
 
-            <!-- Tabla de Requisitos -->
             <div class="table-responsive mb-4">
                 <h4><i class="bi bi-list-check"></i> Requisitos para el siguiente nivel:</h4>
                 <table class="table table-hover promotion-table">
@@ -85,7 +83,9 @@
                                     <td>
                                         @if (req.CumpleRequisitos)
                                         {
-                                            <span class="badge bg-success">Postular</span>
+                                            <button class="btn btn-sm btn-primary" @onclick="Postular">
+                                                <i class="bi bi-send-check"></i> Postular
+                                            </button>
                                         }
                                         else
                                         {
@@ -105,92 +105,45 @@
                 </table>
             </div>
 
-            <!-- Resumen de Cumplimiento -->
             @if (currentRol != null && requisitosPromocion.Any())
             {
                 var primerRequisito = requisitosPromocion.FirstOrDefault(r => r.DesdeRol == currentRol.Rol);
-
-
                 <div class="requirements-info">
                     <h4><i class="bi bi-card-checklist"></i> Tu progreso actual:</h4>
                     <ul>
-                        <li>
-                            <strong>Tiempo en el rol:</strong> @currentRol.AniosEnRol años de @primerRequisito.TiempoMinimoAnios requeridos
-                            @if (currentRol.AniosEnRol >= primerRequisito.TiempoMinimoAnios)
-                            {
-                                <i class="bi bi-check-circle-fill text-success"></i>
-                            }
-                            else
-                            {
-                                <i class="bi bi-x-circle-fill text-danger"></i>
-                            }
-                        </li>
-                        <li>
-                            <strong>Obras publicadas:</strong> @totalObras de @primerRequisito.ObrasMinimas requeridas
-                            @if (totalObras >= primerRequisito.ObrasMinimas)
-                            {
-                                <i class="bi bi-check-circle-fill text-success"></i>
-                            }
-                            else
-                            {
-                                <i class="bi bi-x-circle-fill text-danger"></i>
-                            }
-                        </li>
-                        <li>
-                            <strong>Puntaje evaluación:</strong> @(ultimaEvaluacion?.PuntajeFinal ?? 0)% de @primerRequisito.PuntajeEvaluacionMinimo requerido
-                            @if ((ultimaEvaluacion?.PuntajeFinal ?? 0) >= primerRequisito.PuntajeEvaluacionMinimo)
-                            {
-                                <i class="bi bi-check-circle-fill text-success"></i>
-                            }
-                            else
-                            {
-                                <i class="bi bi-x-circle-fill text-danger"></i>
-                            }
-                        </li>
-                        <li>
-                            <strong>Horas capacitación:</strong> @totalHorasCapacitacion de @primerRequisito.HorasCapacitacionMin requeridas
-                            @if (totalHorasCapacitacion >= primerRequisito.HorasCapacitacionMin)
-                            {
-                                <i class="bi bi-check-circle-fill text-success"></i>
-                            }
-                            else
-                            {
-                                <i class="bi bi-x-circle-fill text-danger"></i>
-                            }
-                        </li>
+                        <li><strong>Tiempo en el rol:</strong> @currentRol.AniosEnRol años de @primerRequisito.TiempoMinimoAnios requeridos @((currentRol.AniosEnRol >= primerRequisito.TiempoMinimoAnios) ? "✔" : "✖")</li>
+                        <li><strong>Obras publicadas:</strong> @totalObras de @primerRequisito.ObrasMinimas requeridas @((totalObras >= primerRequisito.ObrasMinimas) ? "✔" : "✖")</li>
+                        <li><strong>Puntaje evaluación:</strong> @(ultimaEvaluacion?.PuntajeFinal ?? 0)% de @primerRequisito.PuntajeEvaluacionMinimo requerido @(((ultimaEvaluacion?.PuntajeFinal ?? 0) >= primerRequisito.PuntajeEvaluacionMinimo) ? "✔" : "✖")</li>
+                        <li><strong>Horas capacitación:</strong> @totalHorasCapacitacion de @primerRequisito.HorasCapacitacionMin requeridas @((totalHorasCapacitacion >= primerRequisito.HorasCapacitacionMin) ? "✔" : "✖")</li>
                         @if (primerRequisito.MesesInvestigacionMin.HasValue)
-{
-    <li>
-        <strong>Meses investigación:</strong> @totalMesesInvestigacion de @primerRequisito.MesesInvestigacionMin.Value requeridos
-        @if (totalMesesInvestigacion >= primerRequisito.MesesInvestigacionMin.Value)
-        {
-            <i class="bi bi-check-circle-fill text-success"></i>
-        }
-        else
-        {
-            <i class="bi bi-x-circle-fill text-danger"></i>
-        }
-    </li>
-}
-
-else
-{
-    <li>
-        <strong>Meses investigación:</strong> No aplica para este nivel <i class="bi bi-dash-circle text-muted"></i>
-    </li>
-}
+                        {
+                            <li><strong>Meses investigación:</strong> @totalMesesInvestigacion de @primerRequisito.MesesInvestigacionMin.Value requeridos @((totalMesesInvestigacion >= primerRequisito.MesesInvestigacionMin.Value) ? "✔" : "✖")</li>
+                        }
+                        else
+                        {
+                            <li><strong>Meses investigación:</strong> No aplica para este nivel</li>
+                        }
                     </ul>
 
-                    @if (puedePostular)
+                    @if (postulacionActual == null)
                     {
-                        <button class="btn btn-primary" @onclick="Postular">
-                            <i class="bi bi-send-check"></i> Postular para promoción
-                        </button>
+                        if (puedePostular)
+                        {
+                            <button class="btn btn-primary" @onclick="Postular">
+                                <i class="bi bi-send-check"></i> Postular para promoción
+                            </button>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning mt-2">
+                                Aún no cumples con todos los requisitos para postularte.
+                            </div>
+                        }
                     }
                     else
                     {
-                        <div class="alert alert-warning mt-2">
-                            Aún no cumples con todos los requisitos para postularte.
+                        <div class="alert alert-info mt-2">
+                            Ya te has postulado para el rol <strong>@postulacionActual.RolSolicitado</strong>. Estado: <strong>@postulacionActual.Estado</strong>.
                         </div>
                     }
                 </div>
@@ -203,11 +156,11 @@ else
     <div class="footer-info">
         <div class="footer-section">
             <h4><i class="bi bi-info-circle-fill"></i> Sobre Nosotros</h4>
-            <p>Sistema de Promoción para Docentes de la FISEI.<br>Para agilizar trámites.</p>
+            <p>Sistema de Promoción para Docentes de la FISEI.<br />Para agilizar trámites.</p>
         </div>
         <div class="footer-section">
             <h4><i class="bi bi-envelope-fill"></i> Contactos</h4>
-            <p>support@correo.com<br>+593 99 234 56789</p>
+            <p>support@correo.com<br />+593 99 234 56789</p>
         </div>
         <div class="footer-section">
             <h4><i class="bi bi-link-45deg"></i> Enlaces Rápidos</h4>
@@ -218,7 +171,10 @@ else
     </div>
     <p class="copyright">© 2025 Sistema de Promoción, Todos los Derechos Reservados</p>
 </footer>
+
 @code {
+    // Variables, OnInitializedAsync, LoadRequisitosPromocion, LoadRolActual, LoadDatosCumplimiento
+
     private string cedulaUsuario;
     private RolActualDto currentRol;
     private List<RequisitoPromocionDto> requisitosPromocion = new();
@@ -229,6 +185,9 @@ else
     private bool isLoading = true;
     private bool errorLoading = false;
     private bool puedePostular = false;
+    private PostulacionDto postulacionExistente;
+    private PostulacionDto postulacionActual = null;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -252,7 +211,7 @@ else
 
                 var requisitoActual = requisitosPromocion.FirstOrDefault(r => r.DesdeRol == currentRol.Rol);
                 puedePostular = requisitoActual?.CumpleRequisitos == true;
-
+                await CargarPostulacion();
             }
             catch (Exception rolEx)
             {
@@ -343,36 +302,6 @@ else
             Logger.LogWarning(ex, "Error al obtener datos de cumplimiento");
         }
     }
-
-    private async Task Postular()
-    {
-        if (!puedePostular || currentRol == null || !requisitosPromocion.Any()) return;
-
-        try
-        {
-            var response = await Http.PostAsJsonAsync("api/Promocion/Postular", new
-            {
-                Cedula = cedulaUsuario,
-                RolActual = currentRol.Rol,
-                RolSolicitado = requisitosPromocion.First().HaciaRol,
-                FechaSolicitud = DateTime.Now
-            });
-
-            if (response.IsSuccessStatusCode)
-            {
-                Navigation.NavigateTo("/perfil?postulacion=exito");
-            }
-            else
-            {
-                Logger.LogError("Error en la postulación: {StatusCode}", response.StatusCode);
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error al postular");
-        }
-    }
-
     private string GetRolDescription(string rol) => rol switch
     {
         "D1" => "Docente Nivel 1 - Puedes postularte al nivel D2 cuando cumplas los requisitos",
@@ -382,8 +311,67 @@ else
         _ => "Rol no reconocido"
     };
 
-   
+    private async Task Postular()
+    {
+        if (!puedePostular || currentRol == null || !requisitosPromocion.Any()) return;
 
+        try
+        {
+            var requisitoActual = requisitosPromocion.FirstOrDefault(r => r.DesdeRol == currentRol.Rol);
+            if (requisitoActual == null)
+            {
+                Logger.LogWarning("No se encontró requisito para el rol actual");
+                return;
+            }
+
+            var nuevaPostulacion = new PostulacionDto
+            {
+                Cedula = cedulaUsuario,
+                RolActual = currentRol.Rol,
+                RolSolicitado = requisitoActual.HaciaRol,
+                FechaSolicitud = DateTime.Now,
+                Estado = "Pendiente"
+            };
+
+            var response = await Http.PostAsJsonAsync("api/Promocion/Postular", nuevaPostulacion);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Logger.LogInformation("Postulación exitosa");
+                await CargarPostulacion();
+                StateHasChanged();
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                Logger.LogError("Error en la postulación: {0} - {1}", response.StatusCode, error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error al postular");
+        }
+    }
+
+    private async Task CargarPostulacion()
+    {
+        try
+        {
+            var response = await Http.GetAsync($"api/Promocion/PostulacionPorCedula/{cedulaUsuario}");
+            if (response.IsSuccessStatusCode)
+            {
+                postulacionActual = await response.Content.ReadFromJsonAsync<PostulacionDto>();
+            }
+            else
+            {
+                postulacionActual = null;
+            }
+        }
+        catch
+        {
+            postulacionActual = null;
+        }
+    }
 
     public class ObraDto
     {

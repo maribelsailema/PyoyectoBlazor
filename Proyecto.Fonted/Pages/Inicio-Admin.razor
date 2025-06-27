@@ -1,18 +1,22 @@
 ﻿@page "/inicio-admin"
 @using System.Net.Http.Json
+@using Proyecto.Backend.Domain.Entities.Models
+@using Proyecto.Shared.Models
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
 @inject HttpClient Http
 
 <header class="navbar">
     <div class="navbar-left">
-        <h3>Bienvenido, @usuario.Nombre (Administrador)</h3>
+        <h3>Bienvenido, @usuario.NombreCompleto (Administrador)</h3>
     </div>
     <nav class="navbar-right nav-links">
         <NavLink href="/inicio-admin" class="nav-item">
             <i class="bi bi-house-fill"></i> Inicio
         </NavLink>
-        <NavLink href="/verificar" class="nav-item">
-            <i class="bi bi-clipboard-check-fill"></i> Verificar Requisitos
+        <NavLink href="/adminPostulaciones" class="nav-item">
+            <i class="bi bi-clipboard-check-fill"></i> Ver Postulantes
         </NavLink>
+
         <NavLink href="/reportes" class="nav-item">
             <i class="bi bi-bar-chart-line-fill"></i> Reportes
         </NavLink>
@@ -33,20 +37,6 @@
         <h2>Panel de Administración del Sistema de Promoción FISEI</h2>
         <p>Seleccione una opción para gestionar procesos, verificar requisitos o administrar la base de datos.</p>
 
-        <div class="acciones-admin">
-            <NavLink href="/verificar" class="btn-usuario">
-                <i class="bi bi-check-circle-fill"></i> Verificar Requisitos
-            </NavLink>
-            <NavLink href="/reportes" class="btn-usuario">
-                <i class="bi bi-bar-chart-fill"></i> Generar Reportes
-            </NavLink>
-            <NavLink href="/gestion-bd" class="btn-usuario">
-                <i class="bi bi-hdd-fill"></i> Gestión de Base de Datos
-            </NavLink>
-            <NavLink href="/importar-bd" class="btn-usuario">
-                <i class="bi bi-cloud-arrow-up-fill"></i> Importar Datos
-            </NavLink>
-        </div>
     </section>
 </main>
 
@@ -76,11 +66,22 @@
 
     protected override async Task OnInitializedAsync()
     {
-        usuario = await Http.GetFromJsonAsync<UsuarioModel>("https://tu-api.com/api/usuario/actual");
+        try
+        {
+            var cedula = await localStorage.GetItemAsync<string>("cedulaUsuario");
+
+            if (!string.IsNullOrWhiteSpace(cedula))
+            {
+                var response = await Http.GetFromJsonAsync<UsuarioModel>($"api/Usuario/porCedula/{cedula}");
+                if (response != null)
+                    usuario = response;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error cargando datos del usuario: {ex.Message}");
+        }
     }
 
-    public class UsuarioModel
-    {
-        public string Nombre { get; set; } = string.Empty;
-    }
+
 }
