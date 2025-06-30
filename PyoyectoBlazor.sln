@@ -10,7 +10,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Proyecto.Fonted", "Proyecto.Fonted\Proyecto.Fonted.csproj", "{54D8D602-6E9A-4848-AB6B-C27E18684852}"
 	ProjectSection(ProjectDependencies) = postProject
 		{385E489B-B74E-4456-9DBF-8ABC7DB5A332} = {385E489B-B74E-4456-9DBF-8ABC7DB5A332}
-		{FE2E0DEE-5437-4CF6-96D2-AF55531C33AD} = {FE2E0DEE-5437-4CF6-96D2-AF55531C33AD}
 	EndProjectSection
 EndProject
 Global
