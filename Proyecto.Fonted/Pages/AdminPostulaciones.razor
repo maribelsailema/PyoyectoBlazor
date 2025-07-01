@@ -108,13 +108,12 @@
                                     }
                                 </td>
                                 <td>
-                                    
+
                                     <button class="btn btn-outline-info btn-sm"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#modalResumen"
-                                            @onclick="() => MostrarResumen(p.Cedula)">
+                                            @onclick="async () => await MostrarResumen(p.Cedula)">
                                         <i class="bi bi-file-earmark-text"></i> Ver resumen
                                     </button>
+
 
                                 </td>
                             </tr>
@@ -234,14 +233,24 @@
         cedulaSeleccionada = cedula;
         resumenCargado = false;
 
-        // Cargar datos desde API
-        obras = await Http.GetFromJsonAsync<List<ObraDto>>($"api/Obras/ByDocente/{cedula}");
-        evaluacion = await Http.GetFromJsonAsync<EvaluacionDto>($"api/EvaluacionesDocentes/Ultima/{cedula}");
-        horasCapacitacion = await Http.GetFromJsonAsync<int>($"api/Capacitaciones/HorasTotales/{cedula}");
-        mesesInvestigacion = await Http.GetFromJsonAsync<int>($"api/Investigaciones/MesesTotales/{cedula}");
+        try
+        {
+            obras = await Http.GetFromJsonAsync<List<ObraDto>>($"api/Obras/ByDocente/{cedula}");
+            evaluacion = await Http.GetFromJsonAsync<EvaluacionDto>($"api/EvaluacionesDocentes/Ultima/{cedula}");
+            horasCapacitacion = await Http.GetFromJsonAsync<int>($"api/Capacitaciones/HorasTotales/{cedula}");
+            mesesInvestigacion = await Http.GetFromJsonAsync<int>($"api/Investigaciones/MesesTotales/{cedula}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error cargando resumen: " + ex.Message);
+        }
 
         resumenCargado = true;
+
+        // Mostrar modal con JS
+        await JS.InvokeVoidAsync("eval", "new bootstrap.Modal(document.getElementById('modalResumen')).show()");
     }
+
     public class ObraDto
     {
         public int Id { get; set; }
