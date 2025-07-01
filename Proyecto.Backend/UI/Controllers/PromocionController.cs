@@ -73,19 +73,40 @@ namespace Proyecto.Backend.UI.Controllers
 
             return Ok(postulaciones);
         }
-      
-       [HttpPut("CambiarEstado/{id}")]
+
+        [HttpPut("CambiarEstado/{id}")]
         public async Task<IActionResult> CambiarEstado(int id, [FromBody] string nuevoEstado)
         {
             var postulacion = await _context.Postulaciones.FindAsync(id);
-            if (postulacion == null)
-                return NotFound();
+            if (postulacion == null) return NotFound();
 
             postulacion.Estado = nuevoEstado;
-            await _context.SaveChangesAsync();
 
+            if (nuevoEstado == "Aceptada")
+            {
+                // Desactivar roles anteriores
+                var rolesAnteriores = await _context.RolesDocentes
+                    .Where(r => r.Cedula == postulacion.Cedula && r.Activo)
+                    .ToListAsync();
+
+                foreach (var rol in rolesAnteriores)
+                    rol.Activo = false;
+
+                // Agregar nuevo rol
+                var nuevoRol = new RolesDocente
+                {
+                    Cedula = postulacion.Cedula,
+                    Rol = postulacion.RolSolicitado,
+                    FechaAsignacion = DateOnly.FromDateTime(DateTime.Today),
+                    Activo = true
+                };
+                _context.RolesDocentes.Add(nuevoRol);
+            }
+
+            await _context.SaveChangesAsync();
             return NoContent();
         }
+
 
 
         [HttpPost("Postular")]
