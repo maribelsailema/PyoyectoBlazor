@@ -127,17 +127,16 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="modalResumenLabel">Resumen del Docente</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                            <button type="button" class="btn-close" @onclick="CerrarModal" aria-label="Cerrar"></button>
                         </div>
                         <div class="modal-body">
-                                @if (resumenCargado)
-                                {
-                                    <p><strong>Obras:</strong> @resumen.CantidadObras</p>
-                                    <p><strong>Evaluación:</strong> @resumen.PuntajeEvaluacion%</p>
+                            @if (resumenCargado)
+                            {
+                                <p><strong>Obras:</strong> @resumen.CantidadObras</p>
+                                <p><strong>Evaluación:</strong> @resumen.PuntajeEvaluacion%</p>
                                 <p><strong>Capacitación:</strong> @resumen.DuracionHoras horas</p>
                                 <p><strong>Investigación:</strong> @resumen.TiempoMeses meses</p>
-                                }
-                            
+                            }
                             else
                             {
                                 <div class="d-flex justify-content-center">
@@ -147,12 +146,11 @@
                             }
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                            <button type="button" class="btn btn-secondary" @onclick="CerrarModal">Cerrar</button>
                         </div>
                     </div>
                 </div>
             </div>
-
         }
 
     </div>
@@ -230,6 +228,7 @@
 
     private ResumenPostulanteDto resumen = new ();
 private bool resumenCargado = false;
+    [Inject] private IJSRuntime JS { get; set; }
 
     private async Task MostrarResumen(string cedula)
     {
@@ -237,14 +236,27 @@ private bool resumenCargado = false;
         try
         {
             resumen = await Http.GetFromJsonAsync<ResumenPostulanteDto>($"api/Resumen/Postulante/{cedula}");
+            resumenCargado = true;
+            mostrarModal = true; // <- ¡esto es esencial!
+
+            StateHasChanged(); // Forzar renderizado antes del JS
+
+            await Task.Delay(100);
+            await JS.InvokeVoidAsync("mostrarModal", "modalResumen");
+
         }
         catch (Exception ex)
         {
             Console.WriteLine("Error cargando resumen: " + ex.Message);
         }
-        resumenCargado = true;
-        mostrarModal = true;
     }
+
+    private async void CerrarModal()
+    {
+        await JS.InvokeVoidAsync("cerrarModal", "modalResumen");
+        mostrarModal = false;
+    }
+
 
 
     public class ObraDto
