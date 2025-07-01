@@ -65,15 +65,24 @@ namespace Proyecto.Backend.UI.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
-        [HttpGet("HorasTotales/{cedula}")]
-        public async Task<ActionResult<int>> GetHorasTotales(string cedula)
-        {
-            var totalHoras = await _context.Capacitaciones
-                .Where(c => c.Cedula == cedula)
-                .SumAsync(c => (int?)c.DuracionHoras) ?? 0;
 
-            return Ok(totalHoras);
+        [HttpGet("HorasTotalesDesde/{cedula}/{fechaDesde}")]
+        public async Task<ActionResult<int>> GetHorasTotalesDesde(string cedula, string fechaDesde)
+        {
+            if (!DateOnly.TryParse(fechaDesde, out var fechaDesdeParsed))
+                return BadRequest("Formato de fecha inválido");
+
+            var fechaActual = DateOnly.FromDateTime(DateTime.Today);
+
+            var horas = await _context.Capacitaciones
+                .Where(c => c.Cedula == cedula && c.FechaInicio > fechaDesdeParsed && c.FechaInicio <= fechaActual)
+                .SumAsync(c => c.DuracionHoras);
+
+            return horas;
         }
+
+
+
         [HttpPost("GuardarDto")]
         public async Task<ActionResult<Capacitacione>> GuardarDto(CapacitacionCreateDto dto)
         {

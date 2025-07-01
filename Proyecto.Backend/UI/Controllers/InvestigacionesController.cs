@@ -66,15 +66,22 @@ namespace Proyecto.Backend.UI.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
-        [HttpGet("MesesTotales/{cedula}")]
-        public async Task<ActionResult<int>> GetMesesTotalesInvestigacion(string cedula)
+
+        [HttpGet("MesesTotalesDesde/{cedula}/{fechaDesde}")]
+        public async Task<ActionResult<int>> GetMesesTotalesDesde(string cedula, string fechaDesde)
         {
+            if (!DateOnly.TryParse(fechaDesde, out var fechaDesdeParsed))
+                return BadRequest("Formato de fecha inválido");
+
+            var fechaActual = DateOnly.FromDateTime(DateTime.Today);
+
             var meses = await _context.Investigaciones
-                .Where(i => i.Cedula == cedula )
+                .Where(i => i.Cedula == cedula && i.FechaInicio > fechaDesdeParsed && i.FechaInicio <= fechaActual)
                 .SumAsync(i => i.TiempoMeses);
 
-            return Ok(meses);
+            return meses;
         }
+
 
 
         [HttpGet("PorCedula/{cedula}")]

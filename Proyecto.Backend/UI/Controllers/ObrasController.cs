@@ -123,5 +123,30 @@ public async Task<ActionResult<List<ObraS>>> ObtenerPorCedula(string cedula)
         {
             return _context.Obras.Any(e => e.IdObra == id);
         }
+
+        [HttpGet("ByDocenteDesde/{cedula}/{fechaDesde}")]
+        public async Task<ActionResult<List<Obra>>> GetObrasPorDocenteDesde(string cedula, string fechaDesde)
+        {
+            if (!DateOnly.TryParse(fechaDesde, out var fechaDesdeParsed))
+                return BadRequest("Formato de fecha inválido");
+
+            var fechaActual = DateOnly.FromDateTime(DateTime.Today);
+
+            var obras = await _context.Obras
+                .Where(o => o.Cedula == cedula && o.Fecha > fechaDesdeParsed && o.Fecha <= fechaActual)
+                .Select(o => new Obra
+                {
+                    IdObra = o.IdObra,
+                    TipoObra = o.TipoObra,
+                    Fecha = o.Fecha,
+                    Cedula = o.Cedula // <-- asegúrate de incluir esto
+                })
+                .ToListAsync();
+
+            return obras;
+        }
+
+
+
     }
 }

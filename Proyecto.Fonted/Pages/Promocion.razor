@@ -1,6 +1,7 @@
 ﻿@page "/promocion"
 @using System.ComponentModel.DataAnnotations
 @using Proyecto.Shared.Models
+@using Proyecto.Backend.Domain.Entities.Models
 @inject NavigationManager Navigation
 @inject ILogger<Promocion> Logger
 @inject HttpClient Http
@@ -309,26 +310,32 @@
     {
         try
         {
-            var obrasResponse = await Http.GetAsync($"api/Obras/ByDocente/{cedulaUsuario}");
+            var fechaDesde = currentRol.FechaAsignacion.ToString("yyyy-MM-dd");
+
+            // --- OBRAS ---
+            var obrasResponse = await Http.GetAsync($"api/Obra/ByDocenteDesde/{cedulaUsuario}/{fechaDesde}");
             if (obrasResponse.IsSuccessStatusCode)
             {
                 var obras = await obrasResponse.Content.ReadFromJsonAsync<List<ObraDto>>();
                 totalObras = obras?.Count ?? 0;
             }
 
-            var evalResponse = await Http.GetAsync($"api/EvaluacionesDocentes/Ultima/{cedulaUsuario}");
+            // --- EVALUACIÓN ---
+            var evalResponse = await Http.GetAsync($"api/EvaluacionesDocentes/UltimaDesde/{cedulaUsuario}/{fechaDesde}");
             if (evalResponse.IsSuccessStatusCode)
             {
                 ultimaEvaluacion = await evalResponse.Content.ReadFromJsonAsync<EvaluacionDto>();
             }
 
-            var capResponse = await Http.GetAsync($"api/Capacitaciones/HorasTotales/{cedulaUsuario}");
+            // --- CAPACITACIÓN ---
+            var capResponse = await Http.GetAsync($"api/Capacitaciones/HorasTotalesDesde/{cedulaUsuario}/{fechaDesde}");
             if (capResponse.IsSuccessStatusCode)
             {
                 totalHorasCapacitacion = await capResponse.Content.ReadFromJsonAsync<int>();
             }
 
-            var invResponse = await Http.GetAsync($"api/Investigaciones/MesesTotales/{cedulaUsuario}");
+            // --- INVESTIGACIÓN ---
+            var invResponse = await Http.GetAsync($"api/Investigaciones/MesesTotalesDesde/{cedulaUsuario}/{fechaDesde}");
             if (invResponse.IsSuccessStatusCode)
             {
                 totalMesesInvestigacion = await invResponse.Content.ReadFromJsonAsync<int>();
@@ -339,6 +346,7 @@
             Logger.LogWarning(ex, "Error al obtener datos de cumplimiento");
         }
     }
+
     private string GetRolDescription(string rol) => rol switch
     {
         "D1" => "Docente Nivel 1 - Puedes postularte al nivel D2 cuando cumplas los requisitos",
@@ -415,7 +423,10 @@
         public int IdObra { get; set; }
         public string TipoObra { get; set; }
         public DateOnly Fecha { get; set; }
+        public string Cedula { get; set; } // necesario para que no sea null
     }
+
+
 
     public class EvaluacionDto
     {
