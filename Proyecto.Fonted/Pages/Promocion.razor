@@ -383,6 +383,7 @@
             if (response.IsSuccessStatusCode)
             {
                 Logger.LogInformation("Postulación exitosa");
+
                 await CargarPostulacion();
                 StateHasChanged();
             }

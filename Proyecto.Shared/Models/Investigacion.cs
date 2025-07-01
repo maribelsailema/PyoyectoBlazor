@@ -19,7 +19,7 @@ namespace Proyecto.Shared.Models
         public DateTime? FechaInicio { get; set; }
 
         public DateTime? FechaFin { get; set; }
-
+        [Required(ErrorMessage = "Seleccione un pdf.")]
         public byte[]? Pdf { get; set; }
 
         [Required(ErrorMessage = "La carrera es obligatoriaaaa.")]
@@ -30,6 +30,7 @@ namespace Proyecto.Shared.Models
 
         [Required(ErrorMessage = "El estado es obligatorio.")]
         public string? Estado { get; set; }
+        [Required(ErrorMessage = "Campo Cientifico es obligatorio.")]
         public string? Cientifico { get; set; }
 
         public string? NombreCarrera { get; set; }
