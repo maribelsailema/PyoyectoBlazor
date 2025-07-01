@@ -226,38 +226,82 @@
 </div> 
         </div>
                 <div class="row mb-3">
-                    <div class="col">
-                        <label>Fecha de Inicio</label>
-                        <InputDate class="form-control"
+                    <div class="col-md-6">
+                        <label for="fechaInicio">Fecha de Inicio</label>
+                        <InputDate id="fechaInicio"
                                    @bind-Value="nuevaInvestigacion.FechaInicio"
-                                   @onchange="CalcularTiempoMeses" />
+                                   class="form-control" />
+                        <ValidationMessage For="@(() => nuevaInvestigacion.FechaInicio)" />
                     </div>
-                    <div class="col">
-                        <label>Fecha de Fin</label>
-                        <InputDate class="form-control"
+
+                    <div class="col-md-6">
+                        <label for="fechaFin">Fecha de Fin</label>
+                        <InputDate id="fechaFin"
                                    @bind-Value="nuevaInvestigacion.FechaFin"
-                                   @onchange="CalcularTiempoMeses" />
+                                   class="form-control" />
+                        <ValidationMessage For="@(() => nuevaInvestigacion.FechaFin)" />
                     </div>
                 </div>
 
 
-               <div class="col">
-    <label>Duración (meses)</label>
-    <InputNumber class="form-control"
-                 @bind-Value="nuevaInvestigacion.TiempoMeses"
-                 min="0" />
-    <ValidationMessage For="@(() => nuevaInvestigacion.TiempoMeses)" />
-</div>
+
+                <!-- Fila: Duración -->
+                <div class="row mb-3">
+                    <div class="col">
+                        <label>Duración (meses)</label>
+                        <InputNumber @bind-Value="nuevaInvestigacion.TiempoMeses"
+                                     class="form-control"
+                                     min="0"
+                                     step="1"
+                                     oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+                        <ValidationMessage For="@(() => nuevaInvestigacion.TiempoMeses)" />
+                    </div>
+
+                    <div class="col">
+                        <label>Tipo</label>
+                        <InputText class="form-control" @bind-Value="nuevaInvestigacion.Tipo" />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col">
+                        <label>Estado</label>
+                        <select class="form-select" @bind="nuevaInvestigacion.Estado">
+                            <option value="">Seleccione estado</option>
+                            <option value="En proceso">En proceso</option>
+                            <option value="En revisión">En revisión</option>
+                            <option value="Publicado">Publicado</option>
+                        </select>
+                        <ValidationMessage For="@(() => nuevaInvestigacion.Estado)" />
+                    </div>
+
+                    <div class="col">
+                        <label>Tipo Científico</label>
+                        <select class="form-select" @bind="nuevaInvestigacion.Cientifico">
+                            <option value="">Seleccione una categoría</option>
+                            <option value="Ciencias Naturalez">Ciencias Naturalez</option>
+                            <option value="Ingeniería y tecnología">Ingeniería y tecnología</option>
+                            <option value="Ciencias Medicas y de la salud">Ciencias Medicas y de la salud</option>
+                        </select>
+                        <ValidationMessage For="@(() => nuevaInvestigacion.Cientifico)" />
+                    </div>
+                </div>
 
 
 
 
 
 
-        <div class="mb-3">
-            <label>Subir PDF</label>
-            <InputFile OnChange="SubirPDF" />
-        </div>
+
+                <div class="mb-3">
+                    <label>Subir PDF</label>
+                    <InputFile OnChange="SubirPDF" accept=".pdf,application/pdf" />
+                    @if (!string.IsNullOrEmpty(errorArchivo))
+                    {
+                        <div class="text-danger">@errorArchivo</div>
+                    }
+                </div>
+
 
         <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary">
@@ -288,6 +332,10 @@
                         <th>Tiempo</th>
                         <th>Fecha Inicio</th>
                         <th>Fecha Fin</th>
+                        <th>Carrera</th>
+                        <th>Tipo</th>
+                        <th>Estado</th>
+                        <th>Científico</th>
                         <th>PDF</th>
 
                     </tr>
@@ -298,9 +346,14 @@
                         <tr>
                             <td>@inv.NombreProyecto</td>
                             <td>@inv.TiempoMeses</td>
-                            <td>@inv.FechaInicio</td>
-                            <td>@inv.FechaFin</td>
+                            <td>@inv.FechaInicio?.ToShortDateString()</td>
+                            <td>@inv.FechaFin?.ToShortDateString()</td>
                             <td>@inv.NombreCarrera</td>
+                            <td>@inv.Tipo</td>
+                            <td>@inv.Estado</td>
+                            <td>@inv.Cientifico </td>
+
+
 
 
                             <td>
@@ -577,7 +630,7 @@ private bool mostrarCapacitaciones = false;
 private bool mostrarFormCap = false;
 private bool modoEdicionCap = false;
 private IBrowserFile? archivoPDFCap;
-
+    private string? errorArchivo;
 //capacitaciones
 private string? cedulaUsuario;
 
@@ -722,10 +775,33 @@ else
     {
         mostrarFormulario = false;
     }
+    
+    //subir pdfs investigaciones
 
     private async Task SubirPDF(InputFileChangeEventArgs e)
     {
-        archivoPDF = e.File;
+        var archivo = e.File;
+
+        if (archivo.ContentType != "application/pdf")
+        {
+            errorArchivo = "Solo se permiten archivos en formato PDF.";
+            nuevaInvestigacion.Pdf = null;
+            return;
+        }
+
+        try
+        {
+            using var stream = archivo.OpenReadStream(5 * 1024 * 1024); // Máx. 5 MB
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+
+            nuevaInvestigacion.Pdf = ms.ToArray();
+            errorArchivo = null; // Todo bien
+        }
+        catch
+        {
+            errorArchivo = "Error al leer el archivo.";
+        }
     }
 
     private async Task GuardarNuevaInvestigacion()
@@ -795,44 +871,10 @@ else
     }
 
     
-    private void OnFechaInicioChanged(DateTime value)
-    {
-        nuevaInvestigacion.FechaInicio = value;
-        CalcularTiempoMeses();
-    }
-
-    private void OnFechaFinChanged(DateTime? nuevaFechaFin)
-    {
-        nuevaInvestigacion.FechaFin = nuevaFechaFin;
-        CalcularTiempoMeses();
-    }
+  
 
 
-    private void CalcularTiempoMeses()
-    {
-        if (nuevaInvestigacion.FechaFin.HasValue && nuevaInvestigacion.FechaInicio != default)
-        {
-            var inicio = nuevaInvestigacion.FechaInicio;
-            var fin = nuevaInvestigacion.FechaFin.Value;
-
-            if (fin >= inicio)
-            {
-                int meses = ((fin.Year - inicio.Year) * 12) + (fin.Month - inicio.Month);
-                if (fin.Day >= inicio.Day)
-                    meses++;
-
-                nuevaInvestigacion.TiempoMeses = meses;
-            }
-            else
-            {
-                nuevaInvestigacion.TiempoMeses = 0;
-            }
-        }
-        else
-        {
-            nuevaInvestigacion.TiempoMeses = 0;
-        }
-    }
+   
 
     private void EditarInvestigacion(Investigacion inv)
     {

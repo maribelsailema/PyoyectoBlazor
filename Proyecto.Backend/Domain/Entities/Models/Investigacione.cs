@@ -21,6 +21,12 @@ public partial class Investigacione
 
     public int? IdCarrera { get; set; }
 
+    public string? Tipo { get; set; }
+
+    public string? Estado { get; set; }
+    public string? Cientifico { get; set; }
+
+
     [System.Text.Json.Serialization.JsonIgnore]
     public virtual Usuario? CedulaNavigation { get; set; }
 
