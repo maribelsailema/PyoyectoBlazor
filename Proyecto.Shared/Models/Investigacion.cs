@@ -19,6 +19,7 @@ namespace Proyecto.Shared.Models
         public DateTime? FechaInicio { get; set; }
 
         public DateTime? FechaFin { get; set; }
+
         [Required(ErrorMessage = "Seleccione un pdf.")]
         public byte[]? Pdf { get; set; }
 
