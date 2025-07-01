@@ -67,6 +67,7 @@ namespace Proyecto.Backend.UI.Controllers
             existente.FechaInicio = inv.FechaInicio;
             existente.FechaFin = inv.FechaFin;
             existente.IdCarrera = inv.IdCarrera;
+            existente.Pdf = inv.Pdf;
             existente.Tipo = inv.Tipo;
             existente.Estado = inv.Estado;
             existente.Cientifico = inv.Cientifico;

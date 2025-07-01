@@ -10,6 +10,7 @@
 
 @inject CapacitacionesService capacitacionesService  
 @inject ObraService obraService
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
 
 
 <style>
@@ -623,6 +624,9 @@
     private bool modoEdicion = false;
     private DateTime fechaInicioTemp;
     private DateTime? fechaFinTemp;
+    //estado para el btn
+    private string estadoPostulacion;
+    private bool puedeAgregar = true;
       // ————— Capacitaciones —————
 private List<Capacitacione> listaCapacitaciones = new();
 private Capacitacione nuevaCapacitacion = new();
@@ -788,7 +792,12 @@ else
             nuevaInvestigacion.Pdf = null;
             return;
         }
-
+        if (archivoPDF != null)
+        {
+            var buffer = new byte[archivoPDF.Size];
+            await archivoPDF.OpenReadStream().ReadAsync(buffer);
+            nuevaInvestigacion.Pdf = buffer;
+        }
         try
         {
             using var stream = archivo.OpenReadStream(5 * 1024 * 1024); // Máx. 5 MB
@@ -887,12 +896,17 @@ else
                 FechaInicio = inv.FechaInicio,
                 FechaFin = inv.FechaFin,
                 IdCarrera = inv.IdCarrera,
+                Estado= inv.Estado,
+                 Cientifico= inv.Cientifico,
+                 Tipo=inv.Tipo,
                 Pdf = inv.Pdf
             };
 
         mostrarFormulario = true;
         modoEdicion = true;
     }
+
+    
 
     // ————— Obras —————
 private List<ObraS> listaObras = new();
