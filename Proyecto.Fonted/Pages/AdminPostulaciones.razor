@@ -2,6 +2,8 @@
 @inject HttpClient Http
 @using Proyecto.Shared.Models
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject IJSRuntime JS
+
 
 <header class="navbar">
     <div class="navbar-left">
@@ -61,6 +63,7 @@
                             <th>Fecha</th>
                             <th>Estado</th>
                             <th>Acciones</th>
+                            <th>Resumen</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -104,12 +107,50 @@
                                         <span class="text-muted">Sin acciones</span>
                                     }
                                 </td>
+                                <td>
+                                    
+                                    <button class="btn btn-outline-info btn-sm"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalResumen"
+                                            @onclick="() => MostrarResumen(p.Cedula)">
+                                        <i class="bi bi-file-earmark-text"></i> Ver resumen
+                                    </button>
+
+                                </td>
                             </tr>
                         }
                     </tbody>
                 </table>
             </div>
         }
+        <div class="modal fade" id="modalResumen" tabindex="-1" aria-labelledby="modalResumenLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalResumenLabel">Resumen del Docente</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        @if (resumenCargado)
+                        {
+                            <p><strong>Obras:</strong> @obras.Count()</p>
+                            <p><strong>Evaluación:</strong> @evaluacion?.PuntajeFinal%</p>
+                            <p><strong>Capacitación:</strong> @horasCapacitacion horas</p>
+                            <p><strong>Investigación:</strong> @mesesInvestigacion meses</p>
+                        }
+                        else
+                        {
+                            <p>Cargando resumen...</p>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
     </div>
 </main>
 <footer class="footer">
@@ -180,6 +221,47 @@
             Console.WriteLine($"Error al actualizar estado: {response.StatusCode}");
         }
     }
+
+    private string cedulaSeleccionada;
+    private List<ObraDto> obras = new();
+    private EvaluacionDto evaluacion;
+    private int horasCapacitacion = 0;
+    private int mesesInvestigacion = 0;
+    private bool resumenCargado = false;
+
+    private async Task MostrarResumen(string cedula)
+    {
+        cedulaSeleccionada = cedula;
+        resumenCargado = false;
+
+        // Cargar datos desde API
+        obras = await Http.GetFromJsonAsync<List<ObraDto>>($"api/Obras/ByDocente/{cedula}");
+        evaluacion = await Http.GetFromJsonAsync<EvaluacionDto>($"api/EvaluacionesDocentes/Ultima/{cedula}");
+        horasCapacitacion = await Http.GetFromJsonAsync<int>($"api/Capacitaciones/HorasTotales/{cedula}");
+        mesesInvestigacion = await Http.GetFromJsonAsync<int>($"api/Investigaciones/MesesTotales/{cedula}");
+
+        resumenCargado = true;
+    }
+    public class ObraDto
+    {
+        public int Id { get; set; }
+        public string Cedula { get; set; }
+        public string Titulo { get; set; }
+        public string Tipo { get; set; }
+        public DateTime FechaPublicacion { get; set; }
+        public string UrlDocumento { get; set; } // opcional
+    }
+
+    public class EvaluacionDto
+    {
+        public int Id { get; set; }
+        public string Cedula { get; set; }
+        public int Anio { get; set; }
+        public decimal PuntajeFinal { get; set; }
+        public string Observaciones { get; set; } // opcional
+    }
+
 }
+
 
 }

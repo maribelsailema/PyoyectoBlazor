@@ -157,6 +157,43 @@ namespace Proyecto.Backend.UI.Controllers
             return Ok(dto);
         }
 
+        [HttpGet("ResumenDocumentos/{cedula}")]
+        public async Task<ActionResult<ResumenDocumentosDto>> GetResumenDocumentos(string cedula)
+        {
+            var fechaDesde = await _context.RolesDocentes
+                .Where(r => r.Cedula == cedula && r.Activo)
+                .Select(r => r.FechaAsignacion)
+                .FirstOrDefaultAsync();
+
+            if (fechaDesde == default) return NotFound("Rol no encontrado");
+
+            var totalObras = await _context.Obras
+                .Where(o => o.Cedula == cedula && o.Fecha >= fechaDesde)
+                .CountAsync();
+
+            var evaluacion = await _context.EvaluacionesDocentes
+                .Where(e => e.Cedula == cedula && e.FechaEvaluacion >= fechaDesde)
+                .OrderByDescending(e => e.FechaEvaluacion)
+                .FirstOrDefaultAsync();
+
+            var totalHorasCap = await _context.Capacitaciones
+                .Where(c => c.Cedula == cedula && c.FechaInicio >= fechaDesde)
+                .SumAsync(c => (int?)c.DuracionHoras) ?? 0;
+
+            var totalMesesInv = await _context.Investigaciones
+                .Where(i => i.Cedula == cedula && i.FechaInicio >= fechaDesde)
+                .SumAsync(i => EF.Functions.DateDiffMonth(i.FechaInicio, i.FechaFin ?? DateOnly.FromDateTime(DateTime.Today)));
+
+            var resumen = new ResumenDocumentosDto
+            {
+                TotalObras = totalObras,
+                PuntajeEvaluacion = evaluacion?.PuntajeFinal,
+                TotalHorasCapacitacion = totalHorasCap,
+                TotalMesesInvestigacion = totalMesesInv
+            };
+
+            return Ok(resumen);
+        }
 
     }
 }
