@@ -381,10 +381,13 @@
 
 <ValidationMessage For="@(() => nuevaInvestigacion.IdCarrera)" />
                             <td>
-                            
-                                <button class="btn btn-warning btn-sm" @onclick="() => EditarInvestigacion(inv)">
+
+                                <button class="btn btn-warning btn-sm"
+                                        @onclick="() => EditarInvestigacion(inv)"
+                                        disabled="@(puedeAgregar == false)">
                                     <i class="bi bi-pencil"></i> Editar
                                 </button>
+
                             </td>
 
                         </tr>
@@ -665,12 +668,10 @@ private string? cedulaUsuario;
             Console.WriteLine($"Error al cargar postulación: {ex.Message}");
         }
 
-        // Evaluar si se puede agregar documentos según estado
         puedeAgregar = postulacionActual == null ||
                        postulacionActual.Estado == "Rechazada" ||
                        postulacionActual.Estado == "Aceptada";
     }
-
 
 // ----- CAPACITACIONES -----
 private void MostrarFormCap()
