@@ -187,10 +187,14 @@
                 </select>
             </div>
 
-            @if (!string.IsNullOrEmpty(mensaje))
+            @if (!string.IsNullOrWhiteSpace(mensaje))
             {
-                <div class="alert alert-warning mt-2">@mensaje</div>
+                <div class="alert alert-danger d-flex align-items-center mt-3" role="alert" style="font-size: 1rem;">
+                    <i class="bi bi-exclamation-triangle-fill me-2" style="font-size: 1.4rem;"></i>
+                    <div>@mensaje</div>
+                </div>
             }
+
 
             <!-- Botón de Exportación -->
             <div class="export-button">
@@ -206,118 +210,105 @@
 
          @if (mostrarFormulario)
 {
-    <EditForm Model="@nuevaInvestigacion" OnValidSubmit="GuardarNuevaInvestigacion">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(modoEdicion ? "Editar Investigación" : "Agregar Investigación")</h5>
+                    <button type="button" class="btn-close" @onclick="CerrarFormulario" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="@nuevaInvestigacion" OnValidSubmit="GuardarNuevaInvestigacion">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
 
-        <div class="row mb-3">
-            <div class="col">
-                <label>Título del Proyecto</label>
-                <InputText class="form-control" @bind-Value="nuevaInvestigacion.NombreProyecto" />
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label>Título del Proyecto</label>
+                                <InputText class="form-control" @bind-Value="nuevaInvestigacion.NombreProyecto" />
+                            </div>
+                            <div class="col">
+                                <label>Carrera</label>
+                                <select class="form-select" @bind="nuevaInvestigacion.IdCarrera">
+                                    <option value="">Seleccione una carrera</option>
+                                    @foreach (var carrera in listaCarreras)
+                                    {
+                                        <option value="@carrera.IdCarrera">@carrera.Nombre</option>
+                                    }
+                                </select>
+                                <ValidationMessage For="@(() => nuevaInvestigacion.IdCarrera)" />
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label>Fecha de Inicio</label>
+                                <InputDate class="form-control" @bind-Value="nuevaInvestigacion.FechaInicio" />
+                            </div>
+                            <div class="col-md-6">
+                                <label>Fecha de Fin</label>
+                                <InputDate class="form-control" @bind-Value="nuevaInvestigacion.FechaFin" />
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label>Duración (meses)</label>
+                                <InputNumber class="form-control" @bind-Value="nuevaInvestigacion.TiempoMeses"
+                                             min="0" step="1"
+                                             oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+                            </div>
+                            <div class="col">
+                                <label>Tipo</label>
+                                <InputText class="form-control" @bind-Value="nuevaInvestigacion.Tipo" />
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label>Estado</label>
+                                <select class="form-select" @bind="nuevaInvestigacion.Estado">
+                                    <option value="">Seleccione estado</option>
+                                    <option value="En proceso">En proceso</option>
+                                    <option value="En revisión">En revisión</option>
+                                    <option value="Publicado">Publicado</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <label>Tipo Científico</label>
+                                <select class="form-select" @bind="nuevaInvestigacion.Cientifico">
+                                    <option value="">Seleccione una categoría</option>
+                                    <option value="Ciencias Naturalez">Ciencias Naturalez</option>
+                                    <option value="Ingeniería y tecnología">Ingeniería y tecnología</option>
+                                    <option value="Ciencias Medicas y de la salud">Ciencias Medicas y de la salud</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Subir PDF</label>
+                            <InputFile OnChange="SubirPDF" accept=".pdf,application/pdf" />
+                            @if (!string.IsNullOrEmpty(errorArchivo))
+                            {
+                                <div class="text-danger">@errorArchivo</div>
+                            }
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Guardar
+                            </button>
+                            <button type="button" class="btn btn-secondary" @onclick="CerrarFormulario">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
             </div>
-            <div class="col">
-    <label>Carrera</label>
-    <select class="form-select" @bind="nuevaInvestigacion.IdCarrera">
-        <option value="">Seleccione una carrera</option>
-        @foreach (var carrera in listaCarreras)
-        {
-            <option value="@carrera.IdCarrera">@carrera.Nombre</option>
-        }
-    </select>
-    <ValidationMessage For="@(() => nuevaInvestigacion.IdCarrera)" />
-</div> 
         </div>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label for="fechaInicio">Fecha de Inicio</label>
-                        <InputDate id="fechaInicio"
-                                   @bind-Value="nuevaInvestigacion.FechaInicio"
-                                   class="form-control" />
-                        <ValidationMessage For="@(() => nuevaInvestigacion.FechaInicio)" />
-                    </div>
-
-                    <div class="col-md-6">
-                        <label for="fechaFin">Fecha de Fin</label>
-                        <InputDate id="fechaFin"
-                                   @bind-Value="nuevaInvestigacion.FechaFin"
-                                   class="form-control" />
-                        <ValidationMessage For="@(() => nuevaInvestigacion.FechaFin)" />
-                    </div>
-                </div>
-
-
-
-                <!-- Fila: Duración -->
-                <div class="row mb-3">
-                    <div class="col">
-                        <label>Duración (meses)</label>
-                        <InputNumber @bind-Value="nuevaInvestigacion.TiempoMeses"
-                                     class="form-control"
-                                     min="0"
-                                     step="1"
-                                     oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
-                        <ValidationMessage For="@(() => nuevaInvestigacion.TiempoMeses)" />
-                    </div>
-
-                    <div class="col">
-                        <label>Tipo</label>
-                        <InputText class="form-control" @bind-Value="nuevaInvestigacion.Tipo" />
-                    </div>
-                </div>
-
-                <div class="row mb-3">
-                    <div class="col">
-                        <label>Estado</label>
-                        <select class="form-select" @bind="nuevaInvestigacion.Estado">
-                            <option value="">Seleccione estado</option>
-                            <option value="En proceso">En proceso</option>
-                            <option value="En revisión">En revisión</option>
-                            <option value="Publicado">Publicado</option>
-                        </select>
-                        <ValidationMessage For="@(() => nuevaInvestigacion.Estado)" />
-                    </div>
-
-                    <div class="col">
-                        <label>Tipo Científico</label>
-                        <select class="form-select" @bind="nuevaInvestigacion.Cientifico">
-                            <option value="">Seleccione una categoría</option>
-                            <option value="Ciencias Naturalez">Ciencias Naturalez</option>
-                            <option value="Ingeniería y tecnología">Ingeniería y tecnología</option>
-                            <option value="Ciencias Medicas y de la salud">Ciencias Medicas y de la salud</option>
-                        </select>
-                        <ValidationMessage For="@(() => nuevaInvestigacion.Cientifico)" />
-                    </div>
-                </div>
-
-
-
-
-
-
-
-                <div class="mb-3">
-                    <label>Subir PDF</label>
-                    <InputFile OnChange="SubirPDF" accept=".pdf,application/pdf" />
-                    @if (!string.IsNullOrEmpty(errorArchivo))
-                    {
-                        <div class="text-danger">@errorArchivo</div>
-                    }
-                </div>
-
-
-        <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary">
-                <i class="bi bi-check-circle"></i> Guardar
-            </button>
-            <button type="button" class="btn btn-secondary" @onclick="CerrarFormulario">
-                <i class="bi bi-x-circle"></i> Cancelar
-            </button>
-        </div>
-    </EditForm>
+    </div>
 }
 
-<br /> 
-<br />
         @if (mostrarInvestigaciones)
         {
                       <div class="mb-3">
@@ -816,12 +807,15 @@ else
     {
         nuevaInvestigacion = new Investigacion();
         mostrarFormulario = true;
+        await JS.InvokeVoidAsync("eval", "document.body.classList.add('modal-open');");
     }
 
-    private void CerrarFormulario()
+    private async void CerrarFormulario()
     {
         mostrarFormulario = false;
+        await JS.InvokeVoidAsync("eval", "document.body.classList.remove('modal-open');");
     }
+
     
     //subir pdfs investigaciones
 
