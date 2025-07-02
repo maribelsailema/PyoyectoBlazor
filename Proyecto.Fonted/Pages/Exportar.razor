@@ -286,6 +286,7 @@
                                         <ValidationMessage For="@(() => nuevaInvestigacion.Cientifico)" />
                                     </div>
                                 </div>
+                                @* ...dentro del modal de agregar investigación... *@
                                 <div class="mb-3">
                                     <label>Subir PDF</label>
                                     <InputFile OnChange="SubirPDF" accept=".pdf,application/pdf" />
@@ -295,13 +296,14 @@
                                     }
                                 </div>
                                 <div class="d-flex gap-2 justify-content-end">
-                                    <button type="submit" class="btn btn-primary">
+                                    <button type="submit" class="btn btn-primary" disabled="@(!puedeAgregarInvestigacion)">
                                         <i class="bi bi-check-circle"></i> Guardar
                                     </button>
                                     <button type="button" class="btn btn-secondary" @onclick="CerrarFormulario">
                                         <i class="bi bi-x-circle"></i> Cancelar
                                     </button>
                                 </div>
+                                @* ...igual para capacitaciones y obras, usando disabled="@(!puedeAgregarCapacitacion)" y disabled="@(!puedeAgregarObra)" respectivamente *@
                             </EditForm>
                         </div>
                     </div>
@@ -714,6 +716,27 @@
 
 
 @code {
+    private bool puedeAgregarInvestigacion = true;
+    private bool puedeAgregarCapacitacion = true;
+    private bool puedeAgregarObra = true;
+
+    // Requisitos máximos (puedes obtenerlos de la API si lo deseas)
+    private int maxInvestigaciones = 3;
+    private int maxCapacitaciones = 3;
+    private int maxObras = 3;
+
+    // Comprimir PDF (requiere NuGet: PdfSharpCore o similar, aquí ejemplo simple)
+    private async Task<byte[]> ComprimirPdfAsync(IBrowserFile archivo)
+    {
+        // Solo ejemplo: en Blazor WebAssembly no puedes manipular PDF nativamente,
+        // pero puedes reducir el tamaño leyendo menos bytes o usando una librería JS.
+        // Aquí solo se limita el tamaño máximo.
+        using var stream = archivo.OpenReadStream(2 * 1024 * 1024); // 2MB máx
+        using var ms = new MemoryStream();
+        await stream.CopyToAsync(ms);
+        return ms.ToArray();
+    }
+
     private List<Investigacion> listaInvestigaciones = new();
     private bool mostrarInvestigaciones = false;
     private string tablaSeleccionada = "";
@@ -755,10 +778,25 @@ private void MostrarFormCap()
     
 
 
-private async Task SubirPdfCap(InputFileChangeEventArgs e)
-{
-    archivoPDFCap = e.File;
-}
+    private async Task SubirPdfCap(InputFileChangeEventArgs e)
+    {
+        var archivo = e.File;
+        if (archivo.ContentType != "application/pdf")
+        {
+            errorArchivo = "Solo se permiten archivos en formato PDF.";
+            nuevaCapacitacion.Pdf = null;
+            return;
+        }
+        try
+        {
+            nuevaCapacitacion.Pdf = await ComprimirPdfAsync(archivo);
+            errorArchivo = null;
+        }
+        catch
+        {
+            errorArchivo = "Error al leer o comprimir el archivo.";
+        }
+    }
 
 private async Task GuardarCapacitacion()
 {
@@ -791,7 +829,7 @@ private async Task GuardarCapacitacion()
     {
         mensaje = $"Error: {ex.Message}";
     }
-
+        ActualizarEstadosAgregar();
 }
 
 private void EditarCapacitacion(Capacitacione cap)
@@ -841,35 +879,37 @@ private void EditarCapacitacion(Capacitacione cap)
 
                 if (tablaSeleccionada == "Capacitaciones")//capacitaciones
 {
-    var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
-    if (!string.IsNullOrEmpty(cedula))
-    {
-        listaCapacitaciones = await capacitacionesService.ObtenerPorCedulaAsync(cedula);
-        mostrarCapacitaciones = true;
+            var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+            if (!string.IsNullOrEmpty(cedula))
+            {
+                listaCapacitaciones = await capacitacionesService.ObtenerPorCedulaAsync(cedula);
+                mostrarCapacitaciones = true;
+            }
+        }
+        else
+        {
+            mostrarCapacitaciones = false;
+        }
+
+        if (tablaSeleccionada == "Obras")
+        {
+            var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+            if (!string.IsNullOrEmpty(cedula))
+            {
+                listaObras = await obraService.ObtenerPorCedulaAsync(cedula);
+                mostrarObras = true;
+            }
+        }
+        else
+        {
+            mostrarObras = false;
+        }
+
+
+        ActualizarEstadosAgregar();
     }
-}
-else
-{
-    mostrarCapacitaciones = false;
-}
-
-if (tablaSeleccionada == "Obras")
-{
-    var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
-    if (!string.IsNullOrEmpty(cedula))
-    {
-        listaObras = await obraService.ObtenerPorCedulaAsync(cedula);
-        mostrarObras = true;
-    }
-}
-else
-{
-    mostrarObras = false;
-}
 
 
-
-    }
 
     private async Task MostrarFormulario()
     {
@@ -884,34 +924,23 @@ else
     
     //subir pdfs investigaciones
 
-    private async Task SubirPDF(InputFileChangeEventArgs e)
+private async Task SubirPDF(InputFileChangeEventArgs e)
     {
         var archivo = e.File;
-
         if (archivo.ContentType != "application/pdf")
         {
             errorArchivo = "Solo se permiten archivos en formato PDF.";
             nuevaInvestigacion.Pdf = null;
             return;
         }
-        if (archivoPDF != null)
-        {
-            var buffer = new byte[archivoPDF.Size];
-            await archivoPDF.OpenReadStream().ReadAsync(buffer);
-            nuevaInvestigacion.Pdf = buffer;
-        }
         try
         {
-            using var stream = archivo.OpenReadStream(5 * 1024 * 1024); // Máx. 5 MB
-            using var ms = new MemoryStream();
-            await stream.CopyToAsync(ms);
-
-            nuevaInvestigacion.Pdf = ms.ToArray();
-            errorArchivo = null; // Todo bien
+            nuevaInvestigacion.Pdf = await ComprimirPdfAsync(archivo);
+            errorArchivo = null;
         }
         catch
         {
-            errorArchivo = "Error al leer el archivo.";
+            errorArchivo = "Error al leer o comprimir el archivo.";
         }
     }
 
@@ -959,6 +988,7 @@ else
         {
             mensaje = $"Error detallado: {ex.Message}";
         }
+        ActualizarEstadosAgregar();
     }
 
 
@@ -1026,7 +1056,22 @@ else
 
     private async Task SubirPdfObra(InputFileChangeEventArgs e)
     {
-        archivoPDFObra = e.File;
+        var archivo = e.File;
+        if (archivo.ContentType != "application/pdf")
+        {
+            errorArchivo = "Solo se permiten archivos en formato PDF.";
+            nuevaObra.PDF = null;
+            return;
+        }
+        try
+        {
+            nuevaObra.PDF = await ComprimirPdfAsync(archivo);
+            errorArchivo = null;
+        }
+        catch
+        {
+            errorArchivo = "Error al leer o comprimir el archivo.";
+        }
     }
 
     private async Task GuardarObra()
@@ -1055,6 +1100,7 @@ else
         {
             mensaje = $"Error: {ex.Message}";
         }
+        ActualizarEstadosAgregar();
     }
 
     private void EditarObra(ObraS obra)
@@ -1078,6 +1124,13 @@ else
         };
         mostrarFormObra = true;
         modoEdicionObra = true;
+    }
+
+    private void ActualizarEstadosAgregar()
+    {
+        puedeAgregarInvestigacion = listaInvestigaciones.Count < maxInvestigaciones;
+        puedeAgregarCapacitacion = listaCapacitaciones.Count < maxCapacitaciones;
+        puedeAgregarObra = listaObras.Count < maxObras;
     }
   
 }
