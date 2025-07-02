@@ -168,7 +168,7 @@ namespace Proyecto.Backend.UI.Controllers
             if (fechaDesde == default) return NotFound("Rol no encontrado");
 
             var totalObras = await _context.Obras
-                .Where(o => o.Cedula == cedula && o.Fecha >= fechaDesde)
+                .Where(o => o.Cedula == cedula && o.Fecha >= fechaDesde.ToDateTime(TimeOnly.MinValue))
                 .CountAsync();
 
             var evaluacion = await _context.EvaluacionesDocentes

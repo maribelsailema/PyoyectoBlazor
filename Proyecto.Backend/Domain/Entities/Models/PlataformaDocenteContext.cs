@@ -6,40 +6,27 @@ namespace Proyecto.Backend.Domain.Entities.Models;
 
 public partial class PlataformaDocenteContext : DbContext
 {
-    public PlataformaDocenteContext()
-    {
-    }
+    public PlataformaDocenteContext() { }
 
     public PlataformaDocenteContext(DbContextOptions<PlataformaDocenteContext> options)
-        : base(options)
-    {
-    }
+        : base(options) { }
 
     public virtual DbSet<Capacitacione> Capacitaciones { get; set; }
-
     public virtual DbSet<Carrera> Carreras { get; set; }
-
     public virtual DbSet<EvaluacionesDocente> EvaluacionesDocentes { get; set; }
-
     public virtual DbSet<Facultade> Facultades { get; set; }
-
     public virtual DbSet<Investigacione> Investigaciones { get; set; }
-
     public virtual DbSet<Obra> Obras { get; set; }
-
     public virtual DbSet<RequisitosAscenso> RequisitosAscensos { get; set; }
-
     public virtual DbSet<RolesDocente> RolesDocentes { get; set; }
-
     public virtual DbSet<Usuario> Usuarios { get; set; }
-
     public DbSet<Postulacion> Postulaciones { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Capacitacione>(entity =>
         {
-            entity.HasKey(e => e.IdCap).HasName("PK__Capacita__0FA7805A886188BE");
+            entity.HasKey(e => e.IdCap);
 
             entity.Property(e => e.Cedula)
                 .HasMaxLength(10)
@@ -55,21 +42,20 @@ public partial class PlataformaDocenteContext : DbContext
 
         modelBuilder.Entity<Carrera>(entity =>
         {
-            entity.HasKey(e => e.IdCarrera).HasName("PK__Carreras__884A8F1F7ED44CD4");
+            entity.HasKey(e => e.IdCarrera);
 
-            entity.HasIndex(e => e.Nombre, "UQ__Carreras__75E3EFCF7AFD1A87").IsUnique();
-
+            entity.HasIndex(e => e.Nombre).IsUnique();
             entity.Property(e => e.Nombre).HasMaxLength(100);
 
             entity.HasOne(d => d.IdFacultadNavigation).WithMany(p => p.Carreras)
                 .HasForeignKey(d => d.IdFacultad)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Carreras__IdFacu__5165187F");
+                .HasConstraintName("FK_Carreras_Facultad");
         });
 
         modelBuilder.Entity<EvaluacionesDocente>(entity =>
         {
-            entity.HasKey(e => e.IdEval).HasName("PK__Evaluaci__0E05EE774C941474");
+            entity.HasKey(e => e.IdEval);
 
             entity.Property(e => e.Cedula)
                 .HasMaxLength(10)
@@ -85,16 +71,15 @@ public partial class PlataformaDocenteContext : DbContext
 
         modelBuilder.Entity<Facultade>(entity =>
         {
-            entity.HasKey(e => e.IdFacultad).HasName("PK__Facultad__443D4D5E2E176AE5");
+            entity.HasKey(e => e.IdFacultad);
 
-            entity.HasIndex(e => e.Nombre, "UQ__Facultad__75E3EFCF5C0C7E6C").IsUnique();
-
+            entity.HasIndex(e => e.Nombre).IsUnique();
             entity.Property(e => e.Nombre).HasMaxLength(100);
         });
 
         modelBuilder.Entity<Investigacione>(entity =>
         {
-            entity.HasKey(e => e.IdInv).HasName("PK__Investig__0C1AC169E2EC0101");
+            entity.HasKey(e => e.IdInv);
 
             entity.Property(e => e.Cedula)
                 .HasMaxLength(10)
@@ -109,18 +94,28 @@ public partial class PlataformaDocenteContext : DbContext
 
             entity.HasOne(d => d.IdCarreraNavigation).WithMany(p => p.Investigaciones)
                 .HasForeignKey(d => d.IdCarrera)
-                .HasConstraintName("FK__Investiga__IdCar__52593CB8");
+                .HasConstraintName("FK_Inv_Carrera");
         });
 
         modelBuilder.Entity<Obra>(entity =>
         {
-            entity.HasKey(e => e.IdObra).HasName("PK__Obras__8034B032485C9638");
+            entity.HasKey(e => e.IdObra);
 
             entity.Property(e => e.Cedula)
                 .HasMaxLength(10)
                 .IsUnicode(false);
-            entity.Property(e => e.Pdf).HasColumnName("PDF");
+            entity.Property(e => e.Titulo).HasMaxLength(255);
             entity.Property(e => e.TipoObra).HasMaxLength(50);
+            entity.Property(e => e.Fecha).HasColumnType("date");
+            entity.Property(e => e.Pais).HasMaxLength(100);
+            entity.Property(e => e.Ciudad).HasMaxLength(100);
+            entity.Property(e => e.Editorial).HasMaxLength(255);
+            entity.Property(e => e.ISBN).HasMaxLength(50);
+            entity.Property(e => e.DOI).HasMaxLength(100);
+            entity.Property(e => e.Enlace).HasMaxLength(255);
+            entity.Property(e => e.Autores).HasMaxLength(255);
+            entity.Property(e => e.Resumen).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.PDF).HasColumnName("PDF");
 
             entity.HasOne(d => d.CedulaNavigation).WithMany(p => p.Obras)
                 .HasForeignKey(d => d.Cedula)
@@ -130,9 +125,7 @@ public partial class PlataformaDocenteContext : DbContext
 
         modelBuilder.Entity<RequisitosAscenso>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Requisit__3214EC072A51AC7D");
-
-            entity.ToTable("RequisitosAscenso");
+            entity.HasKey(e => e.Id);
 
             entity.Property(e => e.DesdeRol)
                 .HasMaxLength(10)
@@ -145,9 +138,7 @@ public partial class PlataformaDocenteContext : DbContext
 
         modelBuilder.Entity<RolesDocente>(entity =>
         {
-            entity.HasKey(e => e.IdRol).HasName("PK__RolesDoc__2A49584C23304EE2");
-
-            entity.ToTable("RolesDocente");
+            entity.HasKey(e => e.IdRol);
 
             entity.Property(e => e.Activo).HasDefaultValue(true);
             entity.Property(e => e.Cedula)
@@ -166,9 +157,9 @@ public partial class PlataformaDocenteContext : DbContext
 
         modelBuilder.Entity<Usuario>(entity =>
         {
-            entity.HasKey(e => e.Ced).HasName("PK__Usuarios__C1FE05F2A6CF09A3");
+            entity.HasKey(e => e.Ced);
 
-            entity.HasIndex(e => e.Usuari, "UQ__Usuarios__B6E95C87E8D98C9C").IsUnique();
+            entity.HasIndex(e => e.Usuari).IsUnique();
 
             entity.Property(e => e.Ced)
                 .HasMaxLength(10)
@@ -208,9 +199,7 @@ public partial class PlataformaDocenteContext : DbContext
             entity.Property(e => e.Estado)
                 .HasMaxLength(20)
                 .IsUnicode(false);
-
         });
-
 
         OnModelCreatingPartial(modelBuilder);
     }

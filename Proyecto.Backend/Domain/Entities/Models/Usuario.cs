@@ -5,7 +5,7 @@ namespace Proyecto.Backend.Domain.Entities.Models;
 
 public partial class Usuario
 {
-    public string Ced { get; set; } = null!;
+    public string Ced { get; set; } = string.Empty;
 
     public string Nom1 { get; set; } = null!;
 

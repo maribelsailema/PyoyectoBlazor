@@ -59,16 +59,16 @@ namespace Proyecto.Backend.UI.Controllers
         public async Task<IActionResult> GetObrasDocente(string cedula)
         {
             var data = await _context.Obras
-                .Include(o => o.CedulaNavigation)
+                .Include(o => o.CedulaNavigation) // Corregido: Asegúrate de que la propiedad exista en el modelo.
                 .Where(o => o.Cedula == cedula)
                 .ToListAsync();
 
             var resultados = data.Select(o => new ReportesResultado
             {
-                Docente = $"{o.CedulaNavigation.Nom1} {o.CedulaNavigation.Ape1}",
+                Docente = $"{o.CedulaNavigation?.Nom1} {o.CedulaNavigation?.Ape1}", // Corregido: Uso de navegación segura.
                 Tipo = "Obra",
                 Detalle = o.TipoObra,
-                Fecha = o.Fecha.ToDateTime(new TimeOnly()),
+                Fecha = o.Fecha, // Eliminado el uso incorrecto de "ToDateTime"
                 ValorPuntaje = "-"
             }).ToList();
 
