@@ -63,24 +63,22 @@ namespace Proyecto.Backend.UI.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
-        [HttpGet("Ultima/{cedula}")]
-        public async Task<ActionResult<EvaluacionesDocente>> GetUltimaEvaluacion(string cedula)
+        [HttpGet("UltimaDesde/{cedula}/{fechaDesde}")]
+        public async Task<ActionResult<EvaluacionesDocente>> GetUltimaEvaluacionDesde(string cedula, string fechaDesde)
         {
+            if (!DateOnly.TryParse(fechaDesde, out var fechaDesdeParsed))
+                return BadRequest("Formato de fecha inválido");
+
+            var fechaActual = DateOnly.FromDateTime(DateTime.Today);
+
             var evaluacion = await _context.EvaluacionesDocentes
-                .Where(e => e.Cedula == cedula)
+                .Where(e => e.Cedula == cedula && e.FechaEvaluacion > fechaDesdeParsed && e.FechaEvaluacion <= fechaActual)
                 .OrderByDescending(e => e.FechaEvaluacion)
-                .Select(e => new EvaluacionesDocente
-                {
-                    Periodo = e.Periodo,
-                    PuntajeFinal = e.PuntajeFinal,
-                    FechaEvaluacion = e.FechaEvaluacion
-                })
                 .FirstOrDefaultAsync();
 
-            if (evaluacion == null)
-                return NotFound();
-
-            return Ok(evaluacion);
+            return evaluacion;
         }
+
+
     }
 }

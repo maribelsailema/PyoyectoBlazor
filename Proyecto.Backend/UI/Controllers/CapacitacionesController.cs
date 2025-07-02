@@ -65,15 +65,24 @@ namespace Proyecto.Backend.UI.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
-        [HttpGet("HorasTotales/{cedula}")]
-        public async Task<ActionResult<int>> GetHorasTotales(string cedula)
-        {
-            var totalHoras = await _context.Capacitaciones
-                .Where(c => c.Cedula == cedula)
-                .SumAsync(c => (int?)c.DuracionHoras) ?? 0;
 
-            return Ok(totalHoras);
+        [HttpGet("HorasTotalesDesde/{cedula}/{fechaDesde}")]
+        public async Task<ActionResult<int>> GetHorasTotalesDesde(string cedula, string fechaDesde)
+        {
+            if (!DateOnly.TryParse(fechaDesde, out var fechaDesdeParsed))
+                return BadRequest("Formato de fecha inválido");
+
+            var fechaActual = DateOnly.FromDateTime(DateTime.Today);
+
+            var horas = await _context.Capacitaciones
+                .Where(c => c.Cedula == cedula && c.FechaInicio > fechaDesdeParsed && c.FechaInicio <= fechaActual)
+                .SumAsync(c => c.DuracionHoras);
+
+            return horas;
         }
+
+
+
         [HttpPost("GuardarDto")]
         public async Task<ActionResult<Capacitacione>> GuardarDto(CapacitacionCreateDto dto)
         {
@@ -82,7 +91,12 @@ namespace Proyecto.Backend.UI.Controllers
                 Cedula = dto.Cedula,
                 NombreCurso = dto.NombreCurso,
                 DuracionHoras = dto.DuracionHoras,
-                FechaInicio = DateOnly.FromDateTime(dto.FechaInicio), // ← conversión
+                FechaInicio = DateOnly.FromDateTime(dto.FechaInicio),
+                TipoCapacitacion = dto.TipoCapacitacion,
+                Institucion = dto.Institucion,
+                Modalidad = dto.Modalidad,
+                Certificado = dto.Certificado,
+                Observaciones = dto.Observaciones,// ← conversión
                 Pdf = dto.Pdf
             };
 
@@ -102,6 +116,11 @@ namespace Proyecto.Backend.UI.Controllers
             entidad.NombreCurso = dto.NombreCurso;
             entidad.DuracionHoras = dto.DuracionHoras;
             entidad.FechaInicio = DateOnly.FromDateTime(dto.FechaInicio);
+            entidad.TipoCapacitacion = dto.TipoCapacitacion;
+            entidad.Institucion = dto.Institucion;
+            entidad.Modalidad = dto.Modalidad;
+            entidad.Certificado = dto.Certificado;
+            entidad.Observaciones = dto.Observaciones;
             entidad.Pdf = dto.Pdf;
 
             await _context.SaveChangesAsync();

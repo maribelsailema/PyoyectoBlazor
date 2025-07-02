@@ -34,10 +34,26 @@ namespace Proyecto.Backend.UI.Controllers
         [HttpPost("Guardar")]
         public async Task<ActionResult<Investigacione>> Guardar(Investigacione inv)
         {
-            _context.Investigaciones.Add(inv);
+            var nueva = new Investigacione
+            {
+                Cedula = inv.Cedula,
+                NombreProyecto = inv.NombreProyecto,
+                TiempoMeses = inv.TiempoMeses,
+                FechaInicio = inv.FechaInicio,
+                FechaFin = inv.FechaFin,
+                Pdf = inv.Pdf,
+                IdCarrera = inv.IdCarrera,
+                Tipo = inv.Tipo,
+                Estado = inv.Estado,
+                Cientifico = inv.Cientifico
+            };
+
+            _context.Investigaciones.Add(nueva);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(Buscar), new { id = inv.IdInv }, inv);
+
+            return CreatedAtAction(nameof(Buscar), new { id = nueva.IdInv }, nueva);
         }
+
 
         [HttpPut("Actualizar/{id}")]
         public async Task<IActionResult> Actualizar(int id, Investigacione inv)
@@ -51,6 +67,9 @@ namespace Proyecto.Backend.UI.Controllers
             existente.FechaInicio = inv.FechaInicio;
             existente.FechaFin = inv.FechaFin;
             existente.IdCarrera = inv.IdCarrera;
+            existente.Tipo = inv.Tipo;
+            existente.Estado = inv.Estado;
+            existente.Cientifico = inv.Cientifico;
 
             await _context.SaveChangesAsync();
             return Ok(existente);
@@ -66,15 +85,22 @@ namespace Proyecto.Backend.UI.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
-        [HttpGet("MesesTotales/{cedula}")]
-        public async Task<ActionResult<int>> GetMesesTotalesInvestigacion(string cedula)
+
+        [HttpGet("MesesTotalesDesde/{cedula}/{fechaDesde}")]
+        public async Task<ActionResult<int>> GetMesesTotalesDesde(string cedula, string fechaDesde)
         {
+            if (!DateOnly.TryParse(fechaDesde, out var fechaDesdeParsed))
+                return BadRequest("Formato de fecha inválido");
+
+            var fechaActual = DateOnly.FromDateTime(DateTime.Today);
+
             var meses = await _context.Investigaciones
-                .Where(i => i.Cedula == cedula )
+                .Where(i => i.Cedula == cedula && i.FechaInicio > fechaDesdeParsed && i.FechaInicio <= fechaActual)
                 .SumAsync(i => i.TiempoMeses);
 
-            return Ok(meses);
+            return meses;
         }
+
 
 
         [HttpGet("PorCedula/{cedula}")]
@@ -95,8 +121,10 @@ namespace Proyecto.Backend.UI.Controllers
                 FechaFin = i.FechaFin?.ToDateTime(TimeOnly.MinValue),
                 Pdf = i.Pdf,
                 IdCarrera = i.IdCarrera,
-                NombreCarrera = i.IdCarreraNavigation?.Nombre
-
+                NombreCarrera = i.IdCarreraNavigation?.Nombre,
+                Tipo = i.Tipo,          
+                Estado = i.Estado,
+                Cientifico= i.Cientifico
             }).ToList();
 
             return Ok(resultado);

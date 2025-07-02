@@ -1,84 +1,152 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Proyecto.Backend.Domain.Entities.Models;
+using Proyecto.Shared.Models;
 
-namespace Proyecto.Backend.UI.Controllers
+namespace Proyecto.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ObrasController : ControllerBase
+    public class ObraController : ControllerBase
     {
         private readonly PlataformaDocenteContext _context;
-        public ObrasController(PlataformaDocenteContext context)
+
+        public ObraController(PlataformaDocenteContext context)
         {
             _context = context;
         }
+        [HttpGet("por-cedula/{cedula}")]
+public async Task<ActionResult<List<ObraS>>> ObtenerPorCedula(string cedula)
+{
+    var obras = await _context.Obras
+        .Where(o => o.Cedula == cedula)
+        .ToListAsync();
 
-        [HttpGet("Listar")]
-        public async Task<ActionResult<IEnumerable<Obra>>> Listar()
+    // MAPEAR Obra → ObraS
+    var resultado = obras.Select(o => new ObraS
+    {
+        IdObra = o.IdObra,
+        Cedula = o.Cedula,
+        Titulo = "", // <-- puedes obtenerlo si lo tienes, o dejarlo vacío
+        TipoObra = o.TipoObra,
+        FechaPublicacion = DateTime.Parse(o.Fecha.ToString()),
+        Documento = o.Pdf ?? new byte[0],
+        NombreArchivo = "archivo.pdf", // por defecto o uno real
+    }).ToList();
+
+    return Ok(resultado);
+}
+
+        [HttpGet]
+        public async Task<ActionResult<List<Obra>>> ObtenerTodos()
         {
-            var ob = await _context.Obras.ToListAsync();
-            return Ok(ob);
+            return await _context.Obras.ToListAsync();
         }
 
-        [HttpGet("Buscar/{id}")]
-        public async Task<ActionResult<Obra>> Buscar(int id)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Obra>> ObtenerPorId(int id)
         {
-            var obra = await _context.Obras.FindAsync(id);
-            if (obra == null) return NotFound();
-            return Ok(obra);
+            var obra = await _context.Obras
+                .FirstOrDefaultAsync(o => o.IdObra == id);
+
+            if (obra == null)
+            {
+                return NotFound();
+            }
+
+            return obra;
         }
 
-        [HttpPost("Guardar")]
-        public async Task<ActionResult<Obra>> Guardar(Obra obra)
+        [HttpPost]
+        public async Task<ActionResult<Obra>> Crear(ObraS obraS)
         {
+            var obra = new Obra
+            {
+                Cedula = obraS.Cedula,
+                TipoObra = obraS.TipoObra,
+                Fecha = DateOnly.FromDateTime(obraS.FechaPublicacion),
+                Pdf = obraS.Documento,
+            };
+
             _context.Obras.Add(obra);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(Buscar), new { id = obra.IdObra }, obra);
+
+            return CreatedAtAction(nameof(ObtenerPorId), new { id = obra.IdObra }, obra);
         }
 
-        [HttpPut("Actualizar/{id}")]
+
+        [HttpPut("{id}")]
         public async Task<IActionResult> Actualizar(int id, Obra obra)
         {
-            var existente = await _context.Obras.FindAsync(id);
-            if (existente == null) return NotFound();
+            if (id != obra.IdObra)
+            {
+                return BadRequest();
+            }
 
-            existente.Cedula = obra.Cedula;
-            existente.TipoObra = obra.TipoObra;
-            existente.Fecha = obra.Fecha;
+            _context.Entry(obra).State = EntityState.Modified;
 
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ObraExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
-            await _context.SaveChangesAsync();
-            return Ok(existente);
-        }
-
-        [HttpDelete("Eliminar/{id}")]
-        public async Task<IActionResult> Eliminar(int id)
-        {
-            var existente = await _context.Obras.FindAsync(id);
-            if (existente == null) return NotFound();
-
-            _context.Obras.Remove(existente);
-            await _context.SaveChangesAsync();
             return NoContent();
         }
-    
-    [HttpGet("ByDocente/{cedula}")]
-        public async Task<ActionResult<IEnumerable<Obra>>> GetObrasByDocente(string cedula)
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Eliminar(int id)
         {
+            var obra = await _context.Obras.FindAsync(id);
+            if (obra == null)
+            {
+                return NotFound();
+            }
+
+            _context.Obras.Remove(obra);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        private bool ObraExists(int id)
+        {
+            return _context.Obras.Any(e => e.IdObra == id);
+        }
+
+        [HttpGet("ByDocenteDesde/{cedula}/{fechaDesde}")]
+        public async Task<ActionResult<List<Obra>>> GetObrasPorDocenteDesde(string cedula, string fechaDesde)
+        {
+            if (!DateOnly.TryParse(fechaDesde, out var fechaDesdeParsed))
+                return BadRequest("Formato de fecha inválido");
+
+            var fechaActual = DateOnly.FromDateTime(DateTime.Today);
+
             var obras = await _context.Obras
-                .Where(o => o.Cedula == cedula)
+                .Where(o => o.Cedula == cedula && o.Fecha > fechaDesdeParsed && o.Fecha <= fechaActual)
                 .Select(o => new Obra
                 {
                     IdObra = o.IdObra,
                     TipoObra = o.TipoObra,
-                    Fecha = o.Fecha
+                    Fecha = o.Fecha,
+                    Cedula = o.Cedula // <-- asegúrate de incluir esto
                 })
                 .ToListAsync();
 
-            return Ok(obras);
+            return obras;
         }
-    }
 
+
+
+    }
 }

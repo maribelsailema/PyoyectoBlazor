@@ -1,0 +1,33 @@
+﻿using System.Net.Http.Json;
+using Proyecto.Shared.Models;
+
+namespace Proyecto.Frontend.Services
+{
+    public class ObraService
+    {
+        private readonly HttpClient _httpClient;
+
+        public ObraService(HttpClient httpClient)
+        {
+            _httpClient = httpClient;
+        }
+
+        public async Task<List<ObraS>> ObtenerPorCedulaAsync(string cedula)
+        {
+            return await _httpClient.GetFromJsonAsync<List<ObraS>>($"api/Obra/por-cedula/{cedula}")
+                ?? new List<ObraS>();
+        }
+
+
+        public async Task<ObraS?> GuardarObraAsync(ObraS obra)
+        {
+            var response = await _httpClient.PostAsJsonAsync("api/Obra", obra);
+            return await response.Content.ReadFromJsonAsync<ObraS>();
+        }
+
+        public async Task ActualizarObraAsync(ObraS obra)
+        {
+            await _httpClient.PutAsJsonAsync($"api/Obra/{obra.IdObra}", obra);
+        }
+    }
+}

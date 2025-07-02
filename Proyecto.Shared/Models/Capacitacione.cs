@@ -10,7 +10,7 @@ namespace Proyecto.Shared.Models;
 /// <summary>
 /// DTO idéntico a la entidad EF, pero sin navigation properties para evitar ciclos JSON
 /// </summary>
-public class Capacitacione
+public class Capacitacione : IValidatableObject
 {
     public int IdCap { get; set; }
 
@@ -28,7 +28,37 @@ public class Capacitacione
     [Required(ErrorMessage = "La fecha de inicio es obligatoria")]
     public DateTime FechaInicio { get; set; }  // Cambia DateOnly por DateTime
 
+    // 🔹 NUEVOS CAMPOS
+    [StringLength(40)]
+    public string? TipoCapacitacion { get; set; }
+
+    [Required(ErrorMessage = "La institución es obligatoria")]   // ⬅️ REGLA 2
+    [StringLength(150)]
+    public string? Institucion { get; set; }
+
+    [StringLength(10)]
+    public string? Modalidad { get; set; }
+
+    public bool Certificado { get; set; } = false;
+
+    [StringLength(500)]
+    public string? Observaciones { get; set; }
+
     public byte[]? Pdf { get; set; }
+
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext context)
+    {
+        DateTime hoy = DateTime.Today;
+        DateTime limiteInferior = hoy.AddYears(-4);
+
+        if (FechaInicio < limiteInferior || FechaInicio > hoy)
+        {
+            yield return new ValidationResult(
+                $"La fecha debe estar entre {limiteInferior:dd/MM/yyyy} y {hoy:dd/MM/yyyy}.",
+                new[] { nameof(FechaInicio) });
+        }
+    }
 }
 
 //capacticaion todo

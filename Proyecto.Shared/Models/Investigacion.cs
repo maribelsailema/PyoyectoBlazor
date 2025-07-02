@@ -16,7 +16,7 @@ namespace Proyecto.Shared.Models
         public int TiempoMeses { get; set; }
 
         [Required(ErrorMessage = "La fecha de inicio es obligatoria.")]
-        public DateTime FechaInicio { get; set; }
+        public DateTime? FechaInicio { get; set; }
 
         public DateTime? FechaFin { get; set; }
 
@@ -25,6 +25,12 @@ namespace Proyecto.Shared.Models
         [Required(ErrorMessage = "La carrera es obligatoriaaaa.")]
         public int? IdCarrera { get; set; }  // <-- Usamos IdCarrera ahora
         public string Carrera { get; set; } = string.Empty;
+        [Required(ErrorMessage = "El tipo es obligatorio.")]
+        public string? Tipo { get; set; }
+
+        [Required(ErrorMessage = "El estado es obligatorio.")]
+        public string? Estado { get; set; }
+        public string? Cientifico { get; set; }
 
         public string? NombreCarrera { get; set; }
         public string Cedula { get; set; } = string.Empty;
