@@ -420,6 +420,51 @@
                <InputDate TValue="DateTime" @bind-Value="nuevaCapacitacion.FechaInicio" />
             </div>
         </div>
+        <div class="row mb-3">
+    <div class="col">
+        <label>Tipo</label>
+        <InputSelect class="form-select"
+                     @bind-Value="nuevaCapacitacion.TipoCapacitacion">
+            <option value="">Seleccione</option>
+            <option>Curso</option>
+            <option>Taller</option>
+            <option>Seminario</option>
+            <option>Diplomado</option>
+        </InputSelect>
+    </div>
+
+    <div class="col">
+        <label>Modalidad</label>
+        <InputSelect class="form-select"
+                     @bind-Value="nuevaCapacitacion.Modalidad">
+            <option value="">Seleccione</option>
+            <option>Presencial</option>
+            <option>Virtual</option>
+            <option>Híbrida</option>
+        </InputSelect>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col">
+        <label>Institución</label>
+        <InputText class="form-control"
+                   @bind-Value="nuevaCapacitacion.Institucion" />
+    </div>
+
+    <div class="col form-check mt-4">
+        <InputCheckbox class="form-check-input"
+                       @bind-Value="nuevaCapacitacion.Certificado" />
+        <label class="form-check-label">Certificado recibido</label>
+    </div>
+</div>
+
+<div class="mb-3">
+    <label>Observaciones</label>
+    <InputTextArea class="form-control" rows="3"
+                   @bind-Value="nuevaCapacitacion.Observaciones" />
+</div>
+
 
         <div class="mb-3">
             <label>Subir PDF</label>
@@ -484,6 +529,11 @@
                 <th>Curso</th>
                 <th>Horas</th>
                 <th>Fecha Inicio</th>
+                <th>Tipo</th>
+<th>Modalidad</th>
+<th>Institución</th>
+<th>Cert.</th>
+
                 <th>PDF</th>
                 <th></th>
             </tr>
@@ -495,6 +545,11 @@
                     <td>@cap.NombreCurso</td>
                     <td>@cap.DuracionHoras</td>
                     <td>@cap.FechaInicio.ToShortDateString()</td>
+                    <td>@cap.TipoCapacitacion</td>
+                    <td>@cap.Modalidad</td>
+                    <td>@cap.Institucion</td>
+                    <td>@(cap.Certificado ? "Sí" : "No")</td>
+
                     <td>
                         @if (cap.Pdf is not null && cap.Pdf.Length > 0)
                         {

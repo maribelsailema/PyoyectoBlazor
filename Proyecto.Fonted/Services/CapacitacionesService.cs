@@ -21,7 +21,13 @@ public class CapacitacionesService
         NombreCurso = c.NombreCurso,
         DuracionHoras = c.DuracionHoras,
         FechaInicio = c.FechaInicio,
-        Pdf = c.Pdf
+       
+            TipoCapacitacion = c.TipoCapacitacion,
+        Institucion = c.Institucion,
+        Modalidad = c.Modalidad,
+        Certificado = c.Certificado,
+        Observaciones = c.Observaciones,
+         Pdf = c.Pdf
     };
 
 

@@ -91,7 +91,12 @@ namespace Proyecto.Backend.UI.Controllers
                 Cedula = dto.Cedula,
                 NombreCurso = dto.NombreCurso,
                 DuracionHoras = dto.DuracionHoras,
-                FechaInicio = DateOnly.FromDateTime(dto.FechaInicio), // ← conversión
+                FechaInicio = DateOnly.FromDateTime(dto.FechaInicio),
+                TipoCapacitacion = dto.TipoCapacitacion,
+                Institucion = dto.Institucion,
+                Modalidad = dto.Modalidad,
+                Certificado = dto.Certificado,
+                Observaciones = dto.Observaciones,// ← conversión
                 Pdf = dto.Pdf
             };
 
@@ -111,6 +116,11 @@ namespace Proyecto.Backend.UI.Controllers
             entidad.NombreCurso = dto.NombreCurso;
             entidad.DuracionHoras = dto.DuracionHoras;
             entidad.FechaInicio = DateOnly.FromDateTime(dto.FechaInicio);
+            entidad.TipoCapacitacion = dto.TipoCapacitacion;
+            entidad.Institucion = dto.Institucion;
+            entidad.Modalidad = dto.Modalidad;
+            entidad.Certificado = dto.Certificado;
+            entidad.Observaciones = dto.Observaciones;
             entidad.Pdf = dto.Pdf;
 
             await _context.SaveChangesAsync();

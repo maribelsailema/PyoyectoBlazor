@@ -28,7 +28,25 @@ public class Capacitacione
     [Required(ErrorMessage = "La fecha de inicio es obligatoria")]
     public DateTime FechaInicio { get; set; }  // Cambia DateOnly por DateTime
 
+    // 🔹 NUEVOS CAMPOS
+    [StringLength(40)]
+    public string? TipoCapacitacion { get; set; }
+
+    [StringLength(150)]
+    public string? Institucion { get; set; }
+
+    [StringLength(10)]
+    public string? Modalidad { get; set; }
+
+    public bool Certificado { get; set; } = false;
+
+    [StringLength(500)]
+    public string? Observaciones { get; set; }
+
     public byte[]? Pdf { get; set; }
+
+
+  
 }
 
 //capacticaion todo
