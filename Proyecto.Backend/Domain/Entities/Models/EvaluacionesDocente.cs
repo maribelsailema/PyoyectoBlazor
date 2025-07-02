@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Proyecto.Backend.Domain.Entities.Models;
 
@@ -14,6 +13,8 @@ public partial class EvaluacionesDocente
     public decimal PuntajeFinal { get; set; }
 
     public DateOnly FechaEvaluacion { get; set; }
+
+    public byte[]? Pdf { get; set; }  // PDF en binario (VARBINARY)
 
     public virtual Usuario CedulaNavigation { get; set; } = null!;
 }

@@ -2,6 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Proyecto.Backend.Domain.Entities.Models;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace Proyecto.Backend.UI.Controllers
 {
@@ -10,6 +14,7 @@ namespace Proyecto.Backend.UI.Controllers
     public class EvaluacionesDocentesController : ControllerBase
     {
         private readonly PlataformaDocenteContext _context;
+
         public EvaluacionesDocentesController(PlataformaDocenteContext context)
         {
             _context = context;
@@ -18,36 +23,37 @@ namespace Proyecto.Backend.UI.Controllers
         [HttpGet("Listar")]
         public async Task<ActionResult<IEnumerable<EvaluacionesDocente>>> Listar()
         {
-            var eval = await _context.EvaluacionesDocentes.ToListAsync();
-            return Ok(eval);
+            var lista = await _context.EvaluacionesDocentes.ToListAsync();
+            return Ok(lista);
         }
 
         [HttpGet("Buscar/{id}")]
         public async Task<ActionResult<EvaluacionesDocente>> Buscar(int id)
         {
-            var eval = await _context.EvaluacionesDocentes.FindAsync(id);
-            if (eval == null) return NotFound();
-            return Ok(eval);
+            var evaluacion = await _context.EvaluacionesDocentes.FindAsync(id);
+            if (evaluacion == null) return NotFound();
+            return Ok(evaluacion);
         }
 
         [HttpPost("Guardar")]
-        public async Task<ActionResult<EvaluacionesDocente>> Guardar(EvaluacionesDocente eval)
+        public async Task<ActionResult<EvaluacionesDocente>> Guardar(EvaluacionesDocente evaluacion)
         {
-            _context.EvaluacionesDocentes.Add(eval);
+            _context.EvaluacionesDocentes.Add(evaluacion);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(Buscar), new { id = eval.IdEval }, eval);
+            return CreatedAtAction(nameof(Buscar), new { id = evaluacion.IdEval }, evaluacion);
         }
 
         [HttpPut("Actualizar/{id}")]
-        public async Task<IActionResult> Actualizar(int id, EvaluacionesDocente eval)
+        public async Task<IActionResult> Actualizar(int id, EvaluacionesDocente evaluacion)
         {
             var existente = await _context.EvaluacionesDocentes.FindAsync(id);
             if (existente == null) return NotFound();
 
-            existente.Cedula = eval.Cedula;
-            existente.Periodo = eval.Periodo;
-            existente.PuntajeFinal = eval.PuntajeFinal;
-            existente.FechaEvaluacion = eval.FechaEvaluacion;
+            existente.Cedula = evaluacion.Cedula;
+            existente.Periodo = evaluacion.Periodo;
+            existente.PuntajeFinal = evaluacion.PuntajeFinal;
+            existente.FechaEvaluacion = evaluacion.FechaEvaluacion;
+            existente.Pdf = evaluacion.Pdf;
 
             await _context.SaveChangesAsync();
             return Ok(existente);
@@ -63,22 +69,39 @@ namespace Proyecto.Backend.UI.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
-        [HttpGet("UltimaDesde/{cedula}/{fechaDesde}")]
-        public async Task<ActionResult<EvaluacionesDocente>> GetUltimaEvaluacionDesde(string cedula, string fechaDesde)
+
+        [HttpGet("VerPdf/{id}")]
+        public async Task<IActionResult> VerPdf(int id)
         {
-            if (!DateOnly.TryParse(fechaDesde, out var fechaDesdeParsed))
-                return BadRequest("Formato de fecha inválido");
+            var evaluacion = await _context.EvaluacionesDocentes.FindAsync(id);
+            if (evaluacion == null || evaluacion.Pdf == null)
+                return NotFound("PDF no encontrado");
 
-            var fechaActual = DateOnly.FromDateTime(DateTime.Today);
-
-            var evaluacion = await _context.EvaluacionesDocentes
-                .Where(e => e.Cedula == cedula && e.FechaEvaluacion > fechaDesdeParsed && e.FechaEvaluacion <= fechaActual)
-                .OrderByDescending(e => e.FechaEvaluacion)
-                .FirstOrDefaultAsync();
-
-            return evaluacion;
+            return File(evaluacion.Pdf, "application/pdf");
         }
 
+        [HttpPost("GuardarConArchivo")]
+        public async Task<IActionResult> GuardarConArchivo([FromForm] IFormFile archivo, [FromForm] string cedula, [FromForm] string periodo, [FromForm] decimal puntajeFinal, [FromForm] DateTime fechaEvaluacion)
+        {
+            if (archivo == null || archivo.Length == 0)
+                return BadRequest("Archivo PDF inválido");
 
+            using var memoryStream = new MemoryStream();
+            await archivo.CopyToAsync(memoryStream);
+
+            var evaluacion = new EvaluacionesDocente
+            {
+                Cedula = cedula,
+                Periodo = periodo,
+                PuntajeFinal = puntajeFinal,
+                FechaEvaluacion = DateOnly.FromDateTime(fechaEvaluacion),
+                Pdf = memoryStream.ToArray()
+            };
+
+            _context.EvaluacionesDocentes.Add(evaluacion);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { mensaje = "Evaluación guardada con PDF", id = evaluacion.IdEval });
+        }
     }
 }
