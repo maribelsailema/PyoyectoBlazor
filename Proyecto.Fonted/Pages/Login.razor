@@ -4,9 +4,132 @@
 @inject NavigationManager Navigation
 @inject HttpClient Http
 @inject IJSRuntime JS
-
-
 <style>
+    body {
+        background-color: #f0f2f5;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .login-form {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 15px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        max-width: 400px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+
+    .login-header i {
+        color: #007bff;
+        margin-bottom: 10px;
+    }
+
+    .login-header h2 {
+        margin: 0;
+        color: #007bff;
+        font-weight: bold;
+    }
+
+    .login-header p {
+        margin-top: 5px;
+        font-size: 0.95rem;
+        color: #555;
+    }
+
+    label {
+        display: block;
+        text-align: left;
+        margin-top: 1rem;
+        margin-bottom: 0.3rem;
+        font-weight: 600;
+        color: #444;
+    }
+
+    .input-group {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+        .input-group i {
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+    .form-input {
+        width: 100%;
+        padding: 0.6rem 0.6rem 0.6rem 2.5rem;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border 0.2s ease;
+    }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+    .btn-login {
+        width: 100%;
+        padding: 0.6rem;
+        margin-top: 1rem;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-login:hover {
+            background-color: #0056b3;
+        }
+
+    .error-message {
+        color: red;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+
+    .password-group {
+        position: relative;
+    }
+
+    .btn-eye {
+        background: transparent;
+        border: none;
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #888;
+        font-size: 1.1rem;
+        cursor: pointer;
+        padding: 0 0.5rem;
+        z-index: 2;
+        outline: none;
+        transition: color 0.2s;
+    }
+
+        .btn-eye:hover {
+            color: #007bff;
+        }
+
+    /* Modal */
     .modal-overlay {
         position: fixed;
         top: 0;
@@ -27,33 +150,20 @@
         border-radius: 10px;
         width: 90%;
         max-width: 400px;
-        max-height: 300px; /* Limita la altura */
-        overflow-y: auto; /* Agrega scroll si el contenido lo necesita */
+        max-height: 300px;
+        overflow-y: auto;
         box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
         text-align: center;
         z-index: 10000;
         box-sizing: border-box;
-        font-family: sans-serif;
         animation: fadeIn 0.3s ease-in-out;
-        position: relative;
     }
 
-
         .modal h3 {
-            margin-top: 0;
-            margin-bottom: 1rem;
-            font-size: 1.25rem;
+            margin: 0 0 1rem;
+            font-size: 1.2rem;
             color: #333;
         }
-
-        .modal ul.validation-errors {
-            text-align: left;
-            color: red;
-            padding-left: 1.2rem;
-            margin-bottom: 1rem;
-        }
-
- 
 
     .btn-close-top {
         position: absolute;
@@ -64,16 +174,17 @@
         font-size: 1.2rem;
         cursor: pointer;
         color: #999;
-        transition: color 0.2s ease;
     }
 
         .btn-close-top:hover {
             color: #dc3545;
         }
-    .error-message {
+
+    .validation-errors {
         color: red;
-        text-align: center;
-        margin-top: 1rem;
+        text-align: left;
+        padding-left: 1rem;
+        font-size: 0.95rem;
     }
 
     @@keyframes fadeIn {
@@ -82,14 +193,12 @@
             transform: scale(0.9);
         }
 
-
         to {
             opacity: 1;
             transform: scale(1);
         }
     }
 </style>
-
 
 
 @if (showValidationModal)
@@ -121,9 +230,20 @@
             </div>
 
             <label>Contraseña</label>
-            <div class="input-group">
+            <div class="input-group password-group">
                 <i class="fas fa-lock"></i>
-                <InputText @bind-Value="loginModel.Contrasena" class="form-input" placeholder="Ingrese su contraseña" type="password" autocomplete="current-password" />
+                <InputText @bind-Value="loginModel.Contrasena"
+                           class="form-input"
+                           placeholder="Ingrese su contraseña"
+                           type="@passwordInputType"
+                           autocomplete="current-password" />
+                <button type="button"
+                        class="btn-eye"
+                        @onclick="TogglePasswordVisibility"
+                        tabindex="-1"
+                        aria-label="Mostrar/Ocultar contraseña">
+                    <i class="fas @(showPassword ? "fa-eye-slash" : "fa-eye")"></i>
+                </button>
             </div>
 
             @if (!string.IsNullOrEmpty(mensajeError))
@@ -142,6 +262,12 @@
     private LoginModel loginModel = new();
     private string mensajeError = "";
     private bool showValidationModal = false;
+
+    // --- NUEVO PARA VISIBILIDAD DE CONTRASEÑA ---
+    private bool showPassword = false;
+    private string passwordInputType => showPassword ? "text" : "password";
+    private void TogglePasswordVisibility() => showPassword = !showPassword;
+    // --------------------------------------------
 
     private async Task HandleLogin()
     {
