@@ -11,6 +11,7 @@
 @inject CapacitacionesService capacitacionesService  
 @inject ObraService obraService
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject HttpClient Http
 
 
 <style>
@@ -319,10 +320,23 @@
 <br />
         @if (mostrarInvestigaciones)
         {
-            <div class="mb-3">
-    <button class="btn btn-success" @onclick="MostrarFormulario">
-        <i class="bi bi-plus-circle"></i> Agregar Investigación
-    </button>
+                      <div class="mb-3">
+
+
+                @if (puedeAgregar)
+                {
+                    <button class="btn btn-success" @onclick="MostrarFormulario">
+                        <i class="bi bi-plus-circle"></i> Agregar Investigación
+                    </button>
+                }
+                else
+                {
+                    <button class="btn btn-secondary" disabled>
+                        <i class="bi bi-plus-circle"></i> Agregar Investigación (deshabilitado)
+                    </button>
+                    <p class="text-muted mt-2">Ya postulaste. Solo puedes agregar más investigaciones si tu postulación fue rechazada.</p>
+                }
+
 </div>
 
             <h4>Investigaciones</h4>
@@ -626,7 +640,9 @@
     private DateTime? fechaFinTemp;
     //estado para el btn
     private string estadoPostulacion;
+    private PostulacionDto postulacionActual;
     private bool puedeAgregar = true;
+
       // ————— Capacitaciones —————
 private List<Capacitacione> listaCapacitaciones = new();
 private Capacitacione nuevaCapacitacion = new();
@@ -637,6 +653,33 @@ private IBrowserFile? archivoPDFCap;
     private string? errorArchivo;
 //capacitaciones
 private string? cedulaUsuario;
+
+
+    private async Task CargarEstadoPostulacion()
+    {
+        try
+        {
+            var cedula = await localStorage.GetItemAsync<string>("cedulaUsuario");
+            if (!string.IsNullOrWhiteSpace(cedula))
+            {
+                var response = await Http.GetAsync($"api/Promocion/PostulacionPorCedula/{cedula}");
+                if (response.IsSuccessStatusCode)
+                {
+                    postulacionActual = await response.Content.ReadFromJsonAsync<PostulacionDto>();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar postulación: {ex.Message}");
+        }
+
+        // Evaluar si se puede agregar documentos según estado
+        puedeAgregar = postulacionActual == null ||
+                       postulacionActual.Estado == "Rechazada" ||
+                       postulacionActual.Estado == "Aceptada";
+    }
+
 
 // ----- CAPACITACIONES -----
 private void MostrarFormCap()
@@ -865,9 +908,14 @@ else
     protected override async Task OnInitializedAsync()
     {
         listaCarreras = await carreraService.ObtenerCarrerasAsync();
-            cedulaUsuario = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+        cedulaUsuario = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+        await CargarEstadoPostulacion();
+
+
 
     }
+
+
 
     
     private async Task AbrirPdf(byte[]? pdf)

@@ -383,7 +383,7 @@
             if (response.IsSuccessStatusCode)
             {
                 Logger.LogInformation("Postulación exitosa");
-                await localStorage.SetItemAsync("estadoPostulacion", nuevaPostulacion.Estado);
+                //await localStorage.SetItemAsync("estadoPostulacion", "Pendiente");
                 await CargarPostulacion();
                 StateHasChanged();
             }
