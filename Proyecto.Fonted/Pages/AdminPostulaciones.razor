@@ -20,6 +20,7 @@
         <NavLink href="/reportes-admin" class="nav-item">
             <i class="bi bi-bar-chart-line-fill"></i> Reportes
         </NavLink>
+          <NavLink href="/perfil" class="nav-item active"><i class="bi bi-person-fill"></i> Perfil</NavLink> 
 
         <NavLink href="/" class="nav-item cerrar-sesion">
             <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
@@ -131,12 +132,39 @@
                         </div>
                         <div class="modal-body">
                             @if (resumenCargado)
-                            {
-                                <p><strong>Obras:</strong> @resumen.CantidadObras</p>
-                                <p><strong>Evaluación:</strong> @resumen.PuntajeEvaluacion%</p>
-                                <p><strong>Capacitación:</strong> @resumen.DuracionHoras horas</p>
-                                <p><strong>Investigación:</strong> @resumen.TiempoMeses meses</p>
-                            }
+{
+    <h5>Obras</h5>
+    <ul>
+        @foreach (var obra in resumen.Obras)
+        {
+            <li>@obra.TipoObra - @obra.Fecha.ToString("dd/MM/yyyy")</li>
+        }
+    </ul>
+    
+    <h5>Evaluaciones</h5>
+    <ul>
+        @foreach (var eval in resumen.Evaluaciones)
+        {
+            <li>@eval.Periodo - @eval.PuntajeFinal% (@eval.FechaEvaluacion.ToString("dd/MM/yyyy"))</li>
+        }
+    </ul>
+    
+    <h5>Capacitaciones</h5>
+    <ul>
+        @foreach (var cap in resumen.Capacitaciones)
+        {
+            <li>@cap.NombreCurso - @cap.DuracionHoras horas (Inicio: @cap.FechaInicio.ToString("dd/MM/yyyy"))</li>
+        }
+    </ul>
+    
+    <h5>Investigaciones</h5>
+    <ul>
+        @foreach (var inv in resumen.Investigaciones)
+        {
+            <li>@inv.NombreProyecto - @inv.TiempoMeses meses (Inicio: @inv.FechaInicio.ToString("dd/MM/yyyy"))</li>
+        }
+    </ul>
+}
                             else
                             {
                                 <div class="d-flex justify-content-center">
@@ -217,8 +245,23 @@
         var response = await Http.PutAsJsonAsync($"api/Promocion/CambiarEstado/{id}", nuevoEstado);
         if (response.IsSuccessStatusCode)
         {
+           
+            if (nuevoEstado == "Rechazada")
+        {
+            // Quitar de la lista sin volver a consultar toda la API
+            var postulacionEliminada = postulaciones.FirstOrDefault(p => p.Id == id);
+            if (postulacionEliminada != null)
+            {
+                postulaciones.Remove(postulacionEliminada);
+            }
+        }
+        else
+        {
+            // Para "Aceptada", recarga completa
             postulaciones = await Http.GetFromJsonAsync<List<PostulacionDto>>("api/Promocion/Todas");
-            StateHasChanged();
+        }
+
+        StateHasChanged();
         }
         else
         {
@@ -226,7 +269,7 @@
         }
     }
 
-    private ResumenPostulanteDto resumen = new ();
+    private ResumenCompletoPostulanteDto resumen = new ();
 private bool resumenCargado = false;
     [Inject] private IJSRuntime JS { get; set; }
 
@@ -235,7 +278,7 @@ private bool resumenCargado = false;
         resumenCargado = false;
         try
         {
-            resumen = await Http.GetFromJsonAsync<ResumenPostulanteDto>($"api/Resumen/Postulante/{cedula}");
+            resumen = await Http.GetFromJsonAsync<ResumenCompletoPostulanteDto>($"api/Resumen/Postulante/{cedula}");
             resumenCargado = true;
             mostrarModal = true; // <- ¡esto es esencial!
 
@@ -259,24 +302,7 @@ private bool resumenCargado = false;
 
 
 
-    public class ObraDto
-    {
-        public int Id { get; set; }
-        public string Cedula { get; set; }
-        public string Titulo { get; set; }
-        public string Tipo { get; set; }
-        public DateTime FechaPublicacion { get; set; }
-        public string UrlDocumento { get; set; } // opcional
-    }
-
-    public class EvaluacionDto
-    {
-        public int IdEval { get; set; }
-        public string Cedula { get; set; }
-        public int Anio { get; set; }
-        public decimal PuntajeFinal { get; set; }
-        public string Observaciones { get; set; } // opcional
-    }
+    
 
 }
 

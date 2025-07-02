@@ -103,7 +103,11 @@ namespace Proyecto.Backend.UI.Controllers
                 .Select(u => new UsuarioDto
                 {
                     Nom1 = u.Nom1,
-                    Ape1 = u.Ape1
+                    Nom2 = u.Nom2,
+                    Ape1 = u.Ape1,
+                    Ape2 = u.Ape2,
+                    Usuari = u.Usuari
+
                 })
                 .FirstOrDefaultAsync();
 
