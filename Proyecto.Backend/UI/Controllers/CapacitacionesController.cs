@@ -107,6 +107,8 @@ namespace Proyecto.Backend.UI.Controllers
             return CreatedAtAction(nameof(Buscar), new { id = entidad.IdCap }, entidad);
         }
 
+
+
         [HttpPut("ActualizarDto/{id}")]
         public async Task<IActionResult> ActualizarDto(int id, CapacitacionCreateDto dto)
         {
