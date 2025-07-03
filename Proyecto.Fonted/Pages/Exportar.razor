@@ -405,9 +405,21 @@
 
         @if (mostrarEvaluaciones)
         {
-            <button class="btn btn-success mb-3" @onclick="MostrarFormularioEvaluacion">
-                <i class="bi bi-plus-circle"></i> Agregar Evaluación
-            </button>
+            @if (puedeAgregar)
+            {
+                <button class="btn btn-success" @onclick="MostrarFormularioEvaluacion">
+                    <i class="bi bi-plus-circle"></i> Agregar Evaluacion
+                </button>
+            }
+            else
+            {
+                <button class="btn btn-secondary" disabled>
+                    <i class="bi bi-plus-circle"></i> Agregar Evaluacion (deshabilitado)
+                </button>
+                <p class="text-muted mt-2">Ya postulaste. Solo puedes agregar más investigaciones si tu postulación fue rechazada.</p>
+            }
+
+            
 
             <table class="table table-striped">
                 <thead>
@@ -444,8 +456,11 @@
                                 }
                             </td>
                             <td>
-                                <button class="btn btn-warning btn-sm" @onclick="() => EditarEvaluacion(eval)">
+                                <button class="btn btn-warning btn-sm"
+                                        @onclick="() => EditarEvaluacion(eval)"
+                                        disabled="@(puedeAgregar == false)">
                                     <i class="bi bi-pencil"></i> Editar
+                                
                                 </button>
                             </td>
                         </tr>
@@ -907,6 +922,7 @@ private string? cedulaUsuario;
                 IdEval = ev.IdEval,
                 Cedula = ev.Cedula,
                 Periodo = ev.Periodo
+               
             };
         mostrarFormEvaluacion = true;
         modoEdicionEvaluacion = true;
