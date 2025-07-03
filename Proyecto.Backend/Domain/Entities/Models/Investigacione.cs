@@ -19,7 +19,7 @@ public partial class Investigacione
 
     public byte[]? Pdf { get; set; }
 
-    public int? IdCarrera { get; set; }
+    public int? IdCarrera { get; set; } 
 
     public string? Tipo { get; set; }
 

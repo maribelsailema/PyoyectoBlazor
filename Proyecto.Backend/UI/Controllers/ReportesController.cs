@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿/*using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Proyecto.Backend.Domain.Entities.Models;
 
@@ -8,37 +8,18 @@ namespace Proyecto.Backend.UI.Controllers
     [ApiController]
     public class ReportesController : ControllerBase
     {
-        private readonly PlataformaDocenteContext _context;
+        private readonly ApplicationDbContext _context;
 
-        public ReportesController(PlataformaDocenteContext context)
+        // Constructor para inyectar el contexto
+        public ReportesController(ApplicationDbContext context)
         {
             _context = context;
-        }
-
-        [HttpGet("Evaluaciones/{cedula}/{periodo}")]
-        public async Task<IActionResult> GetEvaluacionesDocente(string cedula, string periodo)
-        {
-            var data = await _context.EvaluacionesDocentes
-                .Include(e => e.CedulaNavigation)
-                .Where(e => e.Cedula == cedula && e.Periodo == periodo)
-                .ToListAsync();
-
-            var resultados = data.Select(e => new ReportesResultado
-            {
-                Docente = $"{e.CedulaNavigation.Nom1} {e.CedulaNavigation.Ape1}",
-                Tipo = "Evaluación Docente",
-                Detalle = $"Periodo: {e.Periodo}",
-                Fecha = e.FechaEvaluacion.ToDateTime(new TimeOnly()),
-                ValorPuntaje = $"{e.PuntajeFinal}"
-            }).ToList();
-
-            return Ok(resultados);
         }
 
         [HttpGet("Capacitaciones/{cedula}")]
         public async Task<IActionResult> GetCapacitacionesDocente(string cedula)
         {
-            var data = await _context.Capacitaciones
+            var data = await _context.Set<Capacitacione>()
                 .Include(c => c.CedulaNavigation)
                 .Where(c => c.Cedula == cedula)
                 .ToListAsync();
@@ -48,7 +29,7 @@ namespace Proyecto.Backend.UI.Controllers
                 Docente = $"{c.CedulaNavigation.Nom1} {c.CedulaNavigation.Ape1}",
                 Tipo = "Capacitación",
                 Detalle = c.NombreCurso,
-                Fecha = c.FechaInicio.ToDateTime(new TimeOnly()),
+                Fecha = c.FechaInicio.ToDateTime(TimeOnly.MinValue),
                 ValorPuntaje = $"{c.DuracionHoras} horas"
             }).ToList();
 
@@ -58,7 +39,7 @@ namespace Proyecto.Backend.UI.Controllers
         [HttpGet("Obras/{cedula}")]
         public async Task<IActionResult> GetObrasDocente(string cedula)
         {
-            var data = await _context.Obras
+            var data = await _context.Set<Obra>()
                 .Include(o => o.CedulaNavigation)
                 .Where(o => o.Cedula == cedula)
                 .ToListAsync();
@@ -68,7 +49,7 @@ namespace Proyecto.Backend.UI.Controllers
                 Docente = $"{o.CedulaNavigation.Nom1} {o.CedulaNavigation.Ape1}",
                 Tipo = "Obra",
                 Detalle = o.TipoObra,
-                Fecha = o.Fecha.ToDateTime(new TimeOnly()),
+                Fecha = o.Fecha.ToDateTime(TimeOnly.MinValue),
                 ValorPuntaje = "-"
             }).ToList();
 
@@ -78,7 +59,7 @@ namespace Proyecto.Backend.UI.Controllers
         [HttpGet("Investigaciones/{cedula}")]
         public async Task<IActionResult> GetInvestigacionesDocente(string cedula)
         {
-            var data = await _context.Investigaciones
+            var data = await _context.Set<Investigacione>()
                 .Include(i => i.CedulaNavigation)
                 .Where(i => i.Cedula == cedula)
                 .ToListAsync();
@@ -88,38 +69,12 @@ namespace Proyecto.Backend.UI.Controllers
                 Docente = $"{i.CedulaNavigation?.Nom1} {i.CedulaNavigation?.Ape1}",
                 Tipo = "Investigación",
                 Detalle = i.NombreProyecto,
-                Fecha = i.FechaInicio.ToDateTime(new TimeOnly()),
+                Fecha = i.FechaInicio.ToDateTime(TimeOnly.MinValue),
                 ValorPuntaje = $"{i.TiempoMeses} meses"
             }).ToList();
 
             return Ok(resultados);
         }
-
-
-        // 5. Rol actual y antigüedad
-        [HttpGet("RolYAntiguedad/{cedula}")]
-        public async Task<IActionResult> GetRolYAntiguedad(string cedula)
-        {
-            var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Ced == cedula);
-            var rol = await _context.RolesDocentes // <== corregido aquí
-                .FirstOrDefaultAsync(r => r.Cedula == cedula && r.Activo);
-
-            if (usuario == null || rol == null)
-                return NotFound();
-
-            var antiguedad = usuario.FechaIngreso.HasValue
-                ? DateTime.Now.Year - usuario.FechaIngreso.Value.Year
-                : 0;
-
-            return Ok(new
-            {
-                Cedula = usuario.Ced,
-                Nombre = $"{usuario.Nom1} {usuario.Ape1}",
-                Rol = rol.Rol,
-                Antiguedad = antiguedad
-            });
-        }
-
     }
 }
-
+*/

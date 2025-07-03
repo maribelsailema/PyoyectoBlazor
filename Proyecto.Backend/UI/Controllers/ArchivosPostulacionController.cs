@@ -38,7 +38,7 @@ namespace Proyecto.Backend.UI.Controllers
             listaArchivos.AddRange(obras.Select(o => new ArchivoPdfDto
             {
                 Nombre = $"Obra_{o.IdObra}_{o.TipoObra}.pdf",
-                PdfBase64 = Convert.ToBase64String(o.Pdf!),
+                PdfBase64 = Convert.ToBase64String((byte[])o.Pdf!),
                 Categoria = "Obra"
             }));
 

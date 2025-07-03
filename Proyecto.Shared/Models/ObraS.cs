@@ -22,6 +22,16 @@ namespace Proyecto.Shared.Models
         public DateTime FechaPublicacion { get; set; }
         public byte[] Documento { get; set; }
         public string NombreArchivo { get; set; }= string.Empty;
-
+        public DateTime Fecha { get; set; }
+        public string? Pais { get; set; }
+        public string? Ciudad { get; set; }
+        public string? Editorial { get; set; }
+        public string? ISBN { get; set; }
+        public string? DOI { get; set; }
+        public string? Autores { get; set; }
+        public string? Enlace { get; set; }
+        public string? Resumen { get; set; }
+        public byte[]? PDF { get; set; }
+        public byte[]? Pdf { get; set; }
     }
 }

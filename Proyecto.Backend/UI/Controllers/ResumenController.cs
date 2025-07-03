@@ -12,6 +12,7 @@ namespace Proyecto.Backend.UI.Controllers
     public class ResumenController : ControllerBase
     {
         private readonly PlataformaDocenteContext _context;
+        private List<EvaluacionResumenDto> evaluaciones;
 
         public ResumenController(PlataformaDocenteContext context)
         {
@@ -23,9 +24,9 @@ namespace Proyecto.Backend.UI.Controllers
         {
             // Obras (sin incluir PDF)
             var rolActual = await _context.RolesDocentes
-    .Where(r => r.Cedula == cedula && r.Activo)
-    .OrderByDescending(r => r.FechaAsignacion)
-    .FirstOrDefaultAsync();
+                .Where(r => r.Cedula == cedula && r.Activo)
+                .OrderByDescending(r => r.FechaAsignacion)
+                .FirstOrDefaultAsync();
 
             if (rolActual == null)
                 return NotFound("El docente no tiene un rol activo.");
@@ -33,65 +34,50 @@ namespace Proyecto.Backend.UI.Controllers
             var fechaDesde = rolActual.FechaAsignacion;
             var fechaHasta = DateOnly.FromDateTime(DateTime.Today);
 
+            // Convert DateOnly to DateTime for comparison
+            var fechaDesdeDateTime = fechaDesde.ToDateTime(TimeOnly.MinValue);
+            var fechaHastaDateTime = fechaHasta.ToDateTime(TimeOnly.MinValue);
 
             var obras = await _context.Obras
-     .Where(o => o.Cedula == cedula && o.Fecha > fechaDesde && o.Fecha <= fechaHasta)
-     .Select(o => new ObraResumenDto
-     {
-         IdObra = o.IdObra,
-         Cedula = o.Cedula,
-         TipoObra = o.TipoObra,
-         Fecha = o.Fecha
-     })
-     .ToListAsync();
+                .Where(o => o.Cedula == cedula && o.Fecha > fechaDesdeDateTime && o.Fecha <= fechaHastaDateTime)
+                .Select(o => new ObraResumenDto
+                {
+                    IdObra = o.IdObra,
+                    Cedula = o.Cedula,
+                    TipoObra = o.TipoObra,
+                    Fecha = DateOnly.FromDateTime(o.Fecha)
+                })
+                .ToListAsync();
 
-
-            // Evaluaciones – se obtienen todas; si deseas solo la última, podrías filtrar y tomar FirstOrDefaultAsync()
-            var evaluaciones = await _context.EvaluacionesDocentes
-        .Where(e => e.Cedula == cedula && e.FechaEvaluacion > fechaDesde && e.FechaEvaluacion <= fechaHasta)
-        .Select(e => new EvaluacionResumenDto
-        {
-            IdEval = e.IdEval,
-            Cedula = e.Cedula,
-            Periodo = e.Periodo,
-            PuntajeFinal = e.PuntajeFinal,
-            FechaEvaluacion = e.FechaEvaluacion
-        })
-        .ToListAsync();
-
-
-
-            // Capacitaciones (sumar por registro, sin PDF)
+            // Fix: Convert FechaInicio from DateOnly to DateTime for comparison
             var capacitaciones = await _context.Capacitaciones
-.Where(c => c.Cedula == cedula && c.FechaInicio > fechaDesde && c.FechaInicio <= fechaHasta)
-.Select(c => new CapacitacionResumenDto
-{
-    IdCap = c.IdCap,
-    Cedula = c.Cedula,
-    NombreCurso = c.NombreCurso,
-    DuracionHoras = c.DuracionHoras,
-    FechaInicio = c.FechaInicio
-})
-.ToListAsync();
-
+                .Where(c => c.Cedula == cedula && c.FechaInicio.ToDateTime(TimeOnly.MinValue) > fechaDesdeDateTime && c.FechaInicio.ToDateTime(TimeOnly.MinValue) <= fechaHastaDateTime)
+                .Select(c => new CapacitacionResumenDto
+                {
+                    IdCap = c.IdCap,
+                    Cedula = c.Cedula,
+                    NombreCurso = c.NombreCurso,
+                    DuracionHoras = c.DuracionHoras,
+                    FechaInicio = c.FechaInicio
+                })
+                .ToListAsync();
 
             // Investigaciones (sin PDF)
             var investigaciones = await _context.Investigaciones
-.Where(i => i.Cedula == cedula && i.FechaInicio > fechaDesde && i.FechaInicio <= fechaHasta)
-.Select(i => new InvestigacionResumenDto
-{
-    IdInv = i.IdInv,
-    Cedula = i.Cedula,
-    NombreProyecto = i.NombreProyecto,
-    TiempoMeses = i.TiempoMeses,
-    FechaInicio = i.FechaInicio,
-    FechaFin = i.FechaFin,
-    Tipo = i.Tipo,
-    Estado = i.Estado,
-    Cientifico = i.Cientifico
-})
-.ToListAsync();
-
+                .Where(i => i.Cedula == cedula && i.FechaInicio.ToDateTime(TimeOnly.MinValue) > fechaDesdeDateTime && i.FechaInicio.ToDateTime(TimeOnly.MinValue) <= fechaHastaDateTime)
+                .Select(i => new InvestigacionResumenDto
+                {
+                    IdInv = i.IdInv,
+                    Cedula = i.Cedula,
+                    NombreProyecto = i.NombreProyecto,
+                    TiempoMeses = i.TiempoMeses,
+                    FechaInicio = i.FechaInicio,
+                    FechaFin = i.FechaFin,
+                    Tipo = i.Tipo,
+                    Estado = i.Estado,
+                    Cientifico = i.Cientifico
+                })
+                .ToListAsync();
 
             var resumenCompleto = new ResumenCompletoPostulanteDto
             {

@@ -169,22 +169,29 @@ namespace Proyecto.Backend.UI.Controllers
 
             if (fechaDesde == default) return NotFound("Rol no encontrado");
 
+            // Convert DateOnly to DateTime for comparison  
+            var fechaDesdeDateTime = fechaDesde.ToDateTime(TimeOnly.MinValue);
+
             var totalObras = await _context.Obras
-                .Where(o => o.Cedula == cedula && o.Fecha >= fechaDesde)
+                .Where(o => o.Cedula == cedula && o.Fecha >= fechaDesdeDateTime)
                 .CountAsync();
 
             var evaluacion = await _context.EvaluacionesDocentes
-                .Where(e => e.Cedula == cedula && e.FechaEvaluacion >= fechaDesde)
+                .Where(e => e.Cedula == cedula && e.FechaEvaluacion.ToDateTime(TimeOnly.MinValue) >= fechaDesdeDateTime)
                 .OrderByDescending(e => e.FechaEvaluacion)
                 .FirstOrDefaultAsync();
 
             var totalHorasCap = await _context.Capacitaciones
-                .Where(c => c.Cedula == cedula && c.FechaInicio >= fechaDesde)
+                .Where(c => c.Cedula == cedula && c.FechaInicio.ToDateTime(TimeOnly.MinValue) >= fechaDesdeDateTime)
                 .SumAsync(c => (int?)c.DuracionHoras) ?? 0;
 
-            var totalMesesInv = await _context.Investigaciones
-                .Where(i => i.Cedula == cedula && i.FechaInicio >= fechaDesde)
-                .SumAsync(i => EF.Functions.DateDiffMonth(i.FechaInicio, i.FechaFin ?? DateOnly.FromDateTime(DateTime.Today)));
+            var investigaciones = await _context.Investigaciones
+                .Where(i => i.Cedula == cedula && i.FechaInicio.ToDateTime(TimeOnly.MinValue) >= fechaDesdeDateTime)
+                .ToListAsync();
+
+            var totalMesesInv = investigaciones
+                .Sum(i => EF.Functions.DateDiffMonth(i.FechaInicio.ToDateTime(TimeOnly.MinValue),
+                    (i.FechaFin.HasValue ? i.FechaFin.Value.ToDateTime(TimeOnly.MinValue) : DateTime.Today)));
 
             var resumen = new ResumenDocumentosDto
             {
