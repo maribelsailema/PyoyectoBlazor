@@ -78,20 +78,27 @@ namespace Proyecto.Backend.UI.Controllers
         [HttpPost("Validar")]
         public async Task<ActionResult<Usuario>> ValidarUsuario([FromBody] LoginDTO login)
         {
-            if (login == null || string.IsNullOrWhiteSpace(login.Usuari) || string.IsNullOrWhiteSpace(login.Pass))
+            // 1) Validación de entrada ----------------------------
+            if (login == null ||
+                string.IsNullOrWhiteSpace(login.Usuari) ||
+                string.IsNullOrWhiteSpace(login.Pass))
             {
                 return BadRequest("Usuario y contraseña son obligatorios.");
             }
 
+            // 2) Consulta case‑sensitive ---------------------------
+            const string csCollation = "Latin1_General_CS_AS";   // CS = Case Sensitive
+
             var usuario = await _context.Usuarios
-                .FirstOrDefaultAsync(u => u.Usuari == login.Usuari && u.Pass == login.Pass);
+                .Where(u =>
+                    EF.Functions.Collate(u.Usuari, csCollation) == login.Usuari &&
+                    EF.Functions.Collate(u.Pass, csCollation) == login.Pass)
+                .FirstOrDefaultAsync();
 
-            if (usuario == null)
-            {
+            // 3) Resultado ----------------------------------------
+            if (usuario is null)
                 return Unauthorized("Usuario o contraseña incorrectos.");
-            }
-
-            usuario.Pass = ""; // Evitar enviar la contraseña al frontend
+            usuario.Pass = string.Empty;        // No exponer la clave
             return Ok(usuario);
         }
 
@@ -103,7 +110,11 @@ namespace Proyecto.Backend.UI.Controllers
                 .Select(u => new UsuarioDto
                 {
                     Nom1 = u.Nom1,
-                    Ape1 = u.Ape1
+                    Nom2 = u.Nom2,
+                    Ape1 = u.Ape1,
+                    Ape2 = u.Ape2,
+                    Usuari = u.Usuari
+
                 })
                 .FirstOrDefaultAsync();
 

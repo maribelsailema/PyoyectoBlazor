@@ -1,147 +1,146 @@
 ﻿@page "/exportar"
 @using Proyecto.Fonted.Services
 @using Proyecto.Frontend.Services
-@inject IJSRuntime JS
-@inject InvestigacionService investigacionService
 @using Proyecto.Shared
 @using Proyecto.Shared.Models
 @inject IJSRuntime JS
 @inject CarreraService carreraService
-
-@inject CapacitacionesService capacitacionesService  
+@inject CapacitacionesService capacitacionesService
 @inject ObraService obraService
-
+@inject InvestigacionService investigacionService
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject HttpClient Http
 
 <style>
     /* Estilos específicos para la página de exportación */
     .export-container {
-    max-width: 1200px;
-    margin: var(--spacing-xl) auto;
-    padding: 0 var(--spacing-md);
+        max-width: 1200px;
+        margin: var(--spacing-xl) auto;
+        padding: 0 var(--spacing-md);
     }
 
     .export-title {
-    color: var(--primary-color);
-    margin-bottom: var(--spacing-lg);
-    font-size: 1.8rem;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-lg);
+        font-size: 1.8rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
     }
 
     .export-card {
-    background-color: var(--card-bg-color);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-md);
-    padding: var(--spacing-xl);
-    margin-bottom: var(--spacing-lg);
+        background-color: var(--card-bg-color);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        padding: var(--spacing-xl);
+        margin-bottom: var(--spacing-lg);
     }
 
     .export-filters {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: var(--spacing-lg);
-    margin-bottom: var(--spacing-lg);
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: var(--spacing-lg);
+        margin-bottom: var(--spacing-lg);
     }
 
     .filter-group {
-    margin-bottom: var(--spacing-md);
+        margin-bottom: var(--spacing-md);
     }
 
     .filter-label {
-    display: block;
-    margin-bottom: var(--spacing-xs);
-    font-weight: 500;
-    color: var(--dark-text-color);
+        display: block;
+        margin-bottom: var(--spacing-xs);
+        font-weight: 500;
+        color: var(--dark-text-color);
     }
 
     .form-select, .form-control {
-    width: 100%;
-    padding: var(--spacing-sm) var(--spacing-md);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-md);
-    font-size: 1rem;
-    transition: var(--transition-normal);
-    background-color: var(--light-bg-color);
+        width: 100%;
+        padding: var(--spacing-sm) var(--spacing-md);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+        font-size: 1rem;
+        transition: var(--transition-normal);
+        background-color: var(--light-bg-color);
     }
 
-    .form-select:focus, .form-control:focus {
-    border-color: var(--secondary-color);
-    box-shadow: 0 0 0 4px rgba(41, 128, 185, 0.2);
-    outline: none;
-    background-color: var(--card-bg-color);
-    }
+        .form-select:focus, .form-control:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 4px rgba(41, 128, 185, 0.2);
+            outline: none;
+            background-color: var(--card-bg-color);
+        }
 
     .export-button {
-    display: flex;
-    align-items: flex-end;
+        display: flex;
+        align-items: flex-end;
     }
 
     .btn {
-    padding: var(--spacing-sm) var(--spacing-md);
-    border: none;
-    border-radius: var(--border-radius-md);
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 600;
-    transition: var(--transition-normal);
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    text-decoration: none;
-    box-shadow: var(--shadow-sm);
+        padding: var(--spacing-sm) var(--spacing-md);
+        border: none;
+        border-radius: var(--border-radius-md);
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: var(--transition-normal);
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        text-decoration: none;
+        box-shadow: var(--shadow-sm);
     }
 
     .btn-primary {
-    background-color: var(--secondary-color);
-    color: white;
+        background-color: var(--secondary-color);
+        color: white;
     }
 
-    .btn-primary:hover {
-    background-color: darken(var(--secondary-color), 8%);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    }
+        .btn-primary:hover {
+            background-color: darken(var(--secondary-color), 8%);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
 
     .additional-filters {
-    background-color: var(--light-bg-color);
-    border-radius: var(--border-radius-md);
-    padding: var(--spacing-md);
-    margin-top: var(--spacing-lg);
+        background-color: var(--light-bg-color);
+        border-radius: var(--border-radius-md);
+        padding: var(--spacing-md);
+        margin-top: var(--spacing-lg);
     }
 
     .filter-section h6 {
-    color: var(--primary-color);
-    margin-bottom: var(--spacing-md);
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
+        color: var(--primary-color);
+        margin-bottom: var(--spacing-md);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
     }
 
     .filter-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--spacing-md);
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--spacing-md);
     }
 
     .filter-item {
-    margin-bottom: var(--spacing-sm);
+        margin-bottom: var(--spacing-sm);
     }
 
     /* Ocultar filtros específicos inicialmente */
     .usuario-filters, .evaluacion-filters {
-    display: none;
+        display: none;
     }
 
     /* Mostrar filtros según la selección (esto se manejaría con JS) */
     select.form-select[value="Usuarios"] ~ .additional-filters .usuario-filters {
-    display: grid;
+        display: grid;
     }
 
     select.form-select[value="EvaluacionesDocentes"] ~ .additional-filters .evaluacion-filters {
-    display: grid;
+        display: grid;
     }
 </style>
 
@@ -185,144 +184,158 @@
                 </select>
             </div>
 
-            @if (!string.IsNullOrEmpty(mensaje))
+            @if (!string.IsNullOrWhiteSpace(mensaje))
             {
-                <div class="alert alert-warning mt-2">@mensaje</div>
+                <div class="alert alert-danger d-flex align-items-center mt-3" role="alert" style="font-size: 1rem;">
+                    <i class="bi bi-exclamation-triangle-fill me-2" style="font-size: 1.4rem;"></i>
+                    <div>@mensaje</div>
+                </div>
             }
+
 
             <!-- Botón de Exportación -->
             <div class="export-button">
                 <button class="btn btn-primary" @onclick="ImportarDatos">
                     <i class="bi bi-download"></i> Importar
-                   
+
                 </button>
-                
+
 
             </div>
 
         </div>
-
-         @if (mostrarFormulario)
-{
-    <EditForm Model="@nuevaInvestigacion" OnValidSubmit="GuardarNuevaInvestigacion">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-
-        <div class="row mb-3">
-            <div class="col">
-                <label>Título del Proyecto</label>
-                <InputText class="form-control" @bind-Value="nuevaInvestigacion.NombreProyecto" />
-            </div>
-            <div class="col">
-    <label>Carrera</label>
-    <select class="form-select" @bind="nuevaInvestigacion.IdCarrera">
-        <option value="">Seleccione una carrera</option>
-        @foreach (var carrera in listaCarreras)
+        @if (mostrarFormulario)
         {
-            <option value="@carrera.IdCarrera">@carrera.Nombre</option>
+            <div class="modal-backdrop fade show"></div>
+            <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.2)">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header" style="background: var(--primary-color); color: white;">
+                            <h5 class="modal-title">
+                                <i class="bi bi-journal-plus"></i> @((modoEdicion ? "Editar" : "Agregar") + " Investigación")
+                            </h5>
+                            <button type="button" class="btn-close" @onclick="CerrarFormulario"></button>
+                        </div>
+                        <div class="modal-body">
+                            <EditForm Model="@nuevaInvestigacion" OnValidSubmit="GuardarNuevaInvestigacion">
+                                <DataAnnotationsValidator />
+                                <ValidationSummary />
+
+                                <div class="row mb-3">
+                                    <div class="col">
+                                        <label>Título del Proyecto</label>
+                                        <InputText class="form-control" @bind-Value="nuevaInvestigacion.NombreProyecto" />
+                                    </div>
+                                    <div class="col">
+                                        <label>Carrera</label>
+                                        <select class="form-select" @bind="nuevaInvestigacion.IdCarrera">
+                                            <option value="">Seleccione una carrera</option>
+                                            @foreach (var carrera in listaCarreras)
+                                            {
+                                                <option value="@carrera.IdCarrera">@carrera.Nombre</option>
+                                            }
+                                        </select>
+                                        <ValidationMessage For="@(() => nuevaInvestigacion.IdCarrera)" />
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="fechaInicio">Fecha de Inicio</label>
+                                        <InputDate id="fechaInicio"
+                                                   @bind-Value="nuevaInvestigacion.FechaInicio"
+                                                   class="form-control" />
+                                        <ValidationMessage For="@(() => nuevaInvestigacion.FechaInicio)" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="fechaFin">Fecha de Fin</label>
+                                        <InputDate id="fechaFin"
+                                                   @bind-Value="nuevaInvestigacion.FechaFin"
+                                                   class="form-control" />
+                                        <ValidationMessage For="@(() => nuevaInvestigacion.FechaFin)" />
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col">
+                                        <label>Duración (meses)</label>
+                                        <InputNumber @bind-Value="nuevaInvestigacion.TiempoMeses"
+                                                     class="form-control"
+                                                     min="0"
+                                                     step="1"
+                                                     oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+                                        <ValidationMessage For="@(() => nuevaInvestigacion.TiempoMeses)" />
+                                    </div>
+                                    <div class="col">
+                                        <label>Tipo</label>
+                                        <InputText class="form-control" @bind-Value="nuevaInvestigacion.Tipo" />
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col">
+                                        <label>Estado</label>
+                                        <select class="form-select" @bind="nuevaInvestigacion.Estado">
+                                            <option value="">Seleccione estado</option>
+                                            <option value="En proceso">En proceso</option>
+                                            <option value="En revisión">En revisión</option>
+                                            <option value="Publicado">Publicado</option>
+                                        </select>
+                                        <ValidationMessage For="@(() => nuevaInvestigacion.Estado)" />
+                                    </div>
+                                    <div class="col">
+                                        <label>Tipo Científico</label>
+                                        <select class="form-select" @bind="nuevaInvestigacion.Cientifico">
+                                            <option value="">Seleccione una categoría</option>
+                                            <option value="Ciencias Naturalez">Ciencias Naturalez</option>
+                                            <option value="Ingeniería y tecnología">Ingeniería y tecnología</option>
+                                            <option value="Ciencias Medicas y de la salud">Ciencias Medicas y de la salud</option>
+                                        </select>
+                                        <ValidationMessage For="@(() => nuevaInvestigacion.Cientifico)" />
+                                    </div>
+                                </div>
+                                @* ...dentro del modal de agregar investigación... *@
+                                <div class="mb-3">
+                                    <label>Subir PDF</label>
+                                    <InputFile OnChange="SubirPDF" accept=".pdf,application/pdf" />
+                                    @if (!string.IsNullOrEmpty(errorArchivo))
+                                    {
+                                        <div class="text-danger">@errorArchivo</div>
+                                    }
+                                </div>
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <button type="submit" class="btn btn-primary" disabled="@(!puedeAgregarInvestigacion)">
+                                        <i class="bi bi-check-circle"></i> Guardar
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" @onclick="CerrarFormulario">
+                                        <i class="bi bi-x-circle"></i> Cancelar
+                                    </button>
+                                </div>
+                                @* ...igual para capacitaciones y obras, usando disabled="@(!puedeAgregarCapacitacion)" y disabled="@(!puedeAgregarObra)" respectivamente *@
+                            </EditForm>
+                        </div>
+                    </div>
+                </div>
+            </div>
         }
-    </select>
-    <ValidationMessage For="@(() => nuevaInvestigacion.IdCarrera)" />
-</div> 
-        </div>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label for="fechaInicio">Fecha de Inicio</label>
-                        <InputDate id="fechaInicio"
-                                   @bind-Value="nuevaInvestigacion.FechaInicio"
-                                   class="form-control" />
-                        <ValidationMessage For="@(() => nuevaInvestigacion.FechaInicio)" />
-                    </div>
 
-                    <div class="col-md-6">
-                        <label for="fechaFin">Fecha de Fin</label>
-                        <InputDate id="fechaFin"
-                                   @bind-Value="nuevaInvestigacion.FechaFin"
-                                   class="form-control" />
-                        <ValidationMessage For="@(() => nuevaInvestigacion.FechaFin)" />
-                    </div>
-                </div>
-
-
-
-                <!-- Fila: Duración -->
-                <div class="row mb-3">
-                    <div class="col">
-                        <label>Duración (meses)</label>
-                        <InputNumber @bind-Value="nuevaInvestigacion.TiempoMeses"
-                                     class="form-control"
-                                     min="0"
-                                     step="1"
-                                     oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
-                        <ValidationMessage For="@(() => nuevaInvestigacion.TiempoMeses)" />
-                    </div>
-
-                    <div class="col">
-                        <label>Tipo</label>
-                        <InputText class="form-control" @bind-Value="nuevaInvestigacion.Tipo" />
-                    </div>
-                </div>
-
-                <div class="row mb-3">
-                    <div class="col">
-                        <label>Estado</label>
-                        <select class="form-select" @bind="nuevaInvestigacion.Estado">
-                            <option value="">Seleccione estado</option>
-                            <option value="En proceso">En proceso</option>
-                            <option value="En revisión">En revisión</option>
-                            <option value="Publicado">Publicado</option>
-                        </select>
-                        <ValidationMessage For="@(() => nuevaInvestigacion.Estado)" />
-                    </div>
-
-                    <div class="col">
-                        <label>Tipo Científico</label>
-                        <select class="form-select" @bind="nuevaInvestigacion.Cientifico">
-                            <option value="">Seleccione una categoría</option>
-                            <option value="Ciencias Naturalez">Ciencias Naturalez</option>
-                            <option value="Ingeniería y tecnología">Ingeniería y tecnología</option>
-                            <option value="Ciencias Medicas y de la salud">Ciencias Medicas y de la salud</option>
-                        </select>
-                        <ValidationMessage For="@(() => nuevaInvestigacion.Cientifico)" />
-                    </div>
-                </div>
-
-
-
-
-
-
-
-                <div class="mb-3">
-                    <label>Subir PDF</label>
-                    <InputFile OnChange="SubirPDF" accept=".pdf,application/pdf" />
-                    @if (!string.IsNullOrEmpty(errorArchivo))
-                    {
-                        <div class="text-danger">@errorArchivo</div>
-                    }
-                </div>
-
-
-        <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary">
-                <i class="bi bi-check-circle"></i> Guardar
-            </button>
-            <button type="button" class="btn btn-secondary" @onclick="CerrarFormulario">
-                <i class="bi bi-x-circle"></i> Cancelar
-            </button>
-        </div>
-    </EditForm>
-}
-
-<br /> 
-<br />
         @if (mostrarInvestigaciones)
         {
             <div class="mb-3">
-    <button class="btn btn-success" @onclick="MostrarFormulario">
-        <i class="bi bi-plus-circle"></i> Agregar Investigación
-    </button>
-</div>
+
+
+                @if (puedeAgregar)
+                {
+                    <button class="btn btn-success" @onclick="MostrarFormulario">
+                        <i class="bi bi-plus-circle"></i> Agregar Investigación
+                    </button>
+                }
+                else
+                {
+                    <button class="btn btn-secondary" disabled>
+                        <i class="bi bi-plus-circle"></i> Agregar Investigación (deshabilitado)
+                    </button>
+                    <p class="text-muted mt-2">Ya postulaste. Solo puedes agregar más investigaciones si tu postulación fue rechazada.</p>
+                }
+
+            </div>
 
             <h4>Investigaciones</h4>
             <table class="table">
@@ -371,14 +384,17 @@
                                 }
                             </td>
 
-                            
 
-<ValidationMessage For="@(() => nuevaInvestigacion.IdCarrera)" />
+
+                            <ValidationMessage For="@(() => nuevaInvestigacion.IdCarrera)" />
                             <td>
-                            
-                                <button class="btn btn-warning btn-sm" @onclick="() => EditarInvestigacion(inv)">
+
+                                <button class="btn btn-warning btn-sm"
+                                        @onclick="() => EditarInvestigacion(inv)"
+                                        disabled="@(puedeAgregar == false)">
                                     <i class="bi bi-pencil"></i> Editar
                                 </button>
+
                             </td>
 
                         </tr>
@@ -387,191 +403,300 @@
             </table>
         }
 
-       
-         @if (mostrarCapacitaciones)
-{
-    <div class="mb-3">
-        <button class="btn btn-success" @onclick="MostrarFormCap">
-            <i class="bi bi-plus-circle"></i> Agregar Capacitación
-        </button>
-    </div>
-}
 
-@if (mostrarFormCap)
-{
-    <EditForm Model="@nuevaCapacitacion" OnValidSubmit="GuardarCapacitacion">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-
-        <div class="row mb-3">
-            <div class="col">
-                <label>Nombre del Curso</label>
-                <InputText class="form-control" @bind-Value="nuevaCapacitacion.NombreCurso" />
+        @if (mostrarCapacitaciones)
+        {
+            <div class="mb-3">
+                <button class="btn btn-success" @onclick="MostrarFormCap">
+                    <i class="bi bi-plus-circle"></i> Agregar Capacitación
+                </button>
             </div>
-            <div class="col">
-                <label>Duración (horas)</label>
-                <InputNumber class="form-control" @bind-Value="nuevaCapacitacion.DuracionHoras" />
+        }
+
+        @if (mostrarFormCap)
+        {
+            <div class="modal-backdrop fade show"></div>
+            <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.2)">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header" style="background: var(--primary-color); color: white;">
+                            <h5 class="modal-title">
+                                <i class="bi bi-journal-plus"></i> @((modoEdicionCap ? "Editar" : "Agregar") + " Capacitación")
+                            </h5>
+                            <button type="button" class="btn-close" @onclick="() => mostrarFormCap = false"></button>
+                        </div>
+                        <div class="modal-body">
+                            <EditForm Model="@nuevaCapacitacion" OnValidSubmit="GuardarCapacitacion">
+                                <DataAnnotationsValidator />
+                                <ValidationSummary />
+
+                                <div class="row mb-3">
+                                    <div class="col">
+                                        <label>Nombre del Curso</label>
+                                        <InputText class="form-control" @bind-Value="nuevaCapacitacion.NombreCurso" />
+                                    </div>
+                                    <div class="col">
+                                        <label>Duración (horas)</label>
+                                        <InputNumber class="form-control" @bind-Value="nuevaCapacitacion.DuracionHoras" />
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col">
+                                        <label>Fecha de Inicio</label>
+                                        <InputDate TValue="DateTime" @bind-Value="nuevaCapacitacion.FechaInicio" />
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label>Subir PDF</label>
+                                    <InputFile OnChange="SubirPdfCap" />
+                                </div>
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <button class="btn btn-primary">
+                                        <i class="bi bi-check-circle"></i> Guardar
+                                    </button>
+                                    <button type="button" class="btn btn-secondary"
+                                            @onclick="() => mostrarFormCap = false">
+                                        <i class="bi bi-x-circle"></i> Cancelar
+                                    </button>
+                                </div>
+                            </EditForm>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
+        }
 
-        <div class="row mb-3">
-            <div class="col">
-                <label>Fecha de Inicio</label>
-               <InputDate TValue="DateTime" @bind-Value="nuevaCapacitacion.FechaInicio" />
+
+        @if (mostrarFormObra)
+        {
+            <div class="modal-backdrop fade show"></div>
+            <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.2)">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header" style="background: var(--primary-color); color: white;">
+                            <h5 class="modal-title">
+                                <i class="bi bi-journal-plus"></i> @((modoEdicionObra ? "Editar" : "Agregar") + " Obra")
+                            </h5>
+                            <button type="button" class="btn-close" @onclick="() => mostrarFormObra = false"></button>
+                        </div>
+                        <div class="modal-body">
+                            <EditForm Model="@nuevaObra" OnValidSubmit="GuardarObra">
+                                <DataAnnotationsValidator />
+                                <ValidationSummary />
+
+                                <div class="row mb-3">
+                                    <div class="col">
+                                        <label>Título</label>
+                                        <InputText class="form-control" @bind-Value="nuevaObra.Titulo" />
+                                    </div>
+                                    <div class="col">
+                                        <label>Tipo</label>
+                                        <InputText class="form-control" @bind-Value="nuevaObra.TipoObra" />
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col">
+                                        <label>Fecha</label>
+                                        <InputDate TValue="DateTime" class="form-control" @bind-Value="nuevaObra.Fecha" />
+                                    </div>
+                                    <div class="col">
+                                        <label>Pais</label>
+                                        <InputText class="form-control" @bind-Value="nuevaObra.Pais" />
+                                    </div>
+                                    <div class="col">
+                                        <label>Ciudad</label>
+                                        <InputText class="form-control" @bind-Value="nuevaObra.Ciudad" />
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col">
+                                        <label>Editorial</label>
+                                        <InputText class="form-control" @bind-Value="nuevaObra.Editorial" />
+                                    </div>
+                                    <div class="col">
+                                        <label>ISBN</label>
+                                        <InputText class="form-control" @bind-Value="nuevaObra.ISBN" />
+                                    </div>
+                                    <div class="col">
+                                        <label>DOI</label>
+                                        <InputText class="form-control" @bind-Value="nuevaObra.DOI" />
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col">
+                                        <label>Enlace</label>
+                                        <InputText class="form-control" @bind-Value="nuevaObra.Enlace" />
+                                    </div>
+                                    <div class="col">
+                                        <label>Autores</label>
+                                        <InputText class="form-control" @bind-Value="nuevaObra.Autores" />
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label>Resumen</label>
+                                    <InputTextArea class="form-control" @bind-Value="nuevaObra.Resumen" />
+                                </div>
+                                <div class="mb-3">
+                                    <label>Subir PDF</label>
+                                    <InputFile OnChange="SubirPdfObra" accept=".pdf,application/pdf" />
+                                </div>
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <button class="btn btn-primary">
+                                        <i class="bi bi-check-circle"></i> Guardar
+                                    </button>
+                                    <button type="button" class="btn btn-secondary"
+                                            @onclick="() => mostrarFormObra = false">
+                                        <i class="bi bi-x-circle"></i> Cancelar
+                                    </button>
+                                </div>
+                            </EditForm>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
+        }
 
-        <div class="mb-3">
-            <label>Subir PDF</label>
-            <InputFile OnChange="SubirPdfCap" />
-        </div>
 
-        <div class="d-flex gap-2">
-            <button class="btn btn-primary">
-                <i class="bi bi-check-circle"></i> Guardar
-            </button>
-            <button type="button" class="btn btn-secondary"
-                    @onclick="() => mostrarFormCap = false">
-                <i class="bi bi-x-circle"></i> Cancelar
-            </button>
-        </div>
-    </EditForm>
-}
-@if (mostrarFormObra)
-{
-    <EditForm Model="@nuevaObra" OnValidSubmit="GuardarObra">
-        <div class="row mb-3">
-            <div class="col">
-                <label>Título</label>
-                <InputText class="form-control" @bind-Value="nuevaObra.Titulo" />
+        @if (mostrarCapacitaciones)
+        {
+            <h4>Capacitaciones</h4>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Curso</th>
+                        <th>Horas</th>
+                        <th>Fecha Inicio</th>
+                        <th>PDF</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cap in listaCapacitaciones)
+                    {
+                        <tr>
+                            <td>@cap.NombreCurso</td>
+                            <td>@cap.DuracionHoras</td>
+                            <td>@cap.FechaInicio.ToShortDateString()</td>
+                            <td>
+                                @if (cap.Pdf is not null && cap.Pdf.Length > 0)
+                                {
+                                    <a href="#" onclick="openPdf('@Convert.ToBase64String(cap.Pdf)'); return false;">
+                                        Ver PDF
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Sin PDF</span>
+                                }
+                            </td>
+                            <td>
+                                <button class="btn btn-warning btn-sm"
+                                        @onclick="() => EditarCapacitacion(cap)">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+
+        @if (mostrarObras)
+        {
+            <div class="mb-3">
+                <button class="btn btn-success" @onclick="MostrarFormObra">
+                    <i class="bi bi-plus-circle"></i> Agregar Obra
+                </button>
             </div>
-            <div class="col">
-                <label>Tipo</label>
-                <InputText class="form-control" @bind-Value="nuevaObra.TipoObra" />
+
+            <h4>Obras</h4>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Tipo</th>
+                        <th>Fecha</th>
+                        <th>Pais</th>
+                        <th>Ciudad</th>
+                        <th>Editorial</th>
+                        <th>ISBN</th>
+                        <th>DOI</th>
+                        <th>Enlace</th>
+                        <th>Autores</th>
+                        <th>Resumen</th>
+                        <th>PDF</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var obra in listaObras)
+                    {
+                        <tr>
+                            <td>@obra.Titulo</td>
+                            <td>@obra.TipoObra</td>
+                            <td>@obra.Fecha.ToShortDateString()</td>
+                            <td>@obra.Pais</td>
+                            <td>@obra.Ciudad</td>
+                            <td>@obra.Editorial</td>
+                            <td>@obra.ISBN</td>
+                            <td>@obra.DOI</td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(obra.Enlace))
+                                {
+                                    <a href="@obra.Enlace" target="_blank">Enlace</a>
+                                }
+                            </td>
+                            <td>@obra.Autores</td>
+                            <td>@obra.Resumen</td>
+                            <td>
+                                @if (obra.PDF is not null && obra.PDF.Length > 0)
+                                {
+                                    <a href="#" onclick="openPdf('@Convert.ToBase64String(obra.PDF)'); return false;">
+                                        Ver PDF
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Sin PDF</span>
+                                }
+                            </td>
+                            <td>
+                                <button class="btn btn-warning btn-sm" @onclick="() => EditarObra(obra)">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(mensaje))
+        {
+            <div class="modal-backdrop fade show"></div>
+            <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.2)">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header" style="background: var(--primary-color); color: white;">
+                            <h5 class="modal-title">
+                                <i class="bi bi-info-circle-fill"></i> Notificación
+                            </h5>
+                            <button type="button" class="btn-close" @onclick="() => mensaje = string.Empty"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>@mensaje</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-primary" @onclick="() => mensaje = string.Empty">
+                                <i class="bi bi-check-circle"></i> Aceptar
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
+        }
 
-        <div class="row mb-3">
-            <div class="col">
-                <label>Fecha</label>
-                <InputDate TValue="DateTime" @bind-Value="nuevaObra.FechaPublicacion" />
-            </div>
-        </div>
-
-        <div class="mb-3">
-            <label>Subir PDF</label>
-            <InputFile OnChange="SubirPdfObra" />
-        </div>
-
-        <div class="d-flex gap-2">
-            <button class="btn btn-primary">
-                <i class="bi bi-check-circle"></i> Guardar
-            </button>
-            <button type="button" class="btn btn-secondary"
-                    @onclick="() => mostrarFormObra = false">
-                <i class="bi bi-x-circle"></i> Cancelar
-            </button>
-        </div>
-    </EditForm>
-}
-
-@if (mostrarCapacitaciones)
-{
-    <h4>Capacitaciones</h4>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Curso</th>
-                <th>Horas</th>
-                <th>Fecha Inicio</th>
-                <th>PDF</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var cap in listaCapacitaciones)
-            {
-                <tr>
-                    <td>@cap.NombreCurso</td>
-                    <td>@cap.DuracionHoras</td>
-                    <td>@cap.FechaInicio.ToShortDateString()</td>
-                    <td>
-                        @if (cap.Pdf is not null && cap.Pdf.Length > 0)
-                        {
-                            <a href="#" onclick="openPdf('@Convert.ToBase64String(cap.Pdf)'); return false;">
-                                Ver PDF
-                            </a>
-                        }
-                        else
-                        {
-                            <span class="text-muted">Sin PDF</span>
-                        }
-                    </td>
-                    <td>
-                        <button class="btn btn-warning btn-sm"
-                                @onclick="() => EditarCapacitacion(cap)">
-                            <i class="bi bi-pencil"></i> Editar
-                        </button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-
-
-@if (mostrarObras)
-{
-    <div class="mb-3">
-        <button class="btn btn-success" @onclick="MostrarFormObra">
-            <i class="bi bi-plus-circle"></i> Agregar Obra
-        </button>
-    </div>
-
-    <h4>Obras</h4>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Título</th>
-                <th>Tipo</th>
-                <th>Fecha</th>
-                <th>PDF</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var obra in listaObras)
-            {
-                <tr>
-                    <td>@obra.Titulo</td>
-                    <td>@obra.TipoObra</td>
-                    <td>@obra.FechaPublicacion.ToShortDateString()</td>
-                    <td>
-                        @if (obra.Documento is not null && obra.Documento.Length > 0)
-                        {
-                            <a href="#" onclick="openPdf('@Convert.ToBase64String(obra.Documento)'); return false;">
-                                Ver PDF
-                            </a>
-                        }
-                        else
-                        {
-                            <span class="text-muted">Sin PDF</span>
-                        }
-                    </td>
-                    <td>
-                        <button class="btn btn-warning btn-sm" @onclick="() => EditarObra(obra)">
-                            <i class="bi bi-pencil"></i> Editar
-                        </button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-
-
-        <!-- Filtros Adicionales -->
-       
     </div>
 </div>
 
@@ -611,6 +736,27 @@
 
 
 @code {
+    private bool puedeAgregarInvestigacion = true;
+    private bool puedeAgregarCapacitacion = true;
+    private bool puedeAgregarObra = true;
+
+    // Requisitos máximos (puedes obtenerlos de la API si lo deseas)
+    private int maxInvestigaciones = 3;
+    private int maxCapacitaciones = 3;
+    private int maxObras = 3;
+
+    // Comprimir PDF (requiere NuGet: PdfSharpCore o similar, aquí ejemplo simple)
+    private async Task<byte[]> ComprimirPdfAsync(IBrowserFile archivo)
+    {
+        // Solo ejemplo: en Blazor WebAssembly no puedes manipular PDF nativamente,
+        // pero puedes reducir el tamaño leyendo menos bytes o usando una librería JS.
+        // Aquí solo se limita el tamaño máximo.
+        using var stream = archivo.OpenReadStream(2 * 1024 * 1024); // 2MB máx
+        using var ms = new MemoryStream();
+        await stream.CopyToAsync(ms);
+        return ms.ToArray();
+    }
+
     private List<Investigacion> listaInvestigaciones = new();
     private bool mostrarInvestigaciones = false;
     private string tablaSeleccionada = "";
@@ -623,88 +769,133 @@
     private bool modoEdicion = false;
     private DateTime fechaInicioTemp;
     private DateTime? fechaFinTemp;
-      // ————— Capacitaciones —————
-private List<Capacitacione> listaCapacitaciones = new();
-private Capacitacione nuevaCapacitacion = new();
-private bool mostrarCapacitaciones = false;
-private bool mostrarFormCap = false;
-private bool modoEdicionCap = false;
-private IBrowserFile? archivoPDFCap;
+    //estado para el btn
+    private string estadoPostulacion;
+    private PostulacionDto postulacionActual;
+    private bool puedeAgregar = true;
+
+    // ————— Capacitaciones —————
+    private List<Capacitacione> listaCapacitaciones = new();
+    private Capacitacione nuevaCapacitacion = new();
+    private bool mostrarCapacitaciones = false;
+    private bool mostrarFormCap = false;
+    private bool modoEdicionCap = false;
+    private IBrowserFile? archivoPDFCap;
     private string? errorArchivo;
-//capacitaciones
-private string? cedulaUsuario;
+    //capacitaciones
+    private string? cedulaUsuario;
 
-// ----- CAPACITACIONES -----
-private void MostrarFormCap()
-{
-    nuevaCapacitacion = new Capacitacione
+
+    private async Task CargarEstadoPostulacion()
     {
-        Cedula = cedulaUsuario ?? string.Empty,
-        FechaInicio = DateTime.Today // Cambiado de DateOnly a DateTime
-    };
-    mostrarFormCap = true;
-    modoEdicionCap = false;
-    archivoPDFCap = null;
-}
-    
-
-
-private async Task SubirPdfCap(InputFileChangeEventArgs e)
-{
-    archivoPDFCap = e.File;
-}
-
-private async Task GuardarCapacitacion()
-{
-    try
-    {
-       
-
-        if (archivoPDFCap is not null)
+        try
         {
-            using var stream = archivoPDFCap.OpenReadStream(10 * 1024 * 1024);
-            using var ms = new MemoryStream();
-            await stream.CopyToAsync(ms);
-            nuevaCapacitacion.Pdf = ms.ToArray();
+            var cedula = await localStorage.GetItemAsync<string>("cedulaUsuario");
+            if (!string.IsNullOrWhiteSpace(cedula))
+            {
+                var response = await Http.GetAsync($"api/Promocion/PostulacionPorCedula/{cedula}");
+                if (response.IsSuccessStatusCode)
+                {
+                    postulacionActual = await response.Content.ReadFromJsonAsync<PostulacionDto>();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar postulación: {ex.Message}");
         }
 
-        if (modoEdicionCap)
-            await capacitacionesService.ActualizarAsync(nuevaCapacitacion);
-        else
-            nuevaCapacitacion =
-                await capacitacionesService.GuardarAsync(nuevaCapacitacion) ?? new Capacitacione();
+        puedeAgregar = postulacionActual == null ||
+                       postulacionActual.Estado == "Rechazada" ||
+                       postulacionActual.Estado == "Aceptada";
+    }
 
-        listaCapacitaciones =
-            await capacitacionesService.ObtenerPorCedulaAsync(nuevaCapacitacion.Cedula);
-
-        mostrarFormCap = false;
+    // ----- CAPACITACIONES -----
+    private void MostrarFormCap()
+    {
+        nuevaCapacitacion = new Capacitacione
+            {
+                Cedula = cedulaUsuario ?? string.Empty,
+                FechaInicio = DateTime.Today // Cambiado de DateOnly a DateTime
+            };
+        mostrarFormCap = true;
         modoEdicionCap = false;
         archivoPDFCap = null;
     }
-    catch (Exception ex)
+
+
+
+    private async Task SubirPdfCap(InputFileChangeEventArgs e)
     {
-        mensaje = $"Error: {ex.Message}";
+        var archivo = e.File;
+        if (archivo.ContentType != "application/pdf")
+        {
+            errorArchivo = "Solo se permiten archivos en formato PDF.";
+            nuevaCapacitacion.Pdf = null;
+            return;
+        }
+        try
+        {
+            nuevaCapacitacion.Pdf = await ComprimirPdfAsync(archivo);
+            errorArchivo = null;
+        }
+        catch
+        {
+            errorArchivo = "Error al leer o comprimir el archivo.";
+        }
     }
 
-}
-
-private void EditarCapacitacion(Capacitacione cap)
-{
-    nuevaCapacitacion = new Capacitacione
+    private async Task GuardarCapacitacion()
     {
-        IdCap         = cap.IdCap,
-        Cedula        = cap.Cedula,
-        NombreCurso   = cap.NombreCurso,
-        DuracionHoras = cap.DuracionHoras,
-        FechaInicio   = cap.FechaInicio,
-        Pdf           = cap.Pdf
-    };
+        try
+        {
 
-    mostrarFormCap = true;
-    modoEdicionCap = true;
-}
 
-//capacitaciones
+            if (archivoPDFCap is not null)
+            {
+                using var stream = archivoPDFCap.OpenReadStream(10 * 1024 * 1024);
+                using var ms = new MemoryStream();
+                await stream.CopyToAsync(ms);
+                nuevaCapacitacion.Pdf = ms.ToArray();
+            }
+
+            if (modoEdicionCap)
+                await capacitacionesService.ActualizarAsync(nuevaCapacitacion);
+            else
+                nuevaCapacitacion =
+                    await capacitacionesService.GuardarAsync(nuevaCapacitacion) ?? new Capacitacione();
+
+            listaCapacitaciones =
+                await capacitacionesService.ObtenerPorCedulaAsync(nuevaCapacitacion.Cedula);
+
+            mostrarFormCap = false;
+            modoEdicionCap = false;
+            archivoPDFCap = null;
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"Error: {ex.Message}";
+        }
+        ActualizarEstadosAgregar();
+    }
+
+    private void EditarCapacitacion(Capacitacione cap)
+    {
+        nuevaCapacitacion = new Capacitacione
+            {
+                IdCap = cap.IdCap,
+                Cedula = cap.Cedula,
+                NombreCurso = cap.NombreCurso,
+                DuracionHoras = cap.DuracionHoras,
+                FechaInicio = cap.FechaInicio,
+                Pdf = cap.Pdf
+            };
+
+        mostrarFormCap = true;
+        modoEdicionCap = true;
+    }
+
+    //capacitaciones
 
     private async Task ImportarDatos()
 
@@ -733,74 +924,73 @@ private void EditarCapacitacion(Capacitacione cap)
             mostrarInvestigaciones = false; // Ocultar si no es investigaciones
         }
 
-                if (tablaSeleccionada == "Capacitaciones")//capacitaciones
-{
-    var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
-    if (!string.IsNullOrEmpty(cedula))
-    {
-        listaCapacitaciones = await capacitacionesService.ObtenerPorCedulaAsync(cedula);
-        mostrarCapacitaciones = true;
+        if (tablaSeleccionada == "Capacitaciones")//capacitaciones
+        {
+            var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+            if (!string.IsNullOrEmpty(cedula))
+            {
+                listaCapacitaciones = await capacitacionesService.ObtenerPorCedulaAsync(cedula);
+                mostrarCapacitaciones = true;
+            }
+        }
+        else
+        {
+            mostrarCapacitaciones = false;
+        }
+
+        if (tablaSeleccionada == "Obras")
+        {
+            var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+            if (!string.IsNullOrEmpty(cedula))
+            {
+                listaObras = await obraService.ObtenerPorCedulaAsync(cedula);
+                mostrarObras = true;
+            }
+        }
+        else
+        {
+            mostrarObras = false;
+        }
+
+
+        ActualizarEstadosAgregar();
     }
-}
-else
-{
-    mostrarCapacitaciones = false;
-}
-
-if (tablaSeleccionada == "Obras")
-{
-    var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
-    if (!string.IsNullOrEmpty(cedula))
-    {
-        listaObras = await obraService.ObtenerPorCedulaAsync(cedula);
-        mostrarObras = true;
-    }
-}
-else
-{
-    mostrarObras = false;
-}
 
 
-
-    }
 
     private async Task MostrarFormulario()
     {
         nuevaInvestigacion = new Investigacion();
         mostrarFormulario = true;
+        await JS.InvokeVoidAsync("eval", "document.body.classList.add('modal-open');");
     }
 
-    private void CerrarFormulario()
+    private async void CerrarFormulario()
     {
         mostrarFormulario = false;
+        await JS.InvokeVoidAsync("eval", "document.body.classList.remove('modal-open');");
     }
-    
+
+
     //subir pdfs investigaciones
 
     private async Task SubirPDF(InputFileChangeEventArgs e)
     {
         var archivo = e.File;
-
         if (archivo.ContentType != "application/pdf")
         {
             errorArchivo = "Solo se permiten archivos en formato PDF.";
             nuevaInvestigacion.Pdf = null;
             return;
         }
-
         try
         {
-            using var stream = archivo.OpenReadStream(5 * 1024 * 1024); // Máx. 5 MB
-            using var ms = new MemoryStream();
-            await stream.CopyToAsync(ms);
-
-            nuevaInvestigacion.Pdf = ms.ToArray();
-            errorArchivo = null; // Todo bien
+            nuevaInvestigacion.Pdf = await ComprimirPdfAsync(archivo);
+            errorArchivo = null;
         }
         catch
         {
-            errorArchivo = "Error al leer el archivo.";
+            errorArchivo = "Error al leer o comprimir el archivo.";
         }
     }
 
@@ -848,6 +1038,7 @@ else
         {
             mensaje = $"Error detallado: {ex.Message}";
         }
+        ActualizarEstadosAgregar();
     }
 
 
@@ -856,11 +1047,16 @@ else
     protected override async Task OnInitializedAsync()
     {
         listaCarreras = await carreraService.ObtenerCarrerasAsync();
-            cedulaUsuario = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+        cedulaUsuario = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+        await CargarEstadoPostulacion();
+
+
 
     }
 
-    
+
+
+
     private async Task AbrirPdf(byte[]? pdf)
     {
         if (pdf != null && pdf.Length > 0)
@@ -869,12 +1065,6 @@ else
             await JS.InvokeVoidAsync("openPdfFromBase64", base64);
         }
     }
-
-    
-  
-
-
-   
 
     private void EditarInvestigacion(Investigacion inv)
     {
@@ -887,6 +1077,9 @@ else
                 FechaInicio = inv.FechaInicio,
                 FechaFin = inv.FechaFin,
                 IdCarrera = inv.IdCarrera,
+                Estado = inv.Estado,
+                Cientifico = inv.Cientifico,
+                Tipo = inv.Tipo,
                 Pdf = inv.Pdf
             };
 
@@ -894,76 +1087,105 @@ else
         modoEdicion = true;
     }
 
+
+
     // ————— Obras —————
-private List<ObraS> listaObras = new();
-private ObraS nuevaObra = new();
-private bool mostrarObras = false;
-private bool mostrarFormObra = false;
-private bool modoEdicionObra = false;
-private IBrowserFile? archivoPDFObra;
+    private List<ObraS> listaObras = new();
+    private ObraS nuevaObra = new();
+    private bool mostrarObras = false;
+    private bool mostrarFormObra = false;
+    private bool modoEdicionObra = false;
+    private IBrowserFile? archivoPDFObra;
 
-// Mostrar formulario
-private void MostrarFormObra()
-{
-    nuevaObra = new ObraS
+    private void MostrarFormObra()
     {
-        Cedula = cedulaUsuario ?? string.Empty,
-        FechaPublicacion = DateTime.Today
-    };
-    mostrarFormObra = true;
-    modoEdicionObra = false;
-    archivoPDFObra = null;
-}
-
-// Subir PDF
-private async Task SubirPdfObra(InputFileChangeEventArgs e)
-{
-    archivoPDFObra = e.File;
-}
-
-// Guardar obra
-private async Task GuardarObra()
-{
-    try
-    {
-        if (archivoPDFObra is not null)
-        {
-            using var stream = archivoPDFObra.OpenReadStream(10 * 1024 * 1024);
-            using var ms = new MemoryStream();
-            await stream.CopyToAsync(ms);
-            nuevaObra.Documento = ms.ToArray();
-        }
-
-        if (modoEdicionObra)
-            await obraService.ActualizarObraAsync(nuevaObra);
-        else
-            nuevaObra = await obraService.GuardarObraAsync(nuevaObra) ?? new ObraS();
-
-        listaObras = await obraService.ObtenerPorCedulaAsync(nuevaObra.Cedula);
-        mostrarFormObra = false;
+        nuevaObra = new ObraS
+            {
+                Cedula = cedulaUsuario ?? string.Empty,
+                Fecha = DateTime.Today
+            };
+        mostrarFormObra = true;
         modoEdicionObra = false;
         archivoPDFObra = null;
     }
-    catch (Exception ex)
+
+    private async Task SubirPdfObra(InputFileChangeEventArgs e)
     {
-        mensaje = $"Error: {ex.Message}";
+        var archivo = e.File;
+        if (archivo.ContentType != "application/pdf")
+        {
+            errorArchivo = "Solo se permiten archivos en formato PDF.";
+            nuevaObra.PDF = null;
+            return;
+        }
+        try
+        {
+            nuevaObra.PDF = await ComprimirPdfAsync(archivo);
+            errorArchivo = null;
+        }
+        catch
+        {
+            errorArchivo = "Error al leer o comprimir el archivo.";
+        }
     }
-}
 
-private void EditarObra(ObraS obra)
-{
-    nuevaObra = new ObraS
+    private async Task GuardarObra()
     {
-        IdObra = obra.IdObra,
-        Cedula = obra.Cedula,
-        Titulo = obra.Titulo,
-        TipoObra = obra.TipoObra,
-        FechaPublicacion = obra.FechaPublicacion,
-        Documento = obra.Documento
-    };
-    mostrarFormObra = true;
-    modoEdicionObra = true;
-}
+        try
+        {
+            if (archivoPDFObra is not null)
+            {
+                using var stream = archivoPDFObra.OpenReadStream(10 * 1024 * 1024);
+                using var ms = new MemoryStream();
+                await stream.CopyToAsync(ms);
+                nuevaObra.PDF = ms.ToArray();
+            }
 
-  
+            if (modoEdicionObra)
+                await obraService.ActualizarObraAsync(nuevaObra);
+            else
+                nuevaObra = await obraService.GuardarObraAsync(nuevaObra) ?? new ObraS();
+
+            listaObras = await obraService.ObtenerPorCedulaAsync(nuevaObra.Cedula);
+            mostrarFormObra = false;
+            modoEdicionObra = false;
+            archivoPDFObra = null;
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"Error: {ex.Message}";
+        }
+        ActualizarEstadosAgregar();
+    }
+
+    private void EditarObra(ObraS obra)
+    {
+        nuevaObra = new ObraS
+            {
+                IdObra = obra.IdObra,
+                Cedula = obra.Cedula,
+                Titulo = obra.Titulo,
+                TipoObra = obra.TipoObra,
+                Fecha = obra.Fecha,
+                Pais = obra.Pais,
+                Ciudad = obra.Ciudad,
+                Editorial = obra.Editorial,
+                ISBN = obra.ISBN,
+                DOI = obra.DOI,
+                Enlace = obra.Enlace,
+                Autores = obra.Autores,
+                Resumen = obra.Resumen,
+                PDF = obra.PDF
+            };
+        mostrarFormObra = true;
+        modoEdicionObra = true;
+    }
+
+    private void ActualizarEstadosAgregar()
+    {
+        puedeAgregarInvestigacion = listaInvestigaciones.Count < maxInvestigaciones;
+        puedeAgregarCapacitacion = listaCapacitaciones.Count < maxCapacitaciones;
+        puedeAgregarObra = listaObras.Count < maxObras;
+    }
+
 }

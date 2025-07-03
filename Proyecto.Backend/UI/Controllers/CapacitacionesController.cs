@@ -82,7 +82,6 @@ namespace Proyecto.Backend.UI.Controllers
         }
 
 
-
         [HttpPost("GuardarDto")]
         public async Task<ActionResult<Capacitacione>> GuardarDto(CapacitacionCreateDto dto)
         {

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿/*using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Proyecto.Backend.Domain.Entities.Models;
 
@@ -123,3 +123,4 @@ namespace Proyecto.Backend.UI.Controllers
     }
 }
 
+*/

@@ -67,6 +67,7 @@ namespace Proyecto.Backend.UI.Controllers
             existente.FechaInicio = inv.FechaInicio;
             existente.FechaFin = inv.FechaFin;
             existente.IdCarrera = inv.IdCarrera;
+            existente.Pdf = inv.Pdf;
             existente.Tipo = inv.Tipo;
             existente.Estado = inv.Estado;
             existente.Cientifico = inv.Cientifico;
@@ -122,9 +123,9 @@ namespace Proyecto.Backend.UI.Controllers
                 Pdf = i.Pdf,
                 IdCarrera = i.IdCarrera,
                 NombreCarrera = i.IdCarreraNavigation?.Nombre,
-                Tipo = i.Tipo,          
+                Tipo = i.Tipo,
                 Estado = i.Estado,
-                Cientifico= i.Cientifico
+                Cientifico = i.Cientifico
             }).ToList();
 
             return Ok(resultado);
