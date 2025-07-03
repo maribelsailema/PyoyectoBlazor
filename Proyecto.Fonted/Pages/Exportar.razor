@@ -9,6 +9,7 @@
 @inject ObraService obraService
 @inject InvestigacionService investigacionService
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject HttpClient Http
 
 <style>
     /* Estilos específicos para la página de exportación */
@@ -183,10 +184,14 @@
                 </select>
             </div>
 
-            @if (!string.IsNullOrEmpty(mensaje))
+            @if (!string.IsNullOrWhiteSpace(mensaje))
             {
-                <div class="alert alert-warning mt-2">@mensaje</div>
+                <div class="alert alert-danger d-flex align-items-center mt-3" role="alert" style="font-size: 1rem;">
+                    <i class="bi bi-exclamation-triangle-fill me-2" style="font-size: 1.4rem;"></i>
+                    <div>@mensaje</div>
+                </div>
             }
+
 
             <!-- Botón de Exportación -->
             <div class="export-button">
@@ -310,14 +315,26 @@
                 </div>
             </div>
         }
-<br /> 
-<br />
+
         @if (mostrarInvestigaciones)
         {
-            <div class="mb-3">
-    <button class="btn btn-success" @onclick="MostrarFormulario">
-        <i class="bi bi-plus-circle"></i> Agregar Investigación
-    </button>
+                      <div class="mb-3">
+
+
+                @if (puedeAgregar)
+                {
+                    <button class="btn btn-success" @onclick="MostrarFormulario">
+                        <i class="bi bi-plus-circle"></i> Agregar Investigación
+                    </button>
+                }
+                else
+                {
+                    <button class="btn btn-secondary" disabled>
+                        <i class="bi bi-plus-circle"></i> Agregar Investigación (deshabilitado)
+                    </button>
+                    <p class="text-muted mt-2">Ya postulaste. Solo puedes agregar más investigaciones si tu postulación fue rechazada.</p>
+                }
+
 </div>
 
             <h4>Investigaciones</h4>
@@ -371,10 +388,13 @@
 
 <ValidationMessage For="@(() => nuevaInvestigacion.IdCarrera)" />
                             <td>
-                            
-                                <button class="btn btn-warning btn-sm" @onclick="() => EditarInvestigacion(inv)">
+
+                                <button class="btn btn-warning btn-sm"
+                                        @onclick="() => EditarInvestigacion(inv)"
+                                        disabled="@(puedeAgregar == false)">
                                     <i class="bi bi-pencil"></i> Editar
                                 </button>
+
                             </td>
 
                         </tr>
@@ -751,7 +771,9 @@
     private DateTime? fechaFinTemp;
     //estado para el btn
     private string estadoPostulacion;
+    private PostulacionDto postulacionActual;
     private bool puedeAgregar = true;
+
       // ————— Capacitaciones —————
 private List<Capacitacione> listaCapacitaciones = new();
 private Capacitacione nuevaCapacitacion = new();
@@ -762,6 +784,31 @@ private IBrowserFile? archivoPDFCap;
     private string? errorArchivo;
 //capacitaciones
 private string? cedulaUsuario;
+
+
+    private async Task CargarEstadoPostulacion()
+    {
+        try
+        {
+            var cedula = await localStorage.GetItemAsync<string>("cedulaUsuario");
+            if (!string.IsNullOrWhiteSpace(cedula))
+            {
+                var response = await Http.GetAsync($"api/Promocion/PostulacionPorCedula/{cedula}");
+                if (response.IsSuccessStatusCode)
+                {
+                    postulacionActual = await response.Content.ReadFromJsonAsync<PostulacionDto>();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar postulación: {ex.Message}");
+        }
+
+        puedeAgregar = postulacionActual == null ||
+                       postulacionActual.Estado == "Rechazada" ||
+                       postulacionActual.Estado == "Aceptada";
+    }
 
 // ----- CAPACITACIONES -----
 private void MostrarFormCap()
@@ -915,12 +962,15 @@ private void EditarCapacitacion(Capacitacione cap)
     {
         nuevaInvestigacion = new Investigacion();
         mostrarFormulario = true;
+        await JS.InvokeVoidAsync("eval", "document.body.classList.add('modal-open');");
     }
 
-    private void CerrarFormulario()
+    private async void CerrarFormulario()
     {
         mostrarFormulario = false;
+        await JS.InvokeVoidAsync("eval", "document.body.classList.remove('modal-open');");
     }
+
     
     //subir pdfs investigaciones
 
@@ -997,9 +1047,14 @@ private async Task SubirPDF(InputFileChangeEventArgs e)
     protected override async Task OnInitializedAsync()
     {
         listaCarreras = await carreraService.ObtenerCarrerasAsync();
-            cedulaUsuario = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+        cedulaUsuario = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+        await CargarEstadoPostulacion();
+
+
 
     }
+
+
 
     
     private async Task AbrirPdf(byte[]? pdf)

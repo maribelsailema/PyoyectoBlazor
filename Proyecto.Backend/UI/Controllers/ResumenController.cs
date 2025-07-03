@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Proyecto.Backend.Domain.Entities.Models;
@@ -18,7 +18,7 @@ namespace Proyecto.Backend.UI.Controllers
         }
 
         [HttpGet("Postulante/{cedula}")]
-        public async Task<ActionResult<ResumenPostulanteDto>> GetResumenPostulante(string cedula)
+        public async Task<ActionResult<ResumenCompletoPostulanteDto>> GetResumenPostulante(string cedula)
         {
             var rolActual = await _context.RolesDocentes
                 .Where(r => r.Cedula == cedula && r.Activo)
@@ -26,53 +26,84 @@ namespace Proyecto.Backend.UI.Controllers
                 .FirstOrDefaultAsync();
 
             if (rolActual == null)
-                return NotFound("No se encontró un rol activo para el docente.");
+                return NotFound("El docente no tiene un rol activo.");
 
-            var fechaDesde = rolActual.FechaAsignacion; // DateOnly
-            var fechaActual = DateOnly.FromDateTime(DateTime.Today);
+            var fechaDesde = rolActual.FechaAsignacion;
+            var fechaHasta = DateOnly.FromDateTime(DateTime.Today);
 
-            // Obras (requiere conversión de DateOnly a DateTime)
-            var fechaDesdeDateTime = fechaDesde.ToDateTime(TimeOnly.MinValue);
-            var fechaActualDateTime = fechaActual.ToDateTime(TimeOnly.MaxValue);
+            // Obras (solo datos clave)
+            var obras = await _context.Obras
+                .Where(o => o.Cedula == cedula && o.Fecha > fechaDesde && o.Fecha <= fechaHasta)
+                .Select(o => new ObraResumenDto
+                {
+                    IdObra = o.IdObra,
+                    Cedula = o.Cedula,
+                    TipoObra = o.TipoObra,
+                    Fecha = o.Fecha
+                })
+                .ToListAsync();
 
-            var cantidadObras = await _context.Obras
-                .Where(o => o.Cedula == cedula &&
-                            o.Fecha > fechaDesdeDateTime &&
-                            o.Fecha <= fechaActualDateTime)
-                .CountAsync();
+            // Evaluaciones
+            var evaluaciones = await _context.EvaluacionesDocentes
+                .Where(e => e.Cedula == cedula && e.FechaEvaluacion > fechaDesde && e.FechaEvaluacion <= fechaHasta)
+                .Select(e => new EvaluacionResumenDto
+                {
+                    IdEval = e.IdEval,
+                    Cedula = e.Cedula,
+                    Periodo = e.Periodo,
+                    PuntajeFinal = e.PuntajeFinal,
+                    FechaEvaluacion = e.FechaEvaluacion
+                })
+                .ToListAsync();
 
-            // Evaluación (DateOnly sin conversión)
-            var evaluacion = await _context.EvaluacionesDocentes
-                .Where(e => e.Cedula == cedula &&
-                            e.FechaEvaluacion > fechaDesde &&
-                            e.FechaEvaluacion <= fechaActual)
-                .OrderByDescending(e => e.FechaEvaluacion)
-                .FirstOrDefaultAsync();
+            // Capacitaciones
+            var capacitaciones = await _context.Capacitaciones
+                .Where(c => c.Cedula == cedula && c.FechaInicio > fechaDesde && c.FechaInicio <= fechaHasta)
+                .Select(c => new CapacitacionResumenDto
+                {
+                    IdCap = c.IdCap,
+                    Cedula = c.Cedula,
+                    NombreCurso = c.NombreCurso,
+                    DuracionHoras = c.DuracionHoras,
+                    FechaInicio = c.FechaInicio
+                })
+                .ToListAsync();
 
-            // Capacitaciones (DateOnly sin conversión)
-            var horasCap = await _context.Capacitaciones
-                .Where(c => c.Cedula == cedula &&
-                            c.FechaInicio > fechaDesde &&
-                            c.FechaInicio <= fechaActual)
-                .SumAsync(c => c.DuracionHoras);
+            // Investigaciones
+            var investigaciones = await _context.Investigaciones
+                .Where(i => i.Cedula == cedula && i.FechaInicio > fechaDesde && i.FechaInicio <= fechaHasta)
+                .Select(i => new InvestigacionResumenDto
+                {
+                    IdInv = i.IdInv,
+                    Cedula = i.Cedula,
+                    NombreProyecto = i.NombreProyecto,
+                    TiempoMeses = i.TiempoMeses,
+                    FechaInicio = i.FechaInicio,
+                    FechaFin = i.FechaFin,
+                    Tipo = i.Tipo,
+                    Estado = i.Estado,
+                    Cientifico = i.Cientifico
+                })
+                .ToListAsync();
 
-            // Investigaciones (DateOnly sin conversión)
-            var mesesInv = await _context.Investigaciones
-                .Where(i => i.Cedula == cedula &&
-                            i.FechaInicio > fechaDesde &&
-                            i.FechaInicio <= fechaActual)
-                .SumAsync(i => i.TiempoMeses);
-
-            // Construcción del resumen
-            var resumen = new ResumenPostulanteDto
+            // Crear DTO combinado
+            var resumenCompleto = new ResumenCompletoPostulanteDto
             {
-                CantidadObras = cantidadObras,
-                PuntajeEvaluacion = evaluacion?.PuntajeFinal,
-                DuracionHoras = horasCap,
-                TiempoMeses = mesesInv
+                Obras = obras,
+                Evaluaciones = evaluaciones,
+                Capacitaciones = capacitaciones,
+                Investigaciones = investigaciones,
+
+                // Datos agregados
+                CantidadObras = obras.Count,
+                HorasCapacitacion = capacitaciones.Sum(c => c.DuracionHoras),
+                MesesInvestigacion = investigaciones.Sum(i => i.TiempoMeses),
+                UltimaEvaluacion = evaluaciones
+                    .OrderByDescending(e => e.FechaEvaluacion)
+                    .FirstOrDefault()
             };
 
-            return Ok(resumen);
+            return Ok(resumenCompleto);
         }
     }
 }

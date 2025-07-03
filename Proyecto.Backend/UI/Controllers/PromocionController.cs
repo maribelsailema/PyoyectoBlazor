@@ -60,16 +60,18 @@ namespace Proyecto.Backend.UI.Controllers
         public async Task<ActionResult<IEnumerable<PostulacionDto>>> GetTodas()
         {
             var postulaciones = await _context.Postulaciones
-                .Select(p => new PostulacionDto
-                {
-                    Id = p.Id,
-                    Cedula = p.Cedula,
-                    RolActual = p.RolActual,
-                    RolSolicitado = p.RolSolicitado,
-                    FechaSolicitud = p.FechaSolicitud,
-                    Estado = p.Estado
-                })
-                .ToListAsync();
+        .Where(p => p.Estado == "Pendiente" || p.Estado == "Aceptada")
+        // <- filtro agregado
+        .Select(p => new PostulacionDto
+        {
+            Id = p.Id,
+            Cedula = p.Cedula,
+            RolActual = p.RolActual,
+            RolSolicitado = p.RolSolicitado,
+            FechaSolicitud = p.FechaSolicitud,
+            Estado = p.Estado
+        })
+        .ToListAsync();
 
             return Ok(postulaciones);
         }
