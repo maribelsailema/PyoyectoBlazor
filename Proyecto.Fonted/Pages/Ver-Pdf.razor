@@ -1,0 +1,100 @@
+﻿@page "/ver-pdfs"
+@inject HttpClient Http
+
+<h3>Consultar PDFs por Cédula</h3>
+
+<div style="margin-bottom: 20px;">
+    <label for="cedula">Cédula del usuario:</label>
+    <input id="cedula" @bind="cedulaBusqueda" />
+    <button @onclick="BuscarPdfs">Buscar</button>
+</div>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <p style="color: red;">@error</p>
+}
+else if (pdfs.Any())
+{
+    <h4>Documentos disponibles para: <strong>@cedulaBusqueda</strong></h4>
+
+    <button class="btn btn-primary" @onclick="ToggleMostrarLista">
+        PDFs (@pdfs.Count)
+    </button>
+
+    @if (mostrarLista)
+    {
+        <ul style="margin-top: 10px;">
+            @foreach (var pdf in pdfs.Select((item, index) => new { item, index }))
+            {
+                <li>
+                    <button @onclick="() => VerPdf(pdf.index)">
+                        Ver PDF @(@pdf.index + 1): @pdf.item.NombreCurso
+                    </button>
+                </li>
+            }
+        </ul>
+    }
+
+    @if (indiceSeleccionado >= 0)
+    {
+        <div class="pdf-viewer" style="margin-top: 20px;">
+            <h5>Visualizando PDF @(@indiceSeleccionado + 1): @pdfs[indiceSeleccionado].NombreCurso</h5>
+            <iframe src="data:application/pdf;base64,@pdfs[indiceSeleccionado].PdfBase64" width="100%" height="500px"></iframe>
+        </div>
+    }
+}
+else if (busquedaRealizada)
+{
+    <p>No se encontraron PDFs para esta cédula.</p>
+}
+
+@code {
+    private string cedulaBusqueda = string.Empty;
+    private List<PdfCapacitacionDto> pdfs = new();
+    private bool mostrarLista = false;
+    private int indiceSeleccionado = -1;
+    private bool busquedaRealizada = false;
+    private string? error;
+
+    private async Task BuscarPdfs()
+    {
+        error = null;
+        mostrarLista = false;
+        indiceSeleccionado = -1;
+        pdfs.Clear();
+        busquedaRealizada = false;
+
+        try
+        {
+            var result = await Http.GetFromJsonAsync<List<PdfCapacitacionDto>>($"api/Capacitaciones/VerPdfsPorCedula/{cedulaBusqueda}");
+            if (result != null)
+            {
+                pdfs = result;
+            }
+        }
+        catch (Exception ex)
+        {
+            error = "Error al buscar PDFs: " + ex.Message;
+        }
+
+        busquedaRealizada = true;
+    }
+
+    private void ToggleMostrarLista()
+    {
+        mostrarLista = !mostrarLista;
+    }
+
+    private void VerPdf(int index)
+    {
+        indiceSeleccionado = index;
+    }
+
+    public class PdfCapacitacionDto
+    {
+        public int IdCap { get; set; }
+        public string NombreCurso { get; set; } = "";
+        public DateOnly FechaInicio { get; set; }
+        public string PdfBase64 { get; set; } = "";
+    }
+}

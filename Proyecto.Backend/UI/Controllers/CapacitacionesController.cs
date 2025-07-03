@@ -130,5 +130,26 @@ namespace Proyecto.Backend.UI.Controllers
             return Ok(entidad);
         }
 
+        [HttpGet("VerPdfsPorCedula/{cedula}")]
+        public async Task<ActionResult<IEnumerable<object>>> VerPdfsPorCedula(string cedula)
+        {
+            var lista = await _context.Capacitaciones
+                .Where(c => c.Cedula == cedula && c.Pdf != null)
+                .Select(c => new
+                {
+                    c.IdCap,
+                    c.NombreCurso,
+                    c.FechaInicio,
+                    PdfBase64 = Convert.ToBase64String(c.Pdf!)
+                })
+                .ToListAsync();
+
+            if (!lista.Any())
+                return NotFound("No se encontraron PDFs para esta cédula.");
+
+            return Ok(lista);
+        }
+
+
     }
 }
