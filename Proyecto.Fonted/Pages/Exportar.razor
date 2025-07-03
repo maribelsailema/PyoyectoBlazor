@@ -7,11 +7,15 @@
 @using Proyecto.Shared.Models
 @inject IJSRuntime JS
 @inject CarreraService carreraService
+@inject IJSRuntime JS
+
 
 @inject CapacitacionesService capacitacionesService  
 @inject ObraService obraService
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 @inject HttpClient Http
+@inject EvaluacionDocenteService evaluacionService
+
 
 
 <style>
@@ -309,6 +313,9 @@
     </div>
 }
 
+
+
+
         @if (mostrarInvestigaciones)
         {
                       <div class="mb-3">
@@ -396,8 +403,139 @@
             </table>
         }
 
-       
-         @if (mostrarCapacitaciones)
+        @if (mostrarEvaluaciones)
+        {
+            <button class="btn btn-success mb-3" @onclick="MostrarFormularioEvaluacion">
+                <i class="bi bi-plus-circle"></i> Agregar Evaluación
+            </button>
+
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Período</th>
+                        <th>Puntaje Final</th>
+                        <th>Fecha Evaluación</th>
+                        <th>Tipo</th>
+                        <th>Estado</th>
+                        <th>Modo</th>
+                        <th>PDF</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var eval in listaEvaluaciones)
+                    {
+                        <tr>
+                            <td>@eval.Periodo</td>
+                            <td>@eval.PuntajeFinal</td>
+                            <td>@eval.FechaEvaluacion.ToShortDateString()</td>
+                            <td>@eval.TipoEvaluacion</td>
+                            <td>@eval.Estado</td>
+                            <td>@eval.ModoEvaluacion</td>
+                            <td>
+                                @if (eval.Pdf is not null && eval.Pdf.Length > 0)
+                                {
+                                    <a href="#" onclick="openPdf('@Convert.ToBase64String(eval.Pdf)'); return false;">
+                                        Ver PDF
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Sin PDF</span>
+                                }
+                            </td>
+                            <td>
+                                <button class="btn btn-warning btn-sm" @onclick="() => EditarEvaluacion(eval)">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+
+        @if (mostrarFormEvaluacion)
+        {
+            <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">@((modoEdicionEvaluacion ? "Editar Evaluación" : "Agregar Evaluación"))</h5>
+                            <button type="button" class="btn-close" @onclick="CancelarEdicion" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <EditForm Model="@nuevaEvaluacion" OnValidSubmit="GuardarEvaluacion">
+                                <DataAnnotationsValidator />
+                                <ValidationSummary />
+
+                                <div class="mb-3">
+                                    <label>Periodo</label>
+                                    <InputText class="form-control" @bind-Value="nuevaEvaluacion.Periodo" />
+                                    <ValidationMessage For="@(() => nuevaEvaluacion.Periodo)" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label>Puntaje Final</label>
+                                    <InputNumber class="form-control" @bind-Value="nuevaEvaluacion.PuntajeFinal" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label>Fecha de Evaluación</label>
+                                    <InputDate class="form-control" @bind-Value="nuevaEvaluacion.FechaEvaluacion" />
+                                </div>
+
+                                <!-- Campo: Tipo de Evaluación -->
+                                <div class="mb-3">
+                                    <label>Tipo de Evaluación</label>
+                                    <InputSelect class="form-control" @bind-Value="nuevaEvaluacion.TipoEvaluacion">
+                                        <option value="">Seleccione...</option>
+                                        <option>Autoevaluación</option>
+                                        <option>Heteroevaluación</option>
+                                        <option>Estudiantil</option>
+                                    </InputSelect>
+                                </div>
+
+                                <!-- Campo: Estado -->
+                                <div class="mb-3">
+                                    <label>Estado</label>
+                                    <InputSelect class="form-control" @bind-Value="nuevaEvaluacion.Estado">
+                                        <option value="">Seleccione...</option>
+                                        <option>Aprobado</option>
+                                        <option>Reprobado</option>
+                                    </InputSelect>
+                                </div>
+
+                                <!-- Campo: Modo -->
+                                <div class="mb-3">
+                                    <label>Modo de Evaluación</label>
+                                    <InputSelect class="form-control" @bind-Value="nuevaEvaluacion.ModoEvaluacion">
+                                        <option value="">Seleccione...</option>
+                                        <option>Presencial</option>
+                                        <option>Virtual</option>
+                                        <option>Mixta</option>
+                                    </InputSelect>
+                                </div>
+
+
+                                <div class="mb-3">
+                                    <label>Subir PDF</label>
+                                    <InputFile OnChange="SubirPdfEvaluacion" />
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-primary me-2">Guardar</button>
+                                    <button type="button" class="btn btn-secondary" @onclick="CancelarEdicion">Cancelar</button>
+                                </div>
+                            </EditForm>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+
+        @if (mostrarCapacitaciones)
 {
     <div class="mb-3">
         <button class="btn btn-success" @onclick="MostrarFormCap">
@@ -405,6 +543,7 @@
         </button>
     </div>
 }
+
 
 @if (mostrarFormCap)
 {
@@ -504,6 +643,7 @@
                     <td>@cap.NombreCurso</td>
                     <td>@cap.DuracionHoras</td>
                     <td>@cap.FechaInicio.ToShortDateString()</td>
+                    
                     <td>
                         @if (cap.Pdf is not null && cap.Pdf.Length > 0)
                         {
@@ -649,6 +789,16 @@ private IBrowserFile? archivoPDFCap;
 private string? cedulaUsuario;
 
 
+//EVALUACION DOCENTE
+    private List<EvaluacionDocente> listaEvaluaciones = new();
+    private bool mostrarEvaluaciones = false;
+    private bool mostrarFormEvaluacion = false;
+    private EvaluacionDocente nuevaEvaluacion = new EvaluacionDocente();
+    private string errorArchivoEvaluacion = "";
+    private bool modoEdicionEvaluacion = false;
+    private IBrowserFile? archivoEvaluacionPDF;
+
+
     private async Task CargarEstadoPostulacion()
     {
         try
@@ -672,6 +822,104 @@ private string? cedulaUsuario;
                        postulacionActual.Estado == "Rechazada" ||
                        postulacionActual.Estado == "Aceptada";
     }
+
+
+
+
+
+    //--------------evaluacion
+    private async Task SubirPdfEvaluacion(InputFileChangeEventArgs e)
+    {
+        archivoEvaluacionPDF = e.File;
+    }
+    private void MostrarFormularioEvaluacion()
+    {
+        mostrarFormEvaluacion = true;
+        modoEdicionEvaluacion = false;
+        nuevaEvaluacion = new EvaluacionDocente();
+    }
+
+    private void CerrarFormularioEvaluacion()
+    {
+        mostrarFormEvaluacion = false;
+        nuevaEvaluacion = new EvaluacionDocente();
+        errorArchivoEvaluacion = "";
+    }
+    
+
+
+    private async Task GuardarEvaluacion()
+    {
+        try
+        {
+            // Obtener la cédula del usuario logueado
+            nuevaEvaluacion.Cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+            Console.WriteLine($"Cédula recuperada: {nuevaEvaluacion.Cedula}");
+
+            if (string.IsNullOrWhiteSpace(nuevaEvaluacion.Cedula))
+            {
+                mensaje = "No se pudo obtener la cédula del usuario.";
+                return;
+            }
+
+            // Procesar PDF si se subió
+            if (archivoEvaluacionPDF is not null)
+            {
+                using var stream = archivoEvaluacionPDF.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+                using var memory = new MemoryStream();
+                await stream.CopyToAsync(memory);
+                nuevaEvaluacion.Pdf = memory.ToArray();
+            }
+
+            if (modoEdicionEvaluacion)
+            {
+                await evaluacionService.ActualizarEvaluacionAsync(nuevaEvaluacion);
+                mensaje = "Evaluación actualizada correctamente.";
+            }
+            else
+            {
+                await evaluacionService.GuardarEvaluacionAsync(nuevaEvaluacion);
+                mensaje = "Evaluación guardada correctamente.";
+            }
+
+            listaEvaluaciones = await evaluacionService.ObtenerPorCedulaAsync(nuevaEvaluacion.Cedula);
+
+            //  Cerrar el modal y reiniciar estado
+            mostrarFormEvaluacion = false;
+            modoEdicionEvaluacion = false;
+            nuevaEvaluacion = new EvaluacionDocente();
+            archivoEvaluacionPDF = null;
+
+            StateHasChanged(); //  Forzar renderizado
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"Error: {ex.Message}";
+        }
+    }
+
+
+
+    private void EditarEvaluacion(EvaluacionDocente ev)
+    {
+        nuevaEvaluacion = new EvaluacionDocente
+            {
+                IdEval = ev.IdEval,
+                Cedula = ev.Cedula,
+                Periodo = ev.Periodo
+            };
+        mostrarFormEvaluacion = true;
+        modoEdicionEvaluacion = true;
+    }
+
+    private void CancelarEdicion()
+    {
+        mostrarFormEvaluacion = false;
+        modoEdicionEvaluacion = false;
+        nuevaEvaluacion = new EvaluacionDocente();
+    }
+
+    
 
 // ----- CAPACITACIONES -----
 private void MostrarFormCap()
@@ -799,6 +1047,19 @@ else
 {
     mostrarObras = false;
 }
+        if (tablaSeleccionada == "EvaluacionesDocentes")
+        {
+            var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+            if (!string.IsNullOrEmpty(cedula))
+            {
+                listaEvaluaciones = await evaluacionService.ObtenerPorCedulaAsync(cedula);
+                mostrarEvaluaciones = true;
+            }
+        }
+        else
+        {
+            mostrarEvaluaciones = false;
+        }
 
 
 
@@ -918,13 +1179,10 @@ else
         if (pdf != null && pdf.Length > 0)
         {
             string base64 = Convert.ToBase64String(pdf);
-            await JS.InvokeVoidAsync("openPdfFromBase64", base64);
+            await JS.InvokeVoidAsync("openPdf(base64)", base64);
         }
+
     }
-
-    
-  
-
 
    
 
@@ -1021,6 +1279,7 @@ private void EditarObra(ObraS obra)
     mostrarFormObra = true;
     modoEdicionObra = true;
 }
+   
 
   
 }

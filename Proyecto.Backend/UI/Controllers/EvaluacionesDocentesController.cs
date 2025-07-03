@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Proyecto.Backend.Domain.Entities.Models;
+using Proyecto.Shared.Models;
 
 namespace Proyecto.Backend.UI.Controllers
 {
@@ -31,27 +32,83 @@ namespace Proyecto.Backend.UI.Controllers
         }
 
         [HttpPost("Guardar")]
-        public async Task<ActionResult<EvaluacionesDocente>> Guardar(EvaluacionesDocente eval)
+        public async Task<ActionResult<EvaluacionesDocente>> Guardar(EvaluacionDocente eval)
         {
-            _context.EvaluacionesDocentes.Add(eval);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(Buscar), new { id = eval.IdEval }, eval);
+            if (string.IsNullOrWhiteSpace(eval.Cedula) ||
+        string.IsNullOrWhiteSpace(eval.Periodo) ||
+        string.IsNullOrWhiteSpace(eval.TipoEvaluacion) ||
+        string.IsNullOrWhiteSpace(eval.Estado) ||
+        string.IsNullOrWhiteSpace(eval.ModoEvaluacion))
+            {
+                return BadRequest("Todos los campos obligatorios deben estar llenos.");
+            }
+
+            try
+            {
+                var nueva = new EvaluacionesDocente
+                {
+                    Cedula = eval.Cedula,
+                    Periodo = eval.Periodo,
+                    PuntajeFinal = eval.PuntajeFinal,
+                    FechaEvaluacion = DateOnly.FromDateTime(eval.FechaEvaluacion),
+                    Pdf = eval.Pdf,
+                    TipoEvaluacion = eval.TipoEvaluacion,
+                    Estado = eval.Estado,
+                    ModoEvaluacion = eval.ModoEvaluacion
+                };
+
+                _context.EvaluacionesDocentes.Add(nueva);
+                await _context.SaveChangesAsync();
+
+                return Ok(nueva); //  Ahora devuelve el objeto guardado en JSON
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error al guardar: {ex.Message}");
+            }
         }
 
-        [HttpPut("Actualizar/{id}")]
-        public async Task<IActionResult> Actualizar(int id, EvaluacionesDocente eval)
-        {
-            var existente = await _context.EvaluacionesDocentes.FindAsync(id);
-            if (existente == null) return NotFound();
 
+
+
+        [HttpPut("Actualizar/{id}")]
+public async Task<IActionResult> Actualizar(int id, EvaluacionDocente eval)
+{
+    if (id != eval.IdEval)
+    {
+        return BadRequest("El ID de la URL no coincide con el ID del objeto.");
+    }
+
+    var existente = await _context.EvaluacionesDocentes.FindAsync(id);
+    if (existente == null) return NotFound();
+
+            // Actualizar campos existentes
             existente.Cedula = eval.Cedula;
             existente.Periodo = eval.Periodo;
             existente.PuntajeFinal = eval.PuntajeFinal;
-            existente.FechaEvaluacion = eval.FechaEvaluacion;
+            existente.FechaEvaluacion = DateOnly.FromDateTime(eval.FechaEvaluacion);
 
-            await _context.SaveChangesAsync();
-            return Ok(existente);
-        }
+            // Nuevo: actualizar campos agregados
+            existente.TipoEvaluacion = eval.TipoEvaluacion;
+            existente.Estado = eval.Estado;
+            existente.ModoEvaluacion = eval.ModoEvaluacion;
+
+
+            // Si usas DateOnly, convertir de DateTime a DateOnly
+            existente.FechaEvaluacion = DateOnly.FromDateTime(eval.FechaEvaluacion);
+
+    // Actualizar PDF solo si viene uno nuevo (evita sobrescribir con null)
+    if (eval.Pdf != null && eval.Pdf.Length > 0)
+    {
+        existente.Pdf = eval.Pdf;
+    }
+
+    // Guardar cambios
+    await _context.SaveChangesAsync();
+
+    return Ok(existente);
+}
+
 
         [HttpDelete("Eliminar/{id}")]
         public async Task<IActionResult> Eliminar(int id)
@@ -78,6 +135,17 @@ namespace Proyecto.Backend.UI.Controllers
 
             return evaluacion;
         }
+
+        [HttpGet("porCedula/{cedula}")]
+        public async Task<ActionResult<IEnumerable<EvaluacionesDocente>>> GetPorCedula(string cedula)
+        {
+            var evaluaciones = await _context.EvaluacionesDocentes
+                .Where(e => e.Cedula == cedula)
+                .ToListAsync();
+
+            return Ok(evaluaciones);
+        }
+
 
 
     }

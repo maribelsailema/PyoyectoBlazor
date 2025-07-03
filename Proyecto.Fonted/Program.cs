@@ -30,6 +30,8 @@ namespace Proyecto.Fonted
             builder.Services.AddScoped<CarreraService>();
             builder.Services.AddScoped<CapacitacionesService>();
             builder.Services.AddScoped<ObraService>();
+            builder.Services.AddScoped<EvaluacionDocenteService>();
+
 
 
             await builder.Build().RunAsync();
