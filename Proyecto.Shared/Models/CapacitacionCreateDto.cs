@@ -12,6 +12,8 @@ public record CapacitacionCreateDto
     public string NombreCurso { get; init; } = string.Empty;
     public int DuracionHoras { get; init; }
     public DateTime FechaInicio { get; init; }
+    public DateTime? FechaFin { get; init; }  // ← nuevo
+
     public string? TipoCapacitacion { get; init; }
     public string? Institucion { get; init; }
     public string? Modalidad { get; init; }

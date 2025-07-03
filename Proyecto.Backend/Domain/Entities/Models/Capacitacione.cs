@@ -14,6 +14,7 @@ public partial class Capacitacione
     public int DuracionHoras { get; set; }
 
     public DateOnly FechaInicio { get; set; }
+    public DateOnly? FechaFin { get; set; }
 
     public string? TipoCapacitacion { get; set; }   // Curso, Taller…
     public string? Institucion { get; set; }
