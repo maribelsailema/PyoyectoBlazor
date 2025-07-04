@@ -50,7 +50,7 @@ namespace Proyecto.Backend.UI.Controllers
                 .ToListAsync();
 
             // Fix: Convert FechaInicio from DateOnly to DateTime for comparison
-            var capacitaciones = await _context.Capacitaciones
+                var capacitaciones = await _context.Capacitaciones
                 .Where(c => c.Cedula == cedula && c.FechaInicio.ToDateTime(TimeOnly.MinValue) > fechaDesdeDateTime && c.FechaInicio.ToDateTime(TimeOnly.MinValue) <= fechaHastaDateTime)
                 .Select(c => new CapacitacionResumenDto
                 {
