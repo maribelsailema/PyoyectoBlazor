@@ -1054,6 +1054,16 @@ private string? cedulaUsuario;
         {
             // Obtener la cédula del usuario logueado
             nuevaEvaluacion.Cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+
+        // Verificar si ya existe una evaluación para el mismo período
+        var evaluacionesExistentes = await evaluacionService.ObtenerPorCedulaAsync(nuevaEvaluacion.Cedula);
+        if (evaluacionesExistentes.Any(e => 
+            e.Periodo.Equals(nuevaEvaluacion.Periodo, StringComparison.OrdinalIgnoreCase) &&
+            (!modoEdicionEvaluacion || (modoEdicionEvaluacion && e.IdEval != nuevaEvaluacion.IdEval))))
+        {
+            mensaje = "Ya existe una evaluación para este período.";
+            return;
+        }
             Console.WriteLine($"Cédula recuperada: {nuevaEvaluacion.Cedula}");
 
             if (string.IsNullOrWhiteSpace(nuevaEvaluacion.Cedula))
@@ -1147,7 +1157,18 @@ private async Task GuardarCapacitacion()
 {
     try
     {
-       
+       nuevaCapacitacion.Cedula = cedulaUsuario;
+
+        // Verificar si ya existe una capacitación con el mismo nombre y fechas
+        var capacitacionesExistentes = await capacitacionesService.ObtenerPorCedulaAsync(nuevaCapacitacion.Cedula);
+        if (capacitacionesExistentes.Any(c => 
+            c.NombreCurso.Equals(nuevaCapacitacion.NombreCurso, StringComparison.OrdinalIgnoreCase) &&
+            c.FechaInicio == nuevaCapacitacion.FechaInicio &&
+            (!modoEdicionCap || (modoEdicionCap && c.IdCap != nuevaCapacitacion.IdCap))))
+        {
+            mensaje = "Ya existe una capacitación con el mismo nombre y fecha de inicio.";
+            return;
+        }
 
         if (archivoPDFCap is not null)
         {
@@ -1321,6 +1342,16 @@ else
         {
             nuevaInvestigacion.Cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
 
+        // Verificar si ya existe una investigación con el mismo nombre
+        var investigacionesExistentes = await investigacionService.ObtenerPorCedulaAsync(nuevaInvestigacion.Cedula);
+        if (investigacionesExistentes.Any(i => 
+            i.NombreProyecto.Equals(nuevaInvestigacion.NombreProyecto, StringComparison.OrdinalIgnoreCase) &&
+            (!modoEdicion || (modoEdicion && i.IdInv != nuevaInvestigacion.IdInv))))
+        {
+            mensaje = "Ya existe una investigación con el mismo nombre.";
+            return;
+        }
+
             // Procesar archivo PDF si es nuevo
             if (archivoPDF is not null)
             {
@@ -1375,18 +1406,14 @@ else
     }
 
 
-
-    
-    private async Task AbrirPdf(byte[]? pdf)
+private async Task AbrirPdf(byte[]? pdf)
+{
+    if (pdf != null && pdf.Length > 0)
     {
-        if (pdf != null && pdf.Length > 0)
-        {
-            string base64 = Convert.ToBase64String(pdf);
-            await JS.InvokeVoidAsync("openPdf(base64)", base64);
-        }
-
+        string base64 = Convert.ToBase64String(pdf);
+        await JS.InvokeVoidAsync("openPdf", base64); // Eliminado el parámetro "base64" del nombre
     }
-
+}
    
 
     private void EditarInvestigacion(Investigacion inv)
@@ -1458,7 +1485,7 @@ private async Task SubirPdfObra(InputFileChangeEventArgs e)
 
     try
     {
-        using var stream = archivoPDFObra.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+        using var stream = archivoPDFObra.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
         using var memory = new MemoryStream();
         await stream.CopyToAsync(memory);
         nuevaObra.Documento = memory.ToArray();
@@ -1476,6 +1503,16 @@ private async Task GuardarObra()
     try
     {
         nuevaObra.Cedula = cedulaUsuario;
+        
+        // Verificar si ya existe una obra con el mismo título
+        var obrasExistentes = await obraService.ObtenerPorCedulaAsync(nuevaObra.Cedula);
+        if (obrasExistentes.Any(o => 
+            o.Titulo.Equals(nuevaObra.Titulo, StringComparison.OrdinalIgnoreCase) &&
+            (!modoEdicionObra || (modoEdicionObra && o.IdObra != nuevaObra.IdObra))))
+        {
+            mensaje = "Ya existe una obra con el mismo título.";
+            return;
+        }
         
         if (modoEdicionObra)
         {
