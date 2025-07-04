@@ -1381,7 +1381,7 @@ private async Task GuardarObra()
             await stream.CopyToAsync(ms);
             nuevaObra.Documento = ms.ToArray();
         }
-
+            
         if (modoEdicionObra)
             await obraService.ActualizarObraAsync(nuevaObra);
         else
