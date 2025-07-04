@@ -6,6 +6,324 @@
 @inject HttpClient Http
 @inject IJSRuntime JS
 
+<style>
+    /* Variables de color rojo */
+    :root {
+        --primary-red: #8B0000;
+        --secondary-red: #a52a2a;
+        --dark-red: #700000;
+        --light-red: #ffcccc;
+        --text-dark: #1f2937;
+        --text-light: #f9fafb;
+        --background-light: #f5f5f5;
+        --border-radius: 8px;
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --hover-shadow: 0 6px 12px rgba(139, 0, 0, 0.3);
+        /* Colores específicos para Bootstrap, armonizados con el tema */
+        --bs-primary: var(--primary-red); /* Sobrescribe el primary de Bootstrap con nuestro rojo */
+        --bs-success: #28a745; /* Verde para éxito */
+        --bs-danger: #dc3545; /* Rojo para peligro */
+        --bs-warning: #ffc107; /* Amarillo/naranja para advertencia */
+        --bs-info: #17a2b8; /* Cian para información */
+        --bs-secondary: #6c757d; /* Gris para secundario */
+        /* Variables adicionales para la página de exportación, ajustadas al tema rojo */
+        --primary-color: var(--primary-red);
+        --secondary-color: var(--primary-red); /* Usar primary-red para el secondary-color en este caso */
+        --card-bg-color: #ffffff;
+        --dark-text-color: var(--text-dark);
+        --border-color: #ced4da;
+        --light-bg-color: #f8f9fa;
+        /* Spacing variables */
+        --spacing-xs: 4px;
+        --spacing-sm: 8px;
+        --spacing-md: 16px;
+        --spacing-lg: 24px;
+        --spacing-xl: 32px;
+        /* Border radius variables */
+        --border-radius-md: 6px;
+        --border-radius-lg: 10px;
+        /* Shadow variables */
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 3px 6px rgba(0, 0, 0, 0.1);
+        /* Transition variable */
+        --transition-normal: all 0.3s ease;
+    }
+
+    body {
+        background-color: var(--background-light);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        color: var(--text-dark);
+    }
+
+    /* Navbar/Header Styles */
+    .navbar {
+        background-color: var(--primary-red);
+        color: var(--text-light);
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--shadow);
+    }
+
+    .navbar-left h3 {
+        margin: 0;
+        color: var(--text-light);
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 1.5rem;
+    }
+
+    .nav-item {
+        color: var(--text-light);
+        text-decoration: none;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        border-radius: var(--border-radius);
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background-color: var(--dark-red);
+            color: var(--text-light);
+        }
+
+        .nav-item.cerrar-sesion {
+            background-color: var(--secondary-red);
+        }
+
+            .nav-item.cerrar-sesion:hover {
+                background-color: #ff3333;
+            }
+
+    h1, h2, h3, h4, h6 {
+        color: var(--primary-red);
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    /* Main content styling */
+    .contenido {
+        flex-grow: 1;
+        padding: var(--spacing-xl) var(--spacing-md);
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* Reportes Admin specific styles */
+    .reportes-admin {
+        background-color: var(--card-bg-color);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        padding: var(--spacing-xl);
+        margin-bottom: var(--spacing-lg);
+    }
+
+        .reportes-admin h1 {
+            text-align: center;
+            margin-bottom: var(--spacing-lg);
+            color: var(--primary-color);
+        }
+
+    .filtros {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--spacing-lg);
+        margin-bottom: var(--spacing-lg);
+        padding: var(--spacing-md);
+        background-color: var(--light-bg-color);
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .filtro {
+        margin-bottom: var(--spacing-md);
+    }
+
+        .filtro label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-weight: 500;
+            color: var(--dark-text-color);
+        }
+
+        .filtro select,
+        .filtro input[type="text"] {
+            width: 100%;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-md);
+            font-size: 1rem;
+            transition: var(--transition-normal);
+            background-color: var(--card-bg-color);
+        }
+
+            .filtro select:focus,
+            .filtro input[type="text"]:focus {
+                border-color: var(--secondary-color);
+                box-shadow: 0 0 0 4px rgba(var(--secondary-color), 0.2);
+                outline: none;
+            }
+
+    .acciones {
+        text-align: center;
+        margin-bottom: var(--spacing-xl);
+    }
+
+        .acciones button {
+            padding: var(--spacing-md) var(--spacing-lg);
+            border: none;
+            border-radius: var(--border-radius-lg);
+            background-color: var(--primary-red);
+            color: var(--text-light);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-normal);
+            box-shadow: var(--shadow-md);
+        }
+
+            .acciones button:hover:not(:disabled) {
+                background-color: var(--dark-red);
+                transform: translateY(-2px);
+                box-shadow: var(--hover-shadow);
+            }
+
+            .acciones button:disabled {
+                background-color: #cccccc;
+                cursor: not-allowed;
+                opacity: 0.7;
+            }
+
+    .resultados {
+        margin-top: var(--spacing-xl);
+        text-align: center;
+    }
+
+        .resultados h2 {
+            margin-bottom: var(--spacing-lg);
+            color: var(--primary-color);
+        }
+
+        .resultados table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .resultados th,
+        .resultados td {
+            border: 1px solid var(--border-color);
+            padding: var(--spacing-md);
+            text-align: left;
+        }
+
+        .resultados th {
+            background-color: var(--primary-red);
+            color: var(--text-light);
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        .resultados tbody tr:nth-child(even) {
+            background-color: var(--light-bg-color);
+        }
+
+        .resultados tbody tr:hover {
+            background-color: #e0e0e0;
+        }
+
+        .resultados p {
+            color: var(--dark-text-color);
+            font-style: italic;
+        }
+
+    .exportar {
+        text-align: right;
+        margin-top: var(--spacing-lg);
+    }
+
+        .exportar button {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: none;
+            border-radius: var(--border-radius-md);
+            background-color: var(--secondary-red);
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition-normal);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            box-shadow: var(--shadow-sm);
+        }
+
+            .exportar button:hover {
+                background-color: var(--dark-red);
+                transform: translateY(-1px);
+                box-shadow: var(--shadow-md);
+            }
+
+    /* Footer Styles */
+    .footer {
+        background-color: var(--dark-red);
+        color: var(--text-light);
+        padding: 2rem;
+        margin-top: auto;
+        box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .footer-info {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .footer-section {
+        flex: 1;
+        min-width: 200px;
+        text-align: left;
+    }
+
+        .footer-section h4 {
+            color: var(--light-red);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .footer-section p,
+        .footer-section NavLink {
+            color: var(--text-light);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+            .footer-section NavLink:hover {
+                color: var(--light-red);
+            }
+
+    .copyright {
+        margin-top: 1.5rem;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+</style>
+
 <header class="navbar">
     <div class="navbar-left">
         <h3>Bienvenido, @usuario.NombreCompleto (Administrador)</h3>
@@ -189,13 +507,13 @@
                     if (rol != null)
                     {
                         ReportResults.Add(new ReporteResultado
-                            {
-                                Docente = rol.Nombre,
-                                Tipo = "Rol y Antigüedad",
-                                Detalle = rol.Rol,
-                                Fecha = DateTime.Now,
-                                ValorPuntaje = $"Antigüedad: {rol.Antiguedad} años"
-                            });
+                        {
+                            Docente = rol.Nombre,
+                            Tipo = "Rol y Antigüedad",
+                            Detalle = rol.Rol,
+                            Fecha = DateTime.Now,
+                            ValorPuntaje = $"Antigüedad: {rol.Antiguedad} años"
+                        });
                     }
                     break;
             }

@@ -2,6 +2,88 @@
 @inject HttpClient Http
 @inject IJSRuntime JS
 
+<style>
+    /* Variables de color rojo */
+    :root {
+        --primary-red: #8B0000;
+        --secondary-red: #a52a2a;
+        --dark-red: #700000;
+        --light-red: #ffcccc;
+        --text-dark: #1f2937;
+        --text-light: #f9fafb;
+        --background-light: #f5f5f5;
+        --border-radius: 8px;
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --hover-shadow: 0 6px 12px rgba(139, 0, 0, 0.3);
+        /* Colores específicos para Bootstrap, armonizados con el tema */
+        --bs-primary: var(--primary-red); /* Sobrescribe el primary de Bootstrap con nuestro rojo */
+        --bs-success: #28a745; /* Verde para éxito */
+        --bs-danger: #dc3545; /* Rojo para peligro */
+        --bs-warning: #ffc107; /* Amarillo/naranja para advertencia */
+        --bs-info: #17a2b8; /* Cian para información */
+        --bs-secondary: #6c757d; /* Gris para secundario */
+    }
+
+    body {
+        background-color: var(--background-light);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 2rem; /* Añade un padding general al cuerpo para separación */
+        min-height: 100vh;
+        color: var(--text-dark);
+    }
+
+    h2 {
+        color: var(--primary-red);
+        font-weight: 600;
+        margin-bottom: 1.5rem; /* Margen aumentado para h2 */
+    }
+
+    /* Estilo de la tarjeta (card) */
+    .card.importar-contenedor {
+        border: 1px solid rgba(0,0,0,.125); /* Borde por defecto de Bootstrap */
+        border-radius: var(--border-radius);
+        padding: 2rem; /* Añade padding dentro de la tarjeta */
+        max-width: 600px; /* Limita el ancho de la tarjeta para mejor legibilidad */
+        margin: 0 auto; /* Centra la tarjeta */
+        box-shadow: var(--shadow);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem; /* Espaciado entre grupos de formulario */
+    }
+
+    .form-control {
+        border-color: #ced4da; /* Color de borde por defecto de Bootstrap */
+        border-radius: .25rem; /* Radio de borde por defecto de Bootstrap */
+    }
+
+    /* Estilo de las alertas */
+    .alert.alert-info {
+        background-color: #d1ecf1; /* Cian más claro para el fondo de la alerta de información */
+        color: #0c5460; /* Cian más oscuro para el texto de la alerta de información */
+        border-color: #bee5eb;
+    }
+
+    /* Estilo de los botones */
+    .btn-primary {
+        background-color: var(--primary-red);
+        border-color: var(--primary-red);
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+        .btn-primary:hover:not(:disabled) { /* Se añade :not(:disabled) para prevenir el efecto hover cuando está deshabilitado */
+            background-color: var(--secondary-red) !important;
+            border-color: var(--secondary-red) !important;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.65; /* Opacidad estándar de botón deshabilitado */
+            cursor: not-allowed;
+        }
+</style>
+
 <h2>Importar Datos a la Base de Datos</h2>
 
 
