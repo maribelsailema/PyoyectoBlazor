@@ -33,64 +33,64 @@ namespace Proyecto.Backend.UI.Controllers
             var fechaDesde = rolActual.FechaAsignacion;
             var fechaHasta = DateOnly.FromDateTime(DateTime.Today);
 
+            var fechaDesdeDateTime = fechaDesde.ToDateTime(new TimeOnly(0, 0));
+            var fechaHastaDateTime = fechaHasta.ToDateTime(new TimeOnly(23, 59, 59));
 
+            // Obras (solo datos clave)
             var obras = await _context.Obras
-     .Where(o => o.Cedula == cedula && o.Fecha > fechaDesde && o.Fecha <= fechaHasta)
-     .Select(o => new ObraResumenDto
-     {
-         IdObra = o.IdObra,
-         Cedula = o.Cedula,
-         TipoObra = o.TipoObra,
-         Fecha = o.Fecha
-     })
-     .ToListAsync();
+                .Where(o => o.Cedula == cedula && o.Fecha > fechaDesdeDateTime && o.Fecha <= fechaHastaDateTime)
+                .Select(o => new ObraResumenDto
+                {
+                    IdObra = o.IdObra,
+                    Cedula = o.Cedula,
+                    TipoObra = o.TipoObra,
+                    Fecha = DateOnly.FromDateTime(o.Fecha)
+                })
+                .ToListAsync();
 
-
-            // Evaluaciones – se obtienen todas; si deseas solo la última, podrías filtrar y tomar FirstOrDefaultAsync()
+            // Evaluaciones
             var evaluaciones = await _context.EvaluacionesDocentes
-        .Where(e => e.Cedula == cedula && e.FechaEvaluacion > fechaDesde && e.FechaEvaluacion <= fechaHasta)
-        .Select(e => new EvaluacionResumenDto
-        {
-            IdEval = e.IdEval,
-            Cedula = e.Cedula,
-            Periodo = e.Periodo,
-            PuntajeFinal = e.PuntajeFinal,
-            FechaEvaluacion = e.FechaEvaluacion
-        })
-        .ToListAsync();
+                .Where(e => e.Cedula == cedula && e.FechaEvaluacion > fechaDesde && e.FechaEvaluacion <= fechaHasta)
+                .Select(e => new EvaluacionResumenDto
+                {
+                    IdEval = e.IdEval,
+                    Cedula = e.Cedula,
+                    Periodo = e.Periodo,
+                    PuntajeFinal = e.PuntajeFinal,
+                    FechaEvaluacion = e.FechaEvaluacion
+                })
+                .ToListAsync();
 
-
-
-            // Capacitaciones (sumar por registro, sin PDF)
+            // Capacitaciones
             var capacitaciones = await _context.Capacitaciones
-.Where(c => c.Cedula == cedula && c.FechaInicio > fechaDesde && c.FechaInicio <= fechaHasta)
-.Select(c => new CapacitacionResumenDto
-{
-    IdCap = c.IdCap,
-    Cedula = c.Cedula,
-    NombreCurso = c.NombreCurso,
-    DuracionHoras = c.DuracionHoras,
-    FechaInicio = c.FechaInicio
-})
-.ToListAsync();
+                .Where(c => c.Cedula == cedula && c.FechaInicio > fechaDesde && c.FechaInicio <= fechaHasta)
+                .Select(c => new CapacitacionResumenDto
+                {
+                    IdCap = c.IdCap,
+                    Cedula = c.Cedula,
+                    NombreCurso = c.NombreCurso,
+                    DuracionHoras = c.DuracionHoras,
+                    FechaInicio = c.FechaInicio
+                })
+                .ToListAsync();
 
-
-            // Investigaciones (sin PDF)
+            // Investigaciones
             var investigaciones = await _context.Investigaciones
-.Where(i => i.Cedula == cedula && i.FechaInicio > fechaDesde && i.FechaInicio <= fechaHasta)
-.Select(i => new InvestigacionResumenDto
-{
-    IdInv = i.IdInv,
-    Cedula = i.Cedula,
-    NombreProyecto = i.NombreProyecto,
-    TiempoMeses = i.TiempoMeses,
-    FechaInicio = i.FechaInicio,
-    FechaFin = i.FechaFin,
-    Tipo = i.Tipo,
-    Estado = i.Estado,
-    Cientifico = i.Cientifico
-})
-.ToListAsync();
+                .Where(i => i.Cedula == cedula && i.FechaInicio > fechaDesde && i.FechaInicio <= fechaHasta)
+                .Select(i => new InvestigacionResumenDto
+                {
+                    IdInv = i.IdInv,
+                    Cedula = i.Cedula,
+                    NombreProyecto = i.NombreProyecto,
+                    TiempoMeses = i.TiempoMeses,
+                    FechaInicio = i.FechaInicio,
+                    FechaFin = i.FechaFin,
+                    Tipo = i.Tipo,
+                    Estado = i.Estado,
+                    Cientifico = i.Cientifico
+                })
+                .ToListAsync();
+
 
 
             var resumenCompleto = new ResumenCompletoPostulanteDto

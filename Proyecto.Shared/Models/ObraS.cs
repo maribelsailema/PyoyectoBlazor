@@ -11,17 +11,23 @@ namespace Proyecto.Shared.Models
         [Required(ErrorMessage = "La cédula es obligatoria")]
         public string Cedula { get; set; } = string.Empty;
 
-
         [Required(ErrorMessage = "El título de la obra es obligatorio")]
-        public string Titulo { get; set; }= string.Empty;
+        public string Titulo { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El tipo de obra es obligatorio")]
-        public string TipoObra { get; set; }= string.Empty;
+        public string TipoObra { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "La fecha de publicación es obligatoria")]
         public DateTime FechaPublicacion { get; set; }
-        public byte[] Documento { get; set; }
-        public string NombreArchivo { get; set; }= string.Empty;
 
+        public string? Pais { get; set; }
+        public string? Ciudad { get; set; }
+        public string? Editorial { get; set; }
+        public string? ISBN { get; set; }
+        public string? DOI { get; set; }
+        public string? Enlace { get; set; }
+        public string? Autores { get; set; }
+        public string? Resumen { get; set; }
+        public byte[]? Documento { get; set; } // PDF
     }
 }

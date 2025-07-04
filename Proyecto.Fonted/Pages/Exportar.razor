@@ -198,8 +198,6 @@
                     <div>@mensaje</div>
                 </div>
             }
-
-
             <!-- Botón de Exportación -->
             <div class="export-button">
                 <button class="btn btn-primary" @onclick="ImportarDatos">
@@ -207,7 +205,6 @@
                    
                 </button>
                 
-
             </div>
 
         </div>
@@ -707,6 +704,9 @@ else
 @if (mostrarFormObra)
 {
     <EditForm Model="@nuevaObra" OnValidSubmit="GuardarObra">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
         <div class="row mb-3">
             <div class="col">
                 <label>Título</label>
@@ -720,9 +720,51 @@ else
 
         <div class="row mb-3">
             <div class="col">
-                <label>Fecha</label>
-                <InputDate TValue="DateTime" @bind-Value="nuevaObra.FechaPublicacion" />
+                <label>Fecha de Publicación</label>
+                <InputDate TValue="DateTime" class="form-control" @bind-Value="nuevaObra.FechaPublicacion" />
             </div>
+            <div class="col">
+                <label>País</label>
+                <InputText class="form-control" @bind-Value="nuevaObra.Pais" />
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col">
+                <label>Ciudad</label>
+                <InputText class="form-control" @bind-Value="nuevaObra.Ciudad" />
+            </div>
+            <div class="col">
+                <label>Editorial</label>
+                <InputText class="form-control" @bind-Value="nuevaObra.Editorial" />
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col">
+                <label>ISBN</label>
+                <InputText class="form-control" @bind-Value="nuevaObra.ISBN" />
+            </div>
+            <div class="col">
+                <label>DOI</label>
+                <InputText class="form-control" @bind-Value="nuevaObra.DOI" />
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col">
+                <label>Enlace</label>
+                <InputText class="form-control" @bind-Value="nuevaObra.Enlace" />
+            </div>
+            <div class="col">
+                <label>Autores</label>
+                <InputText class="form-control" @bind-Value="nuevaObra.Autores" />
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label>Resumen</label>
+            <InputTextArea class="form-control" rows="3" @bind-Value="nuevaObra.Resumen" />
         </div>
 
         <div class="mb-3">
@@ -741,7 +783,6 @@ else
         </div>
     </EditForm>
 }
-
 @if (mostrarCapacitaciones)
 {
     <h4>Capacitaciones</h4>
@@ -802,9 +843,19 @@ else
 @if (mostrarObras)
 {
     <div class="mb-3">
-        <button class="btn btn-success" @onclick="MostrarFormObra">
-            <i class="bi bi-plus-circle"></i> Agregar Obra
-        </button>
+        @if (puedeAgregar)
+        {
+            <button class="btn btn-success" @onclick="MostrarFormObra">
+                <i class="bi bi-plus-circle"></i> Agregar Obras
+            </button>
+        }
+        else
+        {
+            <button class="btn btn-secondary" disabled>
+                <i class="bi bi-plus-circle"></i> Agregar Obras (deshabilitado)
+            </button>
+            <p class="text-muted mt-2">Ya postulaste. Solo puedes agregar más evaluaciones si tu postulación fue rechazada o aceptada.</p>
+        }
     </div>
 
     <h4>Obras</h4>
@@ -814,6 +865,14 @@ else
                 <th>Título</th>
                 <th>Tipo</th>
                 <th>Fecha</th>
+                <th>País</th>
+                <th>Ciudad</th>
+                <th>Editorial</th>
+                <th>ISBN</th>
+                <th>DOI</th>
+                <th>Enlace</th>
+                <th>Autores</th>
+                <th>Resumen</th>
                 <th>PDF</th>
                 <th></th>
             </tr>
@@ -825,6 +884,24 @@ else
                     <td>@obra.Titulo</td>
                     <td>@obra.TipoObra</td>
                     <td>@obra.FechaPublicacion.ToShortDateString()</td>
+                    <td>@obra.Pais</td>
+                    <td>@obra.Ciudad</td>
+                    <td>@obra.Editorial</td>
+                    <td>@obra.ISBN</td>
+                    <td>@obra.DOI</td>
+                    <td>
+                        @if (!string.IsNullOrWhiteSpace(obra.Enlace))
+                        {
+                            <a href="@obra.Enlace" target="_blank">Enlace</a>
+                        }
+                    </td>
+                    <td>@obra.Autores</td>
+                    <td>
+                        @if (!string.IsNullOrWhiteSpace(obra.Resumen))
+                        {
+                            <span title="@obra.Resumen">@obra.Resumen.Substring(0, Math.Min(30, obra.Resumen.Length))@(obra.Resumen.Length > 30 ? "..." : "")</span>
+                        }
+                    </td>
                     <td>
                         @if (obra.Documento is not null && obra.Documento.Length > 0)
                         {
@@ -847,7 +924,6 @@ else
         </tbody>
     </table>
 }
-
 
         <!-- Filtros Adicionales -->
        
@@ -1407,12 +1483,18 @@ private void EditarObra(ObraS obra)
         Titulo = obra.Titulo,
         TipoObra = obra.TipoObra,
         FechaPublicacion = obra.FechaPublicacion,
+        Pais = obra.Pais,
+        Ciudad = obra.Ciudad,
+        Editorial = obra.Editorial,
+        ISBN = obra.ISBN,
+        DOI = obra.DOI,
+        Enlace = obra.Enlace,
+        Autores = obra.Autores,
+        Resumen = obra.Resumen,
         Documento = obra.Documento
     };
     mostrarFormObra = true;
     modoEdicionObra = true;
 }
-   
-
   
 }

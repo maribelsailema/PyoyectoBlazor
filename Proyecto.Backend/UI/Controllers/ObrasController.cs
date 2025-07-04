@@ -30,8 +30,7 @@ public async Task<ActionResult<List<ObraS>>> ObtenerPorCedula(string cedula)
         Titulo = "", // <-- puedes obtenerlo si lo tienes, o dejarlo vacío
         TipoObra = o.TipoObra,
         FechaPublicacion = DateTime.Parse(o.Fecha.ToString()),
-        Documento = o.Pdf ?? new byte[0],
-        NombreArchivo = "archivo.pdf", // por defecto o uno real
+        Documento = o.Documento ?? new byte[0]
     }).ToList();
 
     return Ok(resultado);
@@ -64,8 +63,8 @@ public async Task<ActionResult<List<ObraS>>> ObtenerPorCedula(string cedula)
             {
                 Cedula = obraS.Cedula,
                 TipoObra = obraS.TipoObra,
-                Fecha = DateOnly.FromDateTime(obraS.FechaPublicacion),
-                Pdf = obraS.Documento,
+                Fecha = obraS.FechaPublicacion, // Cambiado para usar directamente DateTime
+                Documento = obraS.Documento,
             };
 
             _context.Obras.Add(obra);
@@ -133,20 +132,19 @@ public async Task<ActionResult<List<ObraS>>> ObtenerPorCedula(string cedula)
             var fechaActual = DateOnly.FromDateTime(DateTime.Today);
 
             var obras = await _context.Obras
-                .Where(o => o.Cedula == cedula && o.Fecha > fechaDesdeParsed && o.Fecha <= fechaActual)
+                .Where(o => o.Cedula == cedula &&
+                            DateOnly.FromDateTime(o.Fecha) > fechaDesdeParsed &&
+                            DateOnly.FromDateTime(o.Fecha) <= fechaActual)
                 .Select(o => new Obra
                 {
                     IdObra = o.IdObra,
                     TipoObra = o.TipoObra,
                     Fecha = o.Fecha,
-                    Cedula = o.Cedula // <-- asegúrate de incluir esto
+                    Cedula = o.Cedula
                 })
                 .ToListAsync();
 
             return obras;
         }
-
-
-
     }
 }

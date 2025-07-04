@@ -68,7 +68,7 @@ namespace Proyecto.Backend.UI.Controllers
                 Docente = $"{o.CedulaNavigation.Nom1} {o.CedulaNavigation.Ape1}",
                 Tipo = "Obra",
                 Detalle = o.TipoObra,
-                Fecha = o.Fecha.ToDateTime(new TimeOnly()),
+                Fecha = o.Fecha,
                 ValorPuntaje = "-"
             }).ToList();
 

@@ -14,10 +14,13 @@ namespace Proyecto.Frontend.Services
 
         public async Task<List<ObraS>> ObtenerPorCedulaAsync(string cedula)
         {
-            return await _httpClient.GetFromJsonAsync<List<ObraS>>($"api/Obra/por-cedula/{cedula}")
-                ?? new List<ObraS>();
+            var response = await _httpClient.GetAsync($"api/Obras/por-cedula/{cedula}");
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<List<ObraS>>() ?? new List<ObraS>();
+            }
+            return new List<ObraS>();
         }
-
 
         public async Task<ObraS?> GuardarObraAsync(ObraS obra)
         {
