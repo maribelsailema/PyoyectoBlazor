@@ -1,48 +1,33 @@
 ﻿@page "/adminPostulaciones"
 @inject HttpClient Http
 @using Proyecto.Shared.Models
+@using Proyecto.Shared.Dtos
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject IJSRuntime JS
 
 <header class="navbar">
     <div class="navbar-left">
-        <div class="navbar-left">
-            <h3>Bienvenido, @usuario.NombreCompleto (Administrador)</h3>
-        </div>
+        <h3>Bienvenido, @usuario.NombreCompleto (Administrador)</h3>
     </div>
     <nav class="navbar-right nav-links">
-        <NavLink href="/inicio-admin" class="nav-item">
-            <i class="bi bi-house-fill"></i> Inicio
-        </NavLink>
-        <NavLink href="/adminPostulaciones" class="nav-item">
-            <i class="bi bi-clipboard-check-fill"></i> Ver Postulantes
-        </NavLink>
-
-        <NavLink href="/reportes-admin" class="nav-item">
-            <i class="bi bi-bar-chart-line-fill"></i> Reportes
-        </NavLink>
-          <NavLink href="/perfil" class="nav-item active"><i class="bi bi-person-fill"></i> Perfil</NavLink> 
-
-        <NavLink href="/" class="nav-item cerrar-sesion">
-            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
-        </NavLink>
+        <NavLink href="/inicio-admin" class="nav-item"><i class="bi bi-house-fill"></i> Inicio</NavLink>
+        <NavLink href="/adminPostulaciones" class="nav-item"><i class="bi bi-clipboard-check-fill"></i> Ver Postulantes</NavLink>
+        <NavLink href="/reportes-admin" class="nav-item"><i class="bi bi-bar-chart-line-fill"></i> Reportes</NavLink>
+        <NavLink href="/" class="nav-item cerrar-sesion"><i class="bi bi-box-arrow-right"></i> Cerrar Sesión</NavLink>
     </nav>
 </header>
+
 <main class="contenido-promocion">
     <div class="container">
-
         <div class="text-center mb-4">
-            <h2 class="titulo-admin">
-                <i class="bi bi-person-lines-fill"></i> Solicitudes de Postulación
-            </h2>
+            <h2 class="titulo-admin"><i class="bi bi-person-lines-fill"></i> Solicitudes de Postulación</h2>
             <p class="text-muted">Revisa y gestiona las solicitudes enviadas por los docentes.</p>
         </div>
 
         @if (postulaciones == null)
         {
             <div class="text-center mt-4">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Cargando...</span>
-                </div>
+                <div class="spinner-border text-primary" role="status"></div>
                 <p class="mt-2">Cargando postulaciones...</p>
             </div>
         }
@@ -63,10 +48,11 @@
                             <th>Estado</th>
                             <th>Acciones</th>
                             <th>Resumen</th>
+                            <th>PDFs</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var p in postulaciones )
+                        @foreach (var p in postulaciones)
                         {
                             <tr>
                                 <td>@p.Cedula</td>
@@ -90,14 +76,10 @@
                                 <td>
                                     @if (p.Estado == "Pendiente")
                                     {
-                                        <button class="btn btn-sm btn-success me-2"
-                                                title="Aceptar solicitud"
-                                                @onclick="() => CambiarEstadoAceptada(p.Id)">
+                                        <button class="btn btn-sm btn-success me-2" @onclick="() => CambiarEstadoAceptada(p.Id)">
                                             <i class="bi bi-check-circle"></i> Aceptar
                                         </button>
-                                        <button class="btn btn-sm btn-danger"
-                                                title="Rechazar solicitud"
-                                                @onclick="() => CambiarEstadoRechazada(p.Id)">
+                                        <button class="btn btn-sm btn-danger" @onclick="() => CambiarEstadoRechazada(p.Id)">
                                             <i class="bi bi-x-circle"></i> Rechazar
                                         </button>
                                     }
@@ -107,13 +89,14 @@
                                     }
                                 </td>
                                 <td>
-
-                                    <button class="btn btn-outline-info btn-sm"
-                                            @onclick="async () => await MostrarResumen(p.Cedula)">
+                                    <button class="btn btn-outline-info btn-sm" @onclick="async () => await MostrarResumen(p.Cedula)">
                                         <i class="bi bi-file-earmark-text"></i> Ver resumen
                                     </button>
-
-
+                                </td>
+                                <td>
+                                    <button class="btn btn-outline-secondary btn-sm" @onclick="() => VerPdfs(p.Cedula)">
+                                        <i class="bi bi-file-earmark-pdf"></i> PDFs
+                                    </button>
                                 </td>
                             </tr>
                         }
@@ -121,68 +104,95 @@
                 </table>
             </div>
         }
+
         @if (mostrarModal)
         {
-            <div class="modal fade" id="modalResumen" tabindex="-1" aria-labelledby="modalResumenLabel" aria-hidden="true">
+            <div class="modal fade show d-block" id="modalResumen" tabindex="-1">
                 <div class="modal-dialog modal-dialog-centered modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="modalResumenLabel">Resumen del Docente</h5>
-                            <button type="button" class="btn-close" @onclick="CerrarModal" aria-label="Cerrar"></button>
+                            <h5 class="modal-title">Resumen del Docente</h5>
+                            <button type="button" class="btn-close" @onclick="CerrarModal"></button>
                         </div>
                         <div class="modal-body">
                             @if (resumenCargado)
-{
-    <h5>Obras</h5>
-    <ul>
-        @foreach (var obra in resumen.Obras)
-        {
-            <li>@obra.TipoObra - @obra.Fecha.ToString("dd/MM/yyyy")</li>
-        }
-    </ul>
-    
-    <h5>Evaluaciones</h5>
-    <ul>
-        @foreach (var eval in resumen.Evaluaciones)
-        {
-            <li>@eval.Periodo - @eval.PuntajeFinal% (@eval.FechaEvaluacion.ToString("dd/MM/yyyy"))</li>
-        }
-    </ul>
-    
-    <h5>Capacitaciones</h5>
-    <ul>
-        @foreach (var cap in resumen.Capacitaciones)
-        {
-            <li>@cap.NombreCurso - @cap.DuracionHoras horas (Inicio: @cap.FechaInicio.ToString("dd/MM/yyyy"))</li>
-        }
-    </ul>
-    
-    <h5>Investigaciones</h5>
-    <ul>
-        @foreach (var inv in resumen.Investigaciones)
-        {
-            <li>@inv.NombreProyecto - @inv.TiempoMeses meses (Inicio: @inv.FechaInicio.ToString("dd/MM/yyyy"))</li>
-        }
-    </ul>
-}
+                            {
+                                <h5>Obras</h5>
+                                <ul>
+                                    @foreach (var obra in resumen.Obras)
+                                    {
+                                        <li>@obra.TipoObra - @obra.Fecha.ToString("dd/MM/yyyy")</li>
+                                    }
+                                </ul>
+                                <h5>Evaluaciones</h5>
+                                <ul>
+                                    @foreach (var eval in resumen.Evaluaciones)
+                                    {
+                                        <li>@eval.Periodo - @eval.PuntajeFinal% (@eval.FechaEvaluacion.ToString("dd/MM/yyyy"))</li>
+                                    }
+                                </ul>
+                                <h5>Capacitaciones</h5>
+                                <ul>
+                                    @foreach (var cap in resumen.Capacitaciones)
+                                    {
+                                        <li>@cap.NombreCurso - @cap.DuracionHoras horas (Inicio: @cap.FechaInicio.ToString("dd/MM/yyyy"))</li>
+                                    }
+                                </ul>
+                                <h5>Investigaciones</h5>
+                                <ul>
+                                    @foreach (var inv in resumen.Investigaciones)
+                                    {
+                                        <li>@inv.NombreProyecto - @inv.TiempoMeses meses (Inicio: @inv.FechaInicio.ToString("dd/MM/yyyy"))</li>
+                                    }
+                                </ul>
+                            }
                             else
                             {
                                 <div class="d-flex justify-content-center">
-                                    <div class="spinner-border text-primary" role="status"></div>
+                                    <div class="spinner-border text-primary"></div>
                                     <span class="ms-2">Cargando resumen...</span>
                                 </div>
                             }
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" @onclick="CerrarModal">Cerrar</button>
+                            <button class="btn btn-secondary" @onclick="CerrarModal">Cerrar</button>
                         </div>
                     </div>
                 </div>
             </div>
         }
 
+        @if (mostrarArchivos)
+        {
+            <div class="mt-4">
+                <h5>Archivos del docente: @cedulaActual</h5>
+                @if (archivosPdf?.Any() == true)
+                {
+                    <ul>
+                        @foreach (var archivo in archivosPdf.Select((item, index) => new { item, index }))
+                        {
+                            <li>
+                                <button class="btn btn-sm btn-outline-dark me-2" @onclick="() => VerArchivo(archivo.index)">
+                                    Ver PDF @(archivo.index + 1): @archivo.item.Nombre
+                                </button>
+                            </li>
+                        }
+                    </ul>
+
+                    @if (archivoSeleccionadoIndex >= 0)
+                    {
+                        <iframe src="data:application/pdf;base64,@archivosPdf[archivoSeleccionadoIndex].PdfBase64" width="100%" height="500px"></iframe>
+                    }
+                }
+                else
+                {
+                    <p>No se encontraron archivos PDF.</p>
+                }
+            </div>
+        }
     </div>
 </main>
+
 <footer class="footer">
     <div class="footer-info">
         <div class="footer-section">
@@ -191,31 +201,33 @@
         </div>
         <div class="footer-section">
             <h4><i class="bi bi-envelope-fill"></i> Soporte Técnico</h4>
-            <p>admin@fisei.edu.ec<br>+593 98 765 4321</p>
+            <p>admin@fisei.edu.ec<br />+593 98 765 4321</p>
         </div>
         <div class="footer-section">
             <h4><i class="bi bi-link-45deg"></i> Accesos Rápidos</h4>
             <NavLink href="/verificar"><i class="bi bi-clipboard-check-fill"></i> Verificación</NavLink><br />
-            <NavLink href="/reportes-admin"><i class="bi bi-bar-chart-line-fill"></i> Reportes</NavLink><br />
-
+            <NavLink href="/reportes-admin"><i class="bi bi-bar-chart-line-fill"></i> Reportes</NavLink>
         </div>
     </div>
     <p class="copyright">© 2025 Sistema de Promoción, Todos los Derechos Reservados</p>
 </footer>
-@code {
-    private bool mostrarModal = false;
 
+@code {
     private List<PostulacionDto> postulaciones;
     private UsuarioModel usuario = new();
-    private bool isLoading = true;
+    private bool mostrarModal = false;
+    private ResumenCompletoPostulanteDto resumen = new();
+    private bool resumenCargado = false;
 
-
+    private List<ArchivoPdfDto> archivosPdf = new();
+    private bool mostrarArchivos = false;
+    private string cedulaActual = "";
+    private int archivoSeleccionadoIndex = -1;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            // Cargar usuario
             var cedula = await localStorage.GetItemAsync<string>("cedulaUsuario");
             if (!string.IsNullOrWhiteSpace(cedula))
             {
@@ -224,16 +236,11 @@
                     usuario = response;
             }
 
-            // Cargar postulaciones
             postulaciones = await Http.GetFromJsonAsync<List<PostulacionDto>>("api/Promocion/Todas");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error cargando datos: {ex.Message}");
-        }
-        finally
-        {
-            isLoading = false;
+            Console.WriteLine("Error al cargar datos: " + ex.Message);
         }
     }
 
@@ -245,53 +252,21 @@
         var response = await Http.PutAsJsonAsync($"api/Promocion/CambiarEstado/{id}", nuevoEstado);
         if (response.IsSuccessStatusCode)
         {
-           
             if (nuevoEstado == "Rechazada")
-        {
-            // Quitar de la lista sin volver a consultar toda la API
-            var postulacionEliminada = postulaciones.FirstOrDefault(p => p.Id == id);
-            if (postulacionEliminada != null)
-            {
-                postulaciones.Remove(postulacionEliminada);
-            }
-        }
-        else
-        {
-            // Para "Aceptada", recarga completa
-            postulaciones = await Http.GetFromJsonAsync<List<PostulacionDto>>("api/Promocion/Todas");
-        }
-
-        StateHasChanged();
-        }
-        else
-        {
-            Console.WriteLine($"Error al actualizar estado: {response.StatusCode}");
+                postulaciones.RemoveAll(p => p.Id == id);
+            else
+                postulaciones = await Http.GetFromJsonAsync<List<PostulacionDto>>("api/Promocion/Todas");
         }
     }
-
-    private ResumenCompletoPostulanteDto resumen = new ();
-private bool resumenCargado = false;
-    [Inject] private IJSRuntime JS { get; set; }
 
     private async Task MostrarResumen(string cedula)
     {
         resumenCargado = false;
-        try
-        {
-            resumen = await Http.GetFromJsonAsync<ResumenCompletoPostulanteDto>($"api/Resumen/Postulante/{cedula}");
-            resumenCargado = true;
-            mostrarModal = true; // <- ¡esto es esencial!
-
-            StateHasChanged(); // Forzar renderizado antes del JS
-
-            await Task.Delay(100);
-            await JS.InvokeVoidAsync("mostrarModal", "modalResumen");
-
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Error cargando resumen: " + ex.Message);
-        }
+        resumen = await Http.GetFromJsonAsync<ResumenCompletoPostulanteDto>($"api/Resumen/Postulante/{cedula}");
+        resumenCargado = true;
+        mostrarModal = true;
+        await Task.Delay(100);
+        await JS.InvokeVoidAsync("mostrarModal", "modalResumen");
     }
 
     private async void CerrarModal()
@@ -300,11 +275,17 @@ private bool resumenCargado = false;
         mostrarModal = false;
     }
 
+    private async Task VerPdfs(string cedula)
+    {
+        mostrarArchivos = false;
+        archivoSeleccionadoIndex = -1;
+        cedulaActual = cedula;
+        archivosPdf = await Http.GetFromJsonAsync<List<ArchivoPdfDto>>($"api/Postulaciones/ArchivosPorCedula/{cedula}");
+        mostrarArchivos = true;
+    }
 
-
-    
-
-}
-
-
+    private void VerArchivo(int index)
+    {
+        archivoSeleccionadoIndex = index;
+    }
 }
