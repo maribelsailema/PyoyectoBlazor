@@ -51,7 +51,42 @@
 
 
     </script>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        window.renderBarChart = (labels, values) => {
+            const ctx = document.getElementById('myChart');
+            if (!ctx) return;
+
+            if (window.myChart && typeof window.myChart.destroy === 'function') {
+                window.myChart.destroy();
+            }
+
+            window.myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Valores del Reporte',
+                        data: values,
+                        backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        };
+    </script>
+
     <script src="js/site.js"></script>
 
 </body>

@@ -94,6 +94,10 @@
             }
         </section>
     </div>
+
+    <div style="width: 100%; max-width: 800px; margin: auto;">
+        <canvas id="myChart"></canvas>
+    </div>
 </main>
 
 <footer class="footer">
@@ -114,7 +118,6 @@
     </div>
     <p class="copyright">© 2025 Sistema de Promoción. Todos los Derechos Reservados.</p>
 </footer>
-
 
 @code {
     private UsuarioModel usuario = new();
@@ -200,6 +203,21 @@
                     }
                     break;
             }
+
+            if (ReportResults.Any())
+            {
+                var labels = ReportResults.Select(r => r.Detalle).ToArray();
+                var valores = ReportResults.Select(r =>
+                    double.TryParse(
+                        r.ValorPuntaje.Replace("Antigüedad:", "", StringComparison.OrdinalIgnoreCase)
+                                     .Replace("años", "", StringComparison.OrdinalIgnoreCase)
+                                     .Trim(),
+                        out double val)
+                        ? val
+                        : 0).ToArray();
+
+                await JS.InvokeVoidAsync("renderBarChart", labels, valores);
+            }
         }
         catch (Exception ex)
         {
@@ -209,6 +227,7 @@
         {
             IsLoading = false;
         }
+
         StateHasChanged();
     }
 
