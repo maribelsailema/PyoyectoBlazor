@@ -109,6 +109,7 @@ namespace Proyecto.Backend.UI.Controllers
                 .Where(u => u.Ced == cedula)
                 .Select(u => new UsuarioDto
                 {
+                    Ced = u.Ced,
                     Nom1 = u.Nom1,
                     Nom2 = u.Nom2,
                     Ape1 = u.Ape1,

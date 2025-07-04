@@ -8,6 +8,7 @@ namespace Proyecto.Shared.Models
 {
     public class UsuarioDto
     {
+        public string Ced { get; set; }
         public string Nom1 { get; set; }
         public string Ape1 { get; set; }
         public string Nom2 { get; set; }

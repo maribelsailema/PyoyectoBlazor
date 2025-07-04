@@ -4,17 +4,14 @@
 @using Proyecto.Shared.Models
 @using System.Text.Json
 @inject HttpClient Http
-
+@inject NavigationManager Navigation
 
 <header class="navbar">
-
     <nav class="navbar-right nav-links">
         <NavLink href="/inicio" class="nav-item"><i class="bi bi-house-fill"></i> Inicio</NavLink>
         <NavLink href="/promocion" class="nav-item"><i class="bi bi-bar-chart-line-fill"></i> Promoción</NavLink>
-        <NavLink href="/perfil" class="nav-item active"><i class="bi bi-person-fill"></i> Perfil</NavLink> @* Añadir 'active' para el enlace actual *@
-        <NavLink href="/exportar" class="nav-item ">
-            <i class="bi bi-download"></i> Agregar Documentos
-        </NavLink>
+        <NavLink href="/perfil" class="nav-item active"><i class="bi bi-person-fill"></i> Perfil</NavLink>
+        <NavLink href="/exportar" class="nav-item"><i class="bi bi-download"></i> Agregar Documentos</NavLink>
         <NavLink href="/" class="nav-item cerrar-sesion"><i class="bi bi-box-arrow-right"></i> Cerrar Sesión</NavLink>
     </nav>
 </header>
@@ -31,20 +28,38 @@
     }
     else
     {
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title text-primary">@usuario.Nom1 @usuario.Nom2 @usuario.Ape1 @usuario.Ape2</h5>
-                <p class="card-text"><strong>Cédula:</strong> @usuario.Ced</p>
-                <p class="card-text"><strong>Usuario:</strong> @usuario.Usuari</p>
-                <p class="card-text"><strong>Correo:</strong> @usuario.Usuari</p>
+        <div class="d-flex justify-content-center mt-4">
+            <div class="card shadow-lg p-4 profile-card" style="width: 100%; max-width: 500px;">
+                <div class="text-center mb-3">
+                    <div class="avatar-placeholder mb-2">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <h5 class="text-primary">@usuario.Nom1 @usuario.Nom2 @usuario.Ape1 @usuario.Ape2</h5>
+                    <span class="text-muted">@usuario.Usuari</span>
+                </div>
+                <hr />
+                <div class="mb-2">
+                    <strong><i class="bi bi-card-text me-2"></i>Cédula:</strong>
+                    <span class="ms-1">@usuario.Ced</span>
+                </div>
+                <div class="mb-2">
+                    <strong><i class="bi bi-envelope-fill me-2"></i>Correo:</strong>
+                    <span class="ms-1">@usuario.Usuari</span>
+                </div>
+                <div class="d-grid gap-2 mt-4">
+                    <button class="btn btn-outline-primary" >
+                        <i class="bi bi-pencil-square"></i> Editar Perfil
+                    </button>
+                    <button class="btn btn-outline-secondary" >
+                        <i class="bi bi-shield-lock"></i> Cambiar Contraseña
+                    </button>
+                </div>
             </div>
         </div>
-
-        
     }
 </div>
 
-<footer class="footer">
+<footer class="footer mt-5">
     <div class="footer-info">
         <div class="footer-section">
             <h4><i class="bi bi-info-circle-fill"></i> Sobre Nosotros</h4>
@@ -64,18 +79,43 @@
     <p class="copyright">© 2025 Sistema de Promoción, Todos los Derechos Reservados</p>
 </footer>
 
-@code{
-UsuarioModel usuario;
+@code {
+    UsuarioModel usuario;
 
-protected override async Task OnInitializedAsync()
-{
-    var cedula = await localStorage.GetItemAsync<string>("cedulaUsuario");
-
-    if (!string.IsNullOrWhiteSpace(cedula))
+    protected override async Task OnInitializedAsync()
     {
-        usuario = await Http.GetFromJsonAsync<UsuarioModel>($"api/Usuario/porCedula/{cedula}");
+        var cedula = await localStorage.GetItemAsync<string>("cedulaUsuario");
+
+        if (!string.IsNullOrWhiteSpace(cedula))
+        {
+            usuario = await Http.GetFromJsonAsync<UsuarioModel>($"api/Usuario/porCedula/{cedula}");
+        }
     }
-}
 
 
 }
+
+<style>
+    .profile-card {
+        background-color: #ffffff;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .profile-card:hover {
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .avatar-placeholder {
+        font-size: 5rem;
+        color: #6c757d;
+    }
+
+    
+
+    .copyright {
+        text-align: center;
+        margin-top: 2rem;
+        font-size: 0.9rem;
+    }
+</style>
