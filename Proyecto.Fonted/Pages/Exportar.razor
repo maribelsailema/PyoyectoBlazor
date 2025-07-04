@@ -212,7 +212,7 @@
 
         </div>
 
-         @if (mostrarFormulario)
+@if (mostrarFormulario)
 {
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
         <div class="modal-dialog modal-xl" role="document">
@@ -314,9 +314,7 @@
 }
 
 
-
-
-        @if (mostrarInvestigaciones)
+@if (mostrarInvestigaciones)
         {
                       <div class="mb-3">
 
@@ -403,7 +401,8 @@
             </table>
         }
 
-        @if (mostrarEvaluaciones)
+
+@if (mostrarEvaluaciones)
         {
             @if (puedeAgregar)
             {
@@ -470,7 +469,7 @@
         }
 
 
-        @if (mostrarFormEvaluacion)
+@if (mostrarFormEvaluacion)
         {
             <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
                 <div class="modal-dialog" role="document">
@@ -550,7 +549,7 @@
         }
 
 
-        @if (mostrarCapacitaciones)
+@if (mostrarCapacitaciones)
 {
    @if (puedeAgregar)
 {
@@ -703,7 +702,64 @@ else
         </div>
     </div>
 }
+
+@if (mostrarCapacitaciones)
+{
+    <h4>Capacitaciones</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                   <th>Curso</th>
+                <th>Horas</th>
+                <th>Fecha Inicio</th>
+                <th>Fecha Fin</th>
+                <th>Tipo</th>
+<th>Modalidad</th>
+<th>Institución</th>
+<th>Cert.</th>
+
+                <th>PDF</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cap in listaCapacitaciones)
+            {
+                <tr>
+                    <td>@cap.NombreCurso</td>
+                    <td>@cap.DuracionHoras</td>
+                    <td>@cap.FechaInicio.ToShortDateString()</td
+                    <td>@cap.FechaFin?.ToShortDateString()</td>
+                    <td>@cap.TipoCapacitacion</td>
+                    <td>@cap.Modalidad</td>
+                    <td>@cap.Institucion</td>
+                    <td>@(cap.Certificado ? "Sí" : "No")</td>
+                    
+                    <td>
+                        @if (cap.Pdf is not null && cap.Pdf.Length > 0)
+                        {
+                            <a href="#" onclick="openPdf('@Convert.ToBase64String(cap.Pdf)'); return false;">
+                                Ver PDF
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Sin PDF</span>
+                        }
+                    </td>
+                    <td>
+                        <button class="btn btn-warning btn-sm"
+                                @onclick="() => EditarCapacitacion(cap)">
+                            <i class="bi bi-pencil"></i> Editar
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 }
+
+
 @if (mostrarFormObra)
 {
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
@@ -793,61 +849,8 @@ else
         </div>
     </div>
 }
-@if (mostrarCapacitaciones)
-{
-    <h4>Capacitaciones</h4>
-    <table class="table">
-        <thead>
-            <tr>
-                   <th>Curso</th>
-                <th>Horas</th>
-                <th>Fecha Inicio</th>
-                <th>Fecha Fin</th>
-                <th>Tipo</th>
-<th>Modalidad</th>
-<th>Institución</th>
-<th>Cert.</th>
 
-                <th>PDF</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var cap in listaCapacitaciones)
-            {
-                <tr>
-                    <td>@cap.NombreCurso</td>
-                    <td>@cap.DuracionHoras</td>
-                    <td>@cap.FechaInicio.ToShortDateString()</td
-                    <td>@cap.FechaFin?.ToShortDateString()</td>
-                    <td>@cap.TipoCapacitacion</td>
-                    <td>@cap.Modalidad</td>
-                    <td>@cap.Institucion</td>
-                    <td>@(cap.Certificado ? "Sí" : "No")</td>
-                    
-                    <td>
-                        @if (cap.Pdf is not null && cap.Pdf.Length > 0)
-                        {
-                            <a href="#" onclick="openPdf('@Convert.ToBase64String(cap.Pdf)'); return false;">
-                                Ver PDF
-                            </a>
-                        }
-                        else
-                        {
-                            <span class="text-muted">Sin PDF</span>
-                        }
-                    </td>
-                    <td>
-                        <button class="btn btn-warning btn-sm"
-                                @onclick="() => EditarCapacitacion(cap)">
-                            <i class="bi bi-pencil"></i> Editar
-                        </button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+
 @if (mostrarObras)
 {
     <div class="mb-3">
@@ -895,8 +898,7 @@ else
                     <td>
                         @if (obra.Documento != null && obra.Documento.Length > 0)
                         {
-                            <a href="#" @onclick="() => AbrirPdf(obra.Documento)" 
-                               style="cursor:pointer; color:blue; text-decoration:underline;">
+                            <a href="#" onclick="openPdf('@Convert.ToBase64String(obra.Documento)'); return false;">
                                 Ver PDF
                             </a>
                         }
@@ -917,6 +919,8 @@ else
         </tbody>
     </table>
 }
+
+
 
 
         <!-- Filtros Adicionales -->
@@ -977,19 +981,19 @@ else
     private PostulacionDto postulacionActual;
     private bool puedeAgregar = true;
 
-      // ————— Capacitaciones —————
-private List<Capacitacione> listaCapacitaciones = new();
-private Capacitacione nuevaCapacitacion = new();
-private bool mostrarCapacitaciones = false;
-private bool mostrarFormCap = false;
-private bool modoEdicionCap = false;
-private IBrowserFile? archivoPDFCap;
+    // ————— Capacitaciones —————
+    private List<Capacitacione> listaCapacitaciones = new();
+    private Capacitacione nuevaCapacitacion = new();
+    private bool mostrarCapacitaciones = false;
+    private bool mostrarFormCap = false;
+    private bool modoEdicionCap = false;
+    private IBrowserFile? archivoPDFCap;
     private string? errorArchivo;
-//capacitaciones
-private string? cedulaUsuario;
+    //capacitaciones
+    private string? cedulaUsuario;
 
 
-//EVALUACION DOCENTE
+    //EVALUACION DOCENTE
     private List<EvaluacionDocente> listaEvaluaciones = new();
     private bool mostrarEvaluaciones = false;
     private bool mostrarFormEvaluacion = false;
@@ -1045,7 +1049,7 @@ private string? cedulaUsuario;
         nuevaEvaluacion = new EvaluacionDocente();
         errorArchivoEvaluacion = "";
     }
-    
+
 
 
     private async Task GuardarEvaluacion()
@@ -1107,7 +1111,7 @@ private string? cedulaUsuario;
                 IdEval = ev.IdEval,
                 Cedula = ev.Cedula,
                 Periodo = ev.Periodo
-               
+
             };
         mostrarFormEvaluacion = true;
         modoEdicionEvaluacion = true;
@@ -1120,66 +1124,66 @@ private string? cedulaUsuario;
         nuevaEvaluacion = new EvaluacionDocente();
     }
 
-    
 
-// ----- CAPACITACIONES -----
-private void MostrarFormCap()
-{
-    nuevaCapacitacion = new Capacitacione
+
+    // ----- CAPACITACIONES -----
+    private void MostrarFormCap()
+    {
+        nuevaCapacitacion = new Capacitacione
     {
         Cedula = cedulaUsuario ?? string.Empty,
         FechaInicio = DateTime.Today, // Cambiado de DateOnly a DateTime
          FechaFin    = null 
     };
-    mostrarFormCap = true;
-    modoEdicionCap = false;
-    archivoPDFCap = null;
-}
-    
-
-
-private async Task SubirPdfCap(InputFileChangeEventArgs e)
-{
-    archivoPDFCap = e.File;
-}
-
-private async Task GuardarCapacitacion()
-{
-    try
-    {
-       
-
-        if (archivoPDFCap is not null)
-        {
-            using var stream = archivoPDFCap.OpenReadStream(10 * 1024 * 1024);
-            using var ms = new MemoryStream();
-            await stream.CopyToAsync(ms);
-            nuevaCapacitacion.Pdf = ms.ToArray();
-        }
-
-        if (modoEdicionCap)
-            await capacitacionesService.ActualizarAsync(nuevaCapacitacion);
-        else
-            nuevaCapacitacion =
-                await capacitacionesService.GuardarAsync(nuevaCapacitacion) ?? new Capacitacione();
-
-        listaCapacitaciones =
-            await capacitacionesService.ObtenerPorCedulaAsync(nuevaCapacitacion.Cedula);
-
-        mostrarFormCap = false;
+        mostrarFormCap = true;
         modoEdicionCap = false;
         archivoPDFCap = null;
     }
-    catch (Exception ex)
+
+
+
+    private async Task SubirPdfCap(InputFileChangeEventArgs e)
     {
-        mensaje = $"Error: {ex.Message}";
+        archivoPDFCap = e.File;
     }
 
-}
+    private async Task GuardarCapacitacion()
+    {
+        try
+        {
 
-private void EditarCapacitacion(Capacitacione cap)
-{
-    nuevaCapacitacion = new Capacitacione
+
+            if (archivoPDFCap is not null)
+            {
+                using var stream = archivoPDFCap.OpenReadStream(10 * 1024 * 1024);
+                using var ms = new MemoryStream();
+                await stream.CopyToAsync(ms);
+                nuevaCapacitacion.Pdf = ms.ToArray();
+            }
+
+            if (modoEdicionCap)
+                await capacitacionesService.ActualizarAsync(nuevaCapacitacion);
+            else
+                nuevaCapacitacion =
+                    await capacitacionesService.GuardarAsync(nuevaCapacitacion) ?? new Capacitacione();
+
+            listaCapacitaciones =
+                await capacitacionesService.ObtenerPorCedulaAsync(nuevaCapacitacion.Cedula);
+
+            mostrarFormCap = false;
+            modoEdicionCap = false;
+            archivoPDFCap = null;
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"Error: {ex.Message}";
+        }
+
+    }
+
+    private void EditarCapacitacion(Capacitacione cap)
+    {
+        nuevaCapacitacion = new Capacitacione
     {
         IdCap         = cap.IdCap,
         Cedula        = cap.Cedula,
@@ -1190,11 +1194,11 @@ private void EditarCapacitacion(Capacitacione cap)
         Pdf           = cap.Pdf
     };
 
-    mostrarFormCap = true;
-    modoEdicionCap = true;
-}
+        mostrarFormCap = true;
+        modoEdicionCap = true;
+    }
 
-//capacitaciones
+    //capacitaciones
 
     private async Task ImportarDatos()
 
@@ -1223,21 +1227,21 @@ private void EditarCapacitacion(Capacitacione cap)
             mostrarInvestigaciones = false; // Ocultar si no es investigaciones
         }
 
-                if (tablaSeleccionada == "Capacitaciones")//capacitaciones
-{
-    var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
-    if (!string.IsNullOrEmpty(cedula))
-    {
-        listaCapacitaciones = await capacitacionesService.ObtenerPorCedulaAsync(cedula);
-        mostrarCapacitaciones = true;
-    }
-}
-else
-{
-    mostrarCapacitaciones = false;
-}
+        if (tablaSeleccionada == "Capacitaciones")//capacitaciones
+        {
+            var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+            if (!string.IsNullOrEmpty(cedula))
+            {
+                listaCapacitaciones = await capacitacionesService.ObtenerPorCedulaAsync(cedula);
+                mostrarCapacitaciones = true;
+            }
+        }
+        else
+        {
+            mostrarCapacitaciones = false;
+        }
 
-if (tablaSeleccionada == "Obras")
+        if (tablaSeleccionada == "Obras")
         {
             var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
             if (!string.IsNullOrEmpty(cedula))
@@ -1251,7 +1255,11 @@ if (tablaSeleccionada == "Obras")
                 mensaje = "No se pudo obtener la cédula del usuario";
             }
         }
-        
+        else
+        {
+            mostrarObras = false;
+        }
+
 
 if (tablaSeleccionada == "EvaluacionesDocentes")
         {
@@ -1447,57 +1455,42 @@ private void CerrarFormObra()
 // Subir PDF
 private async Task SubirPdfObra(InputFileChangeEventArgs e)
 {
-    archivoPDFObra = e.File;
-    
-    if (archivoPDFObra.ContentType != "application/pdf")
-    {
-        errorArchivoObra = "Solo se permiten archivos en formato PDF.";
-        return;
-    }
-
     try
     {
-        using var stream = archivoPDFObra.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
-        using var memory = new MemoryStream();
-        await stream.CopyToAsync(memory);
-        nuevaObra.Documento = memory.ToArray();
+        // Validar el archivo
+        if (e.File.ContentType != "application/pdf")
+        {
+            errorArchivoObra = "Solo se permiten archivos PDF";
+            return;
+        }
+
+        // Limitar tamaño (ej. 5MB)
+        if (e.File.Size > 5 * 1024 * 1024)
+        {
+            errorArchivoObra = "El archivo no puede superar los 5MB";
+            return;
+        }
+
+        // Leer el archivo
+        using var stream = e.File.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+        using var memoryStream = new MemoryStream();
+        await stream.CopyToAsync(memoryStream);
+        
+        nuevaObra.Documento = memoryStream.ToArray();
         errorArchivoObra = null;
+        
+        StateHasChanged(); // Actualizar UI
     }
     catch (Exception ex)
     {
-        errorArchivoObra = $"Error al cargar el archivo: {ex.Message}";
+        errorArchivoObra = $"Error al cargar el PDF: {ex.Message}";
     }
 }
 
 // Guardar obra
-private async Task GuardarObra()
-{
-    try
-    {
-        nuevaObra.Cedula = cedulaUsuario;
-        
-        if (modoEdicionObra)
-        {
-            await obraService.ActualizarObraAsync(nuevaObra);
-            mensaje = "Obra actualizada correctamente.";
-        }
-        else
-        {
-            await obraService.GuardarObraAsync(nuevaObra);
-            mensaje = "Obra guardada correctamente.";
-        }
-
-        listaObras = await obraService.ObtenerPorCedulaAsync(cedulaUsuario);
-        CerrarFormObra();
-    }
-    catch (Exception ex)
-    {
-        mensaje = $"Error al guardar la obra: {ex.Message}";
-    }
-}
-
 private void EditarObra(ObraS obra)
 {
+    // Crear una nueva instancia para evitar problemas de referencia
     nuevaObra = new ObraS
     {
         IdObra = obra.IdObra,
@@ -1513,10 +1506,43 @@ private void EditarObra(ObraS obra)
         Enlace = obra.Enlace,
         Autores = obra.Autores,
         Resumen = obra.Resumen,
-        Documento = obra.Documento,
+        Documento = obra.Documento // Asegurarse de copiar el PDF existente
     };
     
     mostrarFormObra = true;
     modoEdicionObra = true;
-} 
+}
+
+private async Task GuardarObra()
+{
+    try
+    {
+        nuevaObra.Cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+        
+        if (modoEdicionObra)
+        {
+            await obraService.ActualizarObraAsync(nuevaObra);
+            mensaje = "Obra actualizada correctamente.";
+        }
+        else
+        {
+            await obraService.GuardarObraAsync(nuevaObra);
+            mensaje = "Obra guardada correctamente.";
+        }
+
+        // Actualizar la lista
+        listaObras = await obraService.ObtenerPorCedulaAsync(nuevaObra.Cedula);
+        
+        // Cerrar el formulario
+        mostrarFormObra = false;
+        modoEdicionObra = false;
+        nuevaObra = new ObraS();
+        
+        StateHasChanged(); // Forzar actualización
+    }
+    catch (Exception ex)
+    {
+        mensaje = $"Error al guardar la obra: {ex.Message}";
+    }
+}
 }

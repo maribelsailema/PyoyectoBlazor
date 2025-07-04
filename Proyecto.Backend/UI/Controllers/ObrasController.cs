@@ -58,27 +58,39 @@ namespace Proyecto.Backend.UI.Controllers
         }
 
         [HttpPut("Actualizar/{id}")]
-        public async Task<IActionResult> Actualizar(int id, Obra obra)
+        public async Task<IActionResult> Actualizar(int id, ObraS obraS)
         {
-            var existente = await _context.Obras.FindAsync(id);
-            if (existente == null) return NotFound();
+            try
+            {
+                var existente = await _context.Obras.FindAsync(id);
+                if (existente == null) return NotFound();
 
-            existente.Cedula = obra.Cedula;
-            existente.Titulo = obra.Titulo;
-            existente.TipoObra = obra.TipoObra;
-            existente.Fecha = obra.Fecha;
-            existente.Pais = obra.Pais;
-            existente.Ciudad = obra.Ciudad;
-            existente.Editorial = obra.Editorial;
-            existente.ISBN = obra.ISBN;
-            existente.DOI = obra.DOI;
-            existente.Enlace = obra.Enlace;
-            existente.Autores = obra.Autores;
-            existente.Resumen = obra.Resumen;
-            existente.Pdf = obra.Pdf;
+                // Actualizar propiedades
+                existente.Titulo = obraS.Titulo;
+                existente.TipoObra = obraS.TipoObra;
+                existente.Fecha = DateOnly.FromDateTime(obraS.FechaPublicacion);
+                existente.Pais = obraS.Pais;
+                existente.Ciudad = obraS.Ciudad;
+                existente.Editorial = obraS.Editorial;
+                existente.ISBN = obraS.ISBN;
+                existente.DOI = obraS.DOI;
+                existente.Enlace = obraS.Enlace;
+                existente.Autores = obraS.Autores;
+                existente.Resumen = obraS.Resumen;
 
-            await _context.SaveChangesAsync();
-            return Ok(existente);
+                // Solo actualizar PDF si se envió uno nuevo
+                if (obraS.Documento != null && obraS.Documento.Length > 0)
+                {
+                    existente.Pdf = obraS.Documento;
+                }
+
+                await _context.SaveChangesAsync();
+                return Ok(existente);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno: {ex.Message}");
+            }
         }
 
         [HttpDelete("Eliminar/{id}")]

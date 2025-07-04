@@ -39,13 +39,44 @@ namespace Proyecto.Frontend.Services
 
         public async Task<ObraS?> GuardarObraAsync(ObraS obra)
         {
-            var response = await _httpClient.PostAsJsonAsync("api/Obra", obra);
-            return await response.Content.ReadFromJsonAsync<ObraS>();
+            try
+            {
+                // Usar el endpoint correcto
+                var response = await _httpClient.PostAsJsonAsync("api/Obra/Guardar", obra);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Error al guardar: {error}");
+                }
+
+                return await response.Content.ReadFromJsonAsync<ObraS>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en GuardarObraAsync: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task ActualizarObraAsync(ObraS obra)
         {
-            await _httpClient.PutAsJsonAsync($"api/Obra/{obra.IdObra}", obra);
+            try
+            {
+                // Asegurarse de usar el endpoint correcto para actualizar
+                var response = await _httpClient.PutAsJsonAsync($"api/Obra/Actualizar/{obra.IdObra}", obra);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Error al actualizar: {error}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en ActualizarObraAsync: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task<List<ObraS>> ListarObrasAsync()
