@@ -119,7 +119,7 @@ public partial class PlataformaDocenteContext : DbContext
             entity.Property(e => e.Cedula)
                 .HasMaxLength(10)
                 .IsUnicode(false);
-            entity.Property(e => e.Pdf).HasColumnName("PDF");
+            entity.Property(e => e.Documento).HasColumnName("PDF");
             entity.Property(e => e.TipoObra).HasMaxLength(50);
 
             entity.HasOne(d => d.CedulaNavigation).WithMany(p => p.Obras)

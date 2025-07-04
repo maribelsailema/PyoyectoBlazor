@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Proyecto.Backend.Domain.Entities.Models;
 using Proyecto.Shared.Models;
 
-namespace Proyecto.Backend.UI.Controllers
+namespace Proyecto.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -16,30 +16,62 @@ namespace Proyecto.Backend.UI.Controllers
             _context = context;
         }
 
-        [HttpGet("Listar")]
-        public async Task<ActionResult<IEnumerable<Obra>>> Listar()
+        [HttpGet]
+        public async Task<ActionResult<List<Obra>>> ObtenerTodos()
         {
-            var obras = await _context.Obras.ToListAsync();
+            return await _context.Obras.ToListAsync();
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Obra>> ObtenerPorId(int id)
+        {
+            var obra = await _context.Obras
+                .FirstOrDefaultAsync(o => o.IdObra == id);
+
+            if (obra == null)
+            {
+                return NotFound();
+            }
+
+            return obra;
+        }
+
+        [HttpGet("por-cedula/{cedula}")]
+        public async Task<ActionResult<List<ObraS>>> ObtenerPorCedula(string cedula)
+        {
+            var obras = await _context.Obras
+                .Where(o => o.Cedula == cedula)
+                .Select(o => new ObraS
+                {
+                    IdObra = o.IdObra,
+                    Cedula = o.Cedula,
+                    Titulo = o.Titulo,
+                    TipoObra = o.TipoObra,
+                    Fecha = o.Fecha,
+                    Pais = o.Pais,
+                    Ciudad = o.Ciudad,
+                    Editorial = o.Editorial,
+                    ISBN = o.ISBN,
+                    DOI = o.DOI,
+                    Enlace = o.Enlace,
+                    Autores = o.Autores,
+                    Resumen = o.Resumen,
+                    Documento = o.Documento
+                })
+                .ToListAsync();
+
             return Ok(obras);
         }
 
-        [HttpGet("Buscar/{id}")]
-        public async Task<ActionResult<Obra>> Buscar(int id)
+        [HttpPost]
+        public async Task<ActionResult<Obra>> Crear(ObraS obraS)
         {
-            var obra = await _context.Obras.FindAsync(id);
-            if (obra == null) return NotFound();
-            return Ok(obra);
-        }
-
-        [HttpPost("Guardar")]
-        public async Task<ActionResult<Obra>> Guardar(ObraS obraS)
-        {
-            var nueva = new Obra
+            var obra = new Obra
             {
                 Cedula = obraS.Cedula,
                 Titulo = obraS.Titulo,
                 TipoObra = obraS.TipoObra,
-                Fecha = DateOnly.FromDateTime(obraS.FechaPublicacion),
+                Fecha = obraS.Fecha,
                 Pais = obraS.Pais,
                 Ciudad = obraS.Ciudad,
                 Editorial = obraS.Editorial,
@@ -48,105 +80,87 @@ namespace Proyecto.Backend.UI.Controllers
                 Enlace = obraS.Enlace,
                 Autores = obraS.Autores,
                 Resumen = obraS.Resumen,
-                Pdf = obraS.Documento
+                Documento = obraS.Documento
             };
 
-            _context.Obras.Add(nueva);
+            _context.Obras.Add(obra);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(Buscar), new { id = nueva.IdObra }, nueva);
+            return CreatedAtAction(nameof(ObtenerPorId), new { id = obra.IdObra }, obra);
         }
 
-        [HttpPut("Actualizar/{id}")]
-        public async Task<IActionResult> Actualizar(int id, Obra obra)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Actualizar(int id, ObraS obraS)
         {
-            var existente = await _context.Obras.FindAsync(id);
-            if (existente == null) return NotFound();
+            var obra = await _context.Obras.FindAsync(id);
+            if (obra == null)
+            {
+                return NotFound();
+            }
 
-            existente.Cedula = obra.Cedula;
-            existente.Titulo = obra.Titulo;
-            existente.TipoObra = obra.TipoObra;
-            existente.Fecha = obra.Fecha;
-            existente.Pais = obra.Pais;
-            existente.Ciudad = obra.Ciudad;
-            existente.Editorial = obra.Editorial;
-            existente.ISBN = obra.ISBN;
-            existente.DOI = obra.DOI;
-            existente.Enlace = obra.Enlace;
-            existente.Autores = obra.Autores;
-            existente.Resumen = obra.Resumen;
-            existente.Pdf = obra.Pdf;
+            obra.Titulo = obraS.Titulo;
+            obra.TipoObra = obraS.TipoObra;
+            obra.Fecha = obraS.Fecha;
+            obra.Pais = obraS.Pais;
+            obra.Ciudad = obraS.Ciudad;
+            obra.Editorial = obraS.Editorial;
+            obra.ISBN = obraS.ISBN;
+            obra.DOI = obraS.DOI;
+            obra.Enlace = obraS.Enlace;
+            obra.Autores = obraS.Autores;
+            obra.Resumen = obraS.Resumen;
+
+            if (obraS.Documento != null && obraS.Documento.Length > 0)
+            {
+                obra.Documento = obraS.Documento;
+            }
 
             await _context.SaveChangesAsync();
-            return Ok(existente);
-        }
 
-        [HttpDelete("Eliminar/{id}")]
+            return NoContent();
+        }
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Eliminar(int id)
         {
-            var existente = await _context.Obras.FindAsync(id);
-            if (existente == null) return NotFound();
+            var obra = await _context.Obras.FindAsync(id);
+            if (obra == null)
+            {
+                return NotFound();
+            }
 
-            _context.Obras.Remove(existente);
+            _context.Obras.Remove(obra);
             await _context.SaveChangesAsync();
+
             return NoContent();
         }
 
-        [HttpGet("PorCedula/{cedula}")]
-        public async Task<ActionResult<IEnumerable<ObraS>>> ObtenerPorCedula(string cedula)
+        private bool ObraExists(int id)
         {
-            var obras = await _context.Obras
-                .Where(o => o.Cedula == cedula)
-                .ToListAsync();
-
-            var resultado = obras.Select(o => new ObraS
-            {
-                IdObra = o.IdObra,
-                Cedula = o.Cedula,
-                Titulo = o.Titulo,
-                TipoObra = o.TipoObra,
-                FechaPublicacion = o.Fecha.ToDateTime(TimeOnly.MinValue),
-                Pais = o.Pais,
-                Ciudad = o.Ciudad,
-                Editorial = o.Editorial,
-                ISBN = o.ISBN,
-                DOI = o.DOI,
-                Enlace = o.Enlace,
-                Autores = o.Autores,
-                Resumen = o.Resumen,
-                Documento = o.Pdf ?? new byte[0],
-                NombreArchivo = "archivo.pdf"
-            }).ToList();
-
-            return Ok(resultado);
+            return _context.Obras.Any(e => e.IdObra == id);
         }
 
-        [HttpGet("VerPdf/{id}")]
-        public async Task<IActionResult> VerPdf(int id)
-        {
-            var obra = await _context.Obras.FindAsync(id);
-
-            if (obra == null || obra.Pdf == null)
-            {
-                return NotFound("PDF no encontrado");
-            }
-
-            return File(obra.Pdf, "application/pdf");
-        }
-
-        [HttpGet("TotalObrasDesde/{cedula}/{fechaDesde}")]
-        public async Task<ActionResult<int>> GetTotalObrasDesde(string cedula, string fechaDesde)
+        [HttpGet("ByDocenteDesde/{cedula}/{fechaDesde}")]
+        public async Task<ActionResult<List<Obra>>> GetObrasPorDocenteDesde(string cedula, string fechaDesde)
         {
             if (!DateOnly.TryParse(fechaDesde, out var fechaDesdeParsed))
                 return BadRequest("Formato de fecha inválido");
 
             var fechaActual = DateOnly.FromDateTime(DateTime.Today);
 
-            var total = await _context.Obras
-                .Where(o => o.Cedula == cedula && o.Fecha > fechaDesdeParsed && o.Fecha <= fechaActual)
-                .CountAsync();
+            var obras = await _context.Obras
+                .Where(o => o.Cedula == cedula &&
+                            o.Fecha > fechaDesdeParsed &&
+                            o.Fecha <= fechaActual)
+                .Select(o => new Obra
+                {
+                    IdObra = o.IdObra,
+                    TipoObra = o.TipoObra,
+                    Fecha = o.Fecha,
+                    Cedula = o.Cedula
+                })
+                .ToListAsync();
 
-            return Ok(total);
+            return obras;
         }
     }
 }
