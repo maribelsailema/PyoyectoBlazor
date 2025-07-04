@@ -3,6 +3,518 @@
 @using Proyecto.Shared.Models
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 
+<style>
+    /* Variables de color rojo */
+    :root {
+        --primary-red: #8B0000;
+        --secondary-red: #a52a2a;
+        --dark-red: #700000;
+        --light-red: #ffcccc;
+        --text-dark: #1f2937;
+        --text-light: #f9fafb;
+        --background-light: #f5f5f5;
+        --border-radius: 8px;
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --hover-shadow: 0 6px 12px rgba(139, 0, 0, 0.3);
+
+        /* Colores específicos para Bootstrap, armonizados con el tema */
+        --bs-primary: var(--primary-red); /* Sobrescribe el primary de Bootstrap con nuestro rojo */
+        --bs-success: #28a745; /* Verde para éxito */
+        --bs-danger: #dc3545; /* Rojo para peligro */
+        --bs-warning: #ffc107; /* Amarillo/naranja para advertencia */
+        --bs-info: #17a2b8; /* Cian para información */
+        --bs-secondary: #6c757d; /* Gris para secundario */
+
+        /* Variables adicionales para la página de exportación, ajustadas al tema rojo */
+        --primary-color: var(--primary-red);
+        --secondary-color: var(--primary-red); /* Usar primary-red para el secondary-color en este caso */
+        --card-bg-color: #ffffff;
+        --dark-text-color: var(--text-dark);
+        --border-color: #ced4da;
+        --light-bg-color: #f8f9fa;
+
+        /* Spacing variables */
+        --spacing-xs: 4px;
+        --spacing-sm: 8px;
+        --spacing-md: 16px;
+        --spacing-lg: 24px;
+        --spacing-xl: 32px;
+
+        /* Border radius variables */
+        --border-radius-md: 6px;
+        --border-radius-lg: 10px;
+
+        /* Shadow variables */
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 3px 6px rgba(0, 0, 0, 0.1);
+
+        /* Transition variable */
+        --transition-normal: all 0.3s ease;
+    }
+
+    body {
+        background-color: var(--background-light);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        color: var(--text-dark);
+    }
+
+    /* Navbar/Header Styles */
+    .navbar {
+        background-color: var(--primary-red);
+        color: var(--text-light);
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--shadow);
+    }
+
+    .navbar-left h3 {
+        margin: 0;
+        color: var(--text-light);
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 1.5rem;
+    }
+
+    .nav-item {
+        color: var(--text-light);
+        text-decoration: none;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        border-radius: var(--border-radius);
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .nav-item:hover,
+    .nav-item.active {
+        background-color: var(--dark-red);
+        color: var(--text-light);
+    }
+
+    .nav-item.cerrar-sesion {
+        background-color: var(--secondary-red);
+    }
+
+    .nav-item.cerrar-sesion:hover {
+        background-color: #ff3333;
+    }
+
+    h1, h2, h3, h4, h6 {
+        color: var(--primary-red);
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    /* Main content styling */
+    .contenido-promocion {
+        flex-grow: 1;
+        padding: var(--spacing-xl) var(--spacing-md);
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .container {
+        padding: 0; /* Override default container padding if necessary */
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .mb-4 {
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .titulo-admin {
+        color: var(--primary-red);
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .titulo-admin i {
+        margin-right: var(--spacing-sm);
+    }
+
+    .text-muted {
+        color: var(--bs-secondary) !important;
+    }
+
+    .mt-4 {
+        margin-top: var(--spacing-xl);
+    }
+
+    /* Spinner */
+    .spinner-border {
+        color: var(--primary-red) !important;
+    }
+
+    /* Alerts */
+    .alert {
+        padding: var(--spacing-md);
+        border-radius: var(--border-radius-md);
+        margin-bottom: var(--spacing-lg);
+        border: 1px solid transparent;
+    }
+
+    .alert-info {
+        color: #055160;
+        background-color: #cff4fc;
+        border-color: #b6effb;
+    }
+
+    /* Table styles */
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .table {
+        width: 100%;
+        margin-bottom: 1rem;
+        color: var(--text-dark);
+        vertical-align: middle;
+        border-color: #dee2e6;
+        background-color: var(--card-bg-color); /* Ensure table background is white */
+        border-radius: var(--border-radius-lg);
+    }
+
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: rgba(0, 0, 0, 0.03);
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 0, 0, 0.075);
+    }
+
+    .shadow-sm {
+        box-shadow: var(--shadow-sm) !important;
+    }
+
+    .table-primary {
+        background-color: var(--primary-red) !important;
+        color: var(--text-light) !important;
+    }
+
+    .table-primary th {
+        border-color: var(--dark-red); /* Darker red for header borders */
+    }
+
+    .table th,
+    .table td {
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+        white-space: nowrap; /* Prevent text wrapping in table headers */
+    }
+
+    .table thead th {
+        vertical-align: bottom;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    /* Badges */
+    .badge {
+        display: inline-block;
+        padding: 0.35em 0.65em;
+        font-size: 0.75em;
+        font-weight: 700;
+        line-height: 1;
+        color: #fff;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: 0.25rem;
+    }
+
+    .bg-success {
+        background-color: var(--bs-success) !important;
+    }
+
+    .bg-danger {
+        background-color: var(--bs-danger) !important;
+    }
+
+    .bg-warning {
+        background-color: var(--bs-warning) !important;
+        color: var(--text-dark) !important; /* Ensure text is dark on warning */
+    }
+
+    /* Buttons */
+    .btn {
+        display: inline-block;
+        font-weight: 400;
+        line-height: 1.5;
+        color: var(--text-dark);
+        text-align: center;
+        text-decoration: none;
+        vertical-align: middle;
+        cursor: pointer;
+        user-select: none;
+        background-color: transparent;
+        border: 1px solid transparent;
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        border-radius: 0.25rem;
+        transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        border-radius: 0.2rem;
+    }
+
+    .btn-success {
+        color: #fff;
+        background-color: var(--bs-success);
+        border-color: var(--bs-success);
+    }
+
+    .btn-success:hover {
+        color: #fff;
+        background-color: #218838;
+        border-color: #1e7e34;
+    }
+
+    .btn-danger {
+        color: #fff;
+        background-color: var(--bs-danger);
+        border-color: var(--bs-danger);
+    }
+
+    .btn-danger:hover {
+        color: #fff;
+        background-color: #c82333;
+        border-color: #bd2130;
+    }
+
+    .btn-outline-info {
+        color: var(--bs-info);
+        border-color: var(--bs-info);
+    }
+
+    .btn-outline-info:hover {
+        color: #fff;
+        background-color: var(--bs-info);
+        border-color: var(--bs-info);
+    }
+
+    .me-2 {
+        margin-right: var(--spacing-sm) !important;
+    }
+
+    /* Modal styles */
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1050;
+        display: none;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        outline: 0;
+        background-color: rgba(0, 0, 0, 0.5); /* Dim background */
+    }
+
+    .modal.show {
+        display: block;
+    }
+
+    .modal-dialog {
+        position: relative;
+        width: auto;
+        margin: 0.5rem;
+        pointer-events: none;
+    }
+
+    .modal-dialog-centered {
+        display: flex;
+        align-items: center;
+        min-height: calc(100% - 1rem);
+    }
+
+    .modal-lg {
+        max-width: 800px; /* Larger modal */
+    }
+
+    .modal-content {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        pointer-events: auto;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        border-radius: 0.3rem;
+        outline: 0;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .modal-header {
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--spacing-md);
+        border-bottom: 1px solid #dee2e6;
+        border-top-left-radius: calc(0.3rem - 1px);
+        border-top-right-radius: calc(0.3rem - 1px);
+        background-color: var(--primary-red);
+        color: var(--text-light);
+    }
+
+    .modal-title {
+        margin-bottom: 0;
+        line-height: 1.5;
+        color: var(--text-light);
+    }
+
+    .btn-close {
+        padding: 0.5rem;
+        margin: -0.5rem -0.5rem -0.5rem auto;
+        background-color: transparent;
+        border: 0;
+        opacity: 0.75;
+        color: var(--text-light); /* Make close button visible on dark header */
+        font-size: 1.5rem; /* Larger close button */
+    }
+
+    .btn-close:hover {
+        opacity: 1;
+        color: var(--light-red);
+    }
+
+    .modal-body {
+        position: relative;
+        flex: 1 1 auto;
+        padding: var(--spacing-md);
+        color: var(--text-dark);
+    }
+
+    .modal-body h5 {
+        color: var(--primary-red);
+        margin-top: var(--spacing-md);
+        margin-bottom: var(--spacing-sm);
+        font-weight: 600;
+    }
+
+    .modal-body ul {
+        list-style: none;
+        padding-left: 0;
+    }
+
+    .modal-body li {
+        margin-bottom: var(--spacing-xs);
+        padding-left: var(--spacing-md);
+        position: relative;
+    }
+
+    .modal-body li::before {
+        content: "•";
+        color: var(--secondary-red);
+        font-weight: bold;
+        display: inline-block;
+        width: 1em;
+        margin-left: -1em;
+    }
+
+    .modal-footer {
+        display: flex;
+        flex-wrap: wrap;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: flex-end;
+        padding: var(--spacing-md);
+        border-top: 1px solid #dee2e6;
+        border-bottom-right-radius: calc(0.3rem - 1px);
+        border-bottom-left-radius: calc(0.3rem - 1px);
+        background-color: var(--light-bg-color); /* Light background for footer */
+    }
+
+    .btn-secondary {
+        color: #fff;
+        background-color: var(--bs-secondary);
+        border-color: var(--bs-secondary);
+    }
+
+    .btn-secondary:hover {
+        color: #fff;
+        background-color: #5a6268;
+        border-color: #545b62;
+    }
+
+    .d-flex {
+        display: flex !important;
+    }
+
+    .justify-content-center {
+        justify-content: center !important;
+    }
+
+    .ms-2 {
+        margin-left: var(--spacing-sm) !important;
+    }
+
+
+    /* Footer Styles */
+    .footer {
+        background-color: var(--dark-red);
+        color: var(--text-light);
+        padding: 2rem;
+        margin-top: auto;
+        box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .footer-info {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .footer-section {
+        flex: 1;
+        min-width: 200px;
+        text-align: left;
+    }
+
+    .footer-section h4 {
+        color: var(--light-red);
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    .footer-section p,
+    .footer-section NavLink {
+        color: var(--text-light);
+        text-decoration: none;
+        display: block;
+        margin-bottom: 0.5rem;
+        transition: color 0.3s ease;
+    }
+
+    .footer-section NavLink:hover {
+        color: var(--light-red);
+    }
+
+    .copyright {
+        margin-top: 1.5rem;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+</style>
+
 <header class="navbar">
     <div class="navbar-left">
         <div class="navbar-left">
@@ -20,7 +532,7 @@
         <NavLink href="/reportes-admin" class="nav-item">
             <i class="bi bi-bar-chart-line-fill"></i> Reportes
         </NavLink>
-          <NavLink href="/perfil" class="nav-item active"><i class="bi bi-person-fill"></i> Perfil</NavLink> 
+        <NavLink href="/perfil" class="nav-item active"><i class="bi bi-person-fill"></i> Perfil</NavLink>    
 
         <NavLink href="/" class="nav-item cerrar-sesion">
             <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
@@ -91,14 +603,14 @@
                                     @if (p.Estado == "Pendiente")
                                     {
                                         <button class="btn btn-sm btn-success me-2"
-                                                title="Aceptar solicitud"
-                                                @onclick="() => CambiarEstadoAceptada(p.Id)">
-                                            <i class="bi bi-check-circle"></i> Aceptar
+                                                    title="Aceptar solicitud"
+                                                    @onclick="() => CambiarEstadoAceptada(p.Id)">
+                                                <i class="bi bi-check-circle"></i> Aceptar
                                         </button>
                                         <button class="btn btn-sm btn-danger"
-                                                title="Rechazar solicitud"
-                                                @onclick="() => CambiarEstadoRechazada(p.Id)">
-                                            <i class="bi bi-x-circle"></i> Rechazar
+                                                    title="Rechazar solicitud"
+                                                    @onclick="() => CambiarEstadoRechazada(p.Id)">
+                                                <i class="bi bi-x-circle"></i> Rechazar
                                         </button>
                                     }
                                     else
@@ -109,8 +621,8 @@
                                 <td>
 
                                     <button class="btn btn-outline-info btn-sm"
-                                            @onclick="async () => await MostrarResumen(p.Cedula)">
-                                        <i class="bi bi-file-earmark-text"></i> Ver resumen
+                                                @onclick="async () => await MostrarResumen(p.Cedula)">
+                                            <i class="bi bi-file-earmark-text"></i> Ver resumen
                                     </button>
 
 
@@ -123,7 +635,7 @@
         }
         @if (mostrarModal)
         {
-            <div class="modal fade" id="modalResumen" tabindex="-1" aria-labelledby="modalResumenLabel" aria-hidden="true">
+            <div class="modal fade @(mostrarModal ? "show d-block" : "")" id="modalResumen" tabindex="-1" aria-labelledby="modalResumenLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -245,23 +757,23 @@
         var response = await Http.PutAsJsonAsync($"api/Promocion/CambiarEstado/{id}", nuevoEstado);
         if (response.IsSuccessStatusCode)
         {
-           
+            
             if (nuevoEstado == "Rechazada")
-        {
-            // Quitar de la lista sin volver a consultar toda la API
-            var postulacionEliminada = postulaciones.FirstOrDefault(p => p.Id == id);
-            if (postulacionEliminada != null)
             {
-                postulaciones.Remove(postulacionEliminada);
+                // Quitar de la lista sin volver a consultar toda la API
+                var postulacionEliminada = postulaciones.FirstOrDefault(p => p.Id == id);
+                if (postulacionEliminada != null)
+                {
+                    postulaciones.Remove(postulacionEliminada);
+                }
             }
-        }
-        else
-        {
-            // Para "Aceptada", recarga completa
-            postulaciones = await Http.GetFromJsonAsync<List<PostulacionDto>>("api/Promocion/Todas");
-        }
+            else
+            {
+                // Para "Aceptada", recarga completa
+                postulaciones = await Http.GetFromJsonAsync<List<PostulacionDto>>("api/Promocion/Todas");
+            }
 
-        StateHasChanged();
+            StateHasChanged();
         }
         else
         {
@@ -303,8 +815,5 @@ private bool resumenCargado = false;
 
 
     
-
-}
-
 
 }

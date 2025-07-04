@@ -5,8 +5,8 @@
 @inject HttpClient Http
 @inject IJSRuntime JS
 
-
 <style>
+    /* Estilos para el modal de validación */
     .modal-overlay {
         position: fixed;
         top: 0;
@@ -23,57 +23,59 @@
         left: 50%;
         transform: translate(-50%, -50%);
         background-color: #fff;
-        padding: 1.5rem 2rem;
-        border-radius: 10px;
+        padding: 2rem;
+        border-radius: 12px;
         width: 90%;
-        max-width: 400px;
-        max-height: 300px; /* Limita la altura */
-        overflow-y: auto; /* Agrega scroll si el contenido lo necesita */
-        box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        max-width: 560px; /* 40% más grande */
+        max-height: 360px; /* 20% más alto */
+        overflow-y: auto;
+        box-shadow: 0 0 20px rgba(139, 0, 0, 0.4);
         text-align: center;
         z-index: 10000;
         box-sizing: border-box;
         font-family: sans-serif;
         animation: fadeIn 0.3s ease-in-out;
         position: relative;
+        border: 2px solid #8B0000; /* Borde rojo */
     }
-
 
         .modal h3 {
             margin-top: 0;
-            margin-bottom: 1rem;
-            font-size: 1.25rem;
-            color: #333;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            color: #8B0000; /* Rojo oscuro */
         }
 
         .modal ul.validation-errors {
             text-align: left;
-            color: red;
-            padding-left: 1.2rem;
-            margin-bottom: 1rem;
+            color: #8B0000; /* Rojo oscuro */
+            padding-left: 1.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
         }
-
- 
 
     .btn-close-top {
         position: absolute;
-        top: 10px;
-        right: 10px;
+        top: 15px;
+        right: 15px;
         background-color: transparent;
         border: none;
-        font-size: 1.2rem;
+        font-size: 1.8rem;
         cursor: pointer;
-        color: #999;
+        color: #8B0000; /* Rojo oscuro */
         transition: color 0.2s ease;
     }
 
         .btn-close-top:hover {
-            color: #dc3545;
+            color: #a52a2a; /* Rojo más claro */
         }
+
     .error-message {
-        color: red;
+        color: #8B0000; /* Rojo oscuro */
         text-align: center;
-        margin-top: 1rem;
+        margin-top: 1.5rem;
+        font-size: 1.3rem;
+        font-weight: bold;
     }
 
     @@keyframes fadeIn {
@@ -82,21 +84,131 @@
             transform: scale(0.9);
         }
 
-
         to {
             opacity: 1;
             transform: scale(1);
         }
     }
+
+    /* Estilos principales del formulario de login */
+    .login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #f5f5f5;
+        padding: 2rem;
+    }
+
+    .login-form {
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(139, 0, 0, 0.2);
+        padding: 4rem; /* Más padding para mayor altura */
+        width: 100%;
+        max-width: 672px; /* 40% más ancho */
+        min-height: 580px; /* 20% más alto */
+        border: 3px solid #8B0000; /* Borde rojo */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .login-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+        .login-header i {
+            color: #8B0000; /* Rojo oscuro */
+            font-size: 5.5rem;
+            margin-bottom: 1.8rem;
+        }
+
+        .login-header h2 {
+            color: #8B0000; /* Rojo oscuro */
+            font-size: 2.8rem;
+            margin-bottom: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .login-header p {
+            font-size: 1.4rem;
+            color: #666;
+        }
+
+    label {
+        display: block;
+        margin-bottom: 1rem;
+        font-size: 1.4rem;
+        color: #8B0000; /* Rojo oscuro */
+        font-weight: 600;
+    }
+
+    .input-group {
+        position: relative;
+        margin-bottom: 2.2rem;
+    }
+
+        .input-group i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8B0000; /* Rojo oscuro */
+            font-size: 1.6rem;
+        }
+
+    .form-input {
+        width: 100%;
+        padding: 1.5rem 1.5rem 1.5rem 4.5rem;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        font-size: 1.4rem;
+        transition: all 0.3s;
+    }
+
+        .form-input:focus {
+            border-color: #8B0000; /* Rojo oscuro */
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(139, 0, 0, 0.2);
+        }
+
+    .btn-login {
+        width: 100%;
+        background-color: #8B0000 !important; /* Rojo oscuro - forzado */
+        color: white !important;
+        border: none;
+        padding: 1.6rem;
+        border-radius: 10px;
+        font-size: 1.6rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        margin-top: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+        .btn-login:hover {
+            background-color: #a52a2a !important; /* Rojo más claro */
+        }
+
+        .btn-login i {
+            margin-right: 12px;
+            font-size: 1.8rem;
+        }
 </style>
-
-
 
 @if (showValidationModal)
 {
     <div class="modal-overlay">
         <div class="modal">
-            <h3>Ningun campo debe ser vacìo</h3>
+            <h3>Ningún campo debe ser vacío</h3>
             <ValidationSummary class="validation-errors" />
             <button class="btn-close-top" @onclick="() => showValidationModal = false" title="Cerrar">✖</button>
         </div>
@@ -109,7 +221,7 @@
     <div class="login-container">
         <div class="login-form">
             <div class="login-header">
-                <i class="fas fa-user-circle fa-3x"></i>
+                <i class="fas fa-user-circle"></i>
                 <h2>LOGIN</h2>
                 <p>Ingrese sus credenciales</p>
             </div>
@@ -160,14 +272,11 @@
             var response = await Http.PostAsJsonAsync("api/Usuario/Validar", datosLogin);
 
             if (response.IsSuccessStatusCode)
-
-              {
-
+            {
                 var usuario = await response.Content.ReadFromJsonAsync<Usuario>();
 
                 if (usuario is not null && !string.IsNullOrEmpty(usuario.Ced))
                 {
-
                     await JS.InvokeVoidAsync("localStorage.setItem", "cedulaUsuario", usuario.Ced);
 
                     var tipo = usuario.TipoUsuario?.ToLower();
@@ -183,15 +292,11 @@
                     {
                         mensajeError = "Tipo de usuario no reconocido.";
                     }
-
                 }
                 else
                 {
                     mensajeError = "Usuario no válido.";
                 }
-
-
-
             }
             else
             {
@@ -201,7 +306,7 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error en login.");
-            mensajeError = $"Error en la conexión al servidor: {ex.Message}";
+            mensajeError = $"Error en la conexión: {ex.Message}";
         }
     }
 
@@ -231,4 +336,3 @@
         public string FechaIngreso { get; set; }
     }
 }
-

@@ -1,6 +1,131 @@
 ﻿@page "/estado-promocion"
 @inject NavigationManager Navigation
 
+<style>
+    /* Variables de color rojo */
+    :root {
+        --primary-red: #8B0000;
+        --secondary-red: #a52a2a;
+        --dark-red: #700000;
+        --light-red: #ffcccc;
+        --text-dark: #1f2937;
+        --text-light: #f9fafb;
+        --background-light: #f5f5f5;
+        --border-radius: 8px;
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --hover-shadow: 0 6px 12px rgba(139, 0, 0, 0.3);
+
+        /* Colores específicos para Bootstrap, armonizados con el tema */
+        --bs-primary: var(--primary-red); /* Sobrescribe el primary de Bootstrap con nuestro rojo */
+        --bs-success: #28a745; /* Verde para éxito */
+        --bs-danger: #dc3545; /* Rojo para peligro */
+        --bs-warning: #ffc107; /* Amarillo/naranja para advertencia */
+        --bs-info: #17a2b8; /* Cian para información */
+        --bs-secondary: #6c757d; /* Gris para secundario */
+    }
+
+    body {
+        background-color: var(--background-light);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 2rem; /* Añade un padding general al cuerpo para separación */
+        min-height: 100vh;
+        color: var(--text-dark);
+    }
+
+    h3, h4 {
+        color: var(--primary-red);
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    /* Estilo de la tarjeta (card) */
+    .card {
+        border: 1px solid rgba(0,0,0,.125); /* Borde por defecto de Bootstrap */
+        border-radius: var(--border-radius);
+    }
+
+    .card-header.bg-primary {
+        background-color: var(--primary-red) !important;
+        color: var(--text-light) !important;
+        border-bottom: 1px solid var(--primary-red);
+    }
+
+    /* Estilo de las insignias (badges) */
+    .badge.bg-success {
+        background-color: var(--bs-success) !important;
+        color: white !important;
+    }
+
+    .badge.bg-warning {
+        background-color: var(--bs-warning) !important;
+        color: var(--text-dark) !important;
+    }
+
+    .badge.bg-danger {
+        background-color: var(--bs-danger) !important;
+        color: white !important;
+    }
+
+    .badge.bg-secondary {
+        background-color: var(--bs-secondary) !important;
+        color: white !important;
+    }
+
+    /* Estilo de las alertas */
+    .alert.alert-danger {
+        background-color: #f8d7da; /* Rojo más claro para el fondo de la alerta */
+        color: #721c24; /* Rojo más oscuro para el texto de la alerta */
+        border-color: #f5c6cb;
+    }
+
+    .alert.alert-success {
+        background-color: #d4edda; /* Verde más claro para el fondo de la alerta */
+        color: #155724; /* Verde más oscuro para el texto de la alerta */
+        border-color: #c3e6cb;
+    }
+
+    /* Estilo de los botones */
+    .btn-primary {
+        background-color: var(--primary-red);
+        border-color: var(--primary-red);
+        color: white;
+        transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+        background-color: var(--secondary-red) !important;
+        border-color: var(--secondary-red) !important;
+    }
+
+    .btn-danger {
+        background-color: var(--bs-danger);
+        border-color: var(--bs-danger);
+        color: white;
+        transition: all 0.3s ease;
+    }
+    .btn-danger:hover {
+        background-color: #c82333 !important; /* Rojo peligro más oscuro */
+        border-color: #bd2130 !important;
+    }
+
+    .btn-sm { /* Asegura que los botones pequeños hereden estilos consistentes */
+        padding: .25rem .5rem;
+        font-size: .875rem;
+        border-radius: .2rem;
+    }
+
+    /* Asegura que los colores de texto sean consistentes donde Bootstrap podría sobrescribir */
+    .text-primary {
+        color: var(--primary-red) !important;
+    }
+    /* Añade un padding general para el contenido principal para evitar que toque los bordes */
+    .container {
+        padding: 0 15px; /* Padding estándar de contenedor de Bootstrap */
+        max-width: 960px; /* Ajusta si es necesario, o deja que Bootstrap lo maneje */
+        margin: 0 auto; /* Centra el contenedor */
+    }
+</style>
+
 <h3>Estado de Mi Postulación a Promoción</h3>
 
 <AlertMessage Message="@statusMessage" AlertType="@alertType" />

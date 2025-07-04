@@ -5,6 +5,231 @@
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 @inject HttpClient Http
 
+<style>
+    /* Variables de color rojo */
+    :root {
+        --primary-red: #8B0000;
+        --secondary-red: #a52a2a;
+        --dark-red: #700000;
+        --light-red: #ffcccc;
+        --text-dark: #1f2937;
+        --text-light: #f9fafb;
+        --background-light: #f5f5f5;
+        --border-radius: 8px;
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --hover-shadow: 0 6px 12px rgba(139, 0, 0, 0.3);
+    }
+
+    body {
+        background-color: var(--background-light);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        color: var(--text-dark);
+    }
+
+    /* Navbar - Estilo rojo */
+    .navbar {
+        background: linear-gradient(90deg, var(--dark-red) 0%, var(--primary-red) 100%);
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--shadow);
+    }
+
+    .navbar-left h3 {
+        color: var(--text-light);
+        margin: 0;
+        font-weight: 600;
+        font-size: 1.25rem;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 1.5rem;
+    }
+
+    .nav-item {
+        color: rgba(255, 255, 255, 0.85);
+        text-decoration: none;
+        font-weight: 500;
+        padding: 0.5rem 0.75rem;
+        border-radius: var(--border-radius);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.25);
+            color: white;
+        }
+
+        .nav-item i {
+            font-size: 1.1rem;
+        }
+
+    /* Contenido principal - Estilo rojo */
+    .contenido {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1.5rem;
+    }
+
+    .bienvenida {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 3rem 2rem;
+        text-align: center;
+        box-shadow: var(--shadow);
+        margin-bottom: 2rem;
+        border: 2px solid var(--primary-red);
+    }
+
+        .bienvenida h2 {
+            color: var(--primary-red);
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+
+    .btn-usuario {
+        background: var(--primary-red);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.75rem;
+        border-radius: var(--border-radius);
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-decoration: none;
+        box-shadow: var(--shadow);
+    }
+
+        .btn-usuario:hover {
+            background: var(--secondary-red);
+            transform: translateY(-2px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .btn-usuario i {
+            font-size: 1.3rem;
+        }
+
+    /* Footer - Mantenemos el tamaño original */
+    .footer {
+        background: linear-gradient(90deg, var(--dark-red) 0%, var(--primary-red) 100%);
+        color: var(--text-light);
+        padding: 1rem 0; /* Tamaño original */
+        margin-top: 2rem; /* Tamaño original */
+    }
+
+    .footer-info {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+    }
+
+    .footer-section {
+        flex: 1;
+        min-width: 250px;
+        margin-bottom: 1rem; /* Tamaño original */
+        padding: 0 1rem;
+    }
+
+        .footer-section h4 {
+            font-size: 1.1rem; /* Tamaño original */
+            margin-bottom: 0.5rem; /* Tamaño original */
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-section p {
+            margin: 0.3rem 0; /* Tamaño original */
+            line-height: 1.4; /* Tamaño original */
+            font-size: 0.9rem; /* Tamaño original */
+        }
+
+        .footer-section a {
+            color: var(--text-light);
+            text-decoration: none;
+            transition: opacity 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.3rem 0; /* Tamaño original */
+            font-size: 0.9rem; /* Tamaño original */
+        }
+
+            .footer-section a:hover {
+                opacity: 0.8;
+                text-decoration: underline;
+            }
+
+    .copyright {
+        text-align: center;
+        padding-top: 1rem; /* Tamaño original */
+        margin-top: 1rem; /* Tamaño original */
+        opacity: 0.8;
+        font-size: 0.8rem; /* Tamaño original */
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .navbar {
+            flex-direction: column;
+            padding: 1rem;
+        }
+
+        .navbar-left {
+            margin-bottom: 1rem;
+        }
+
+        .nav-links {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .footer-info {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .footer-section {
+            text-align: center;
+        }
+
+            .footer-section h4 {
+                justify-content: center;
+            }
+
+            .footer-section a {
+                justify-content: center;
+            }
+
+        .bienvenida h2 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
 <header class="navbar">
     <div class="navbar-left">
         <h3>Bienvenido, @usuario.NombreCompleto (Administrador)</h3>
@@ -20,7 +245,7 @@
         <NavLink href="/reportes-admin" class="nav-item">
             <i class="bi bi-bar-chart-line-fill"></i> Reportes
         </NavLink>
-        <NavLink href="/perfil" class="nav-item active"><i class="bi bi-person-fill"></i> Perfil</NavLink> 
+        <NavLink href="/perfil" class="nav-item active"><i class="bi bi-person-fill"></i> Perfil</NavLink>
         <NavLink href="/" class="nav-item cerrar-sesion">
             <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
         </NavLink>
