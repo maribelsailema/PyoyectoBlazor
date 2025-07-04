@@ -416,7 +416,7 @@
                 <button class="btn btn-secondary" disabled>
                     <i class="bi bi-plus-circle"></i> Agregar Evaluacion (deshabilitado)
                 </button>
-                <p class="text-muted mt-2">Ya postulaste. Solo puedes agregar más investigaciones si tu postulación fue rechazada.</p>
+                <p class="text-muted mt-2">Ya postulaste. Solo puedes agregar más evaluaciones si tu postulación fue rechazada o aceptada.</p>
             }
 
             
@@ -535,7 +535,7 @@
 
                                 <div class="mb-3">
                                     <label>Subir PDF</label>
-                                    <InputFile OnChange="SubirPdfEvaluacion" />
+                                    <InputFile OnChange="SubirPDF" accept=".pdf,application/pdf" />
                                 </div>
 
                                 <div class="modal-footer">
@@ -706,42 +706,93 @@ else
 }
 @if (mostrarFormObra)
 {
-    <EditForm Model="@nuevaObra" OnValidSubmit="GuardarObra">
-        <div class="row mb-3">
-            <div class="col">
-                <label>Título</label>
-                <InputText class="form-control" @bind-Value="nuevaObra.Titulo" />
-            </div>
-            <div class="col">
-                <label>Tipo</label>
-                <InputText class="form-control" @bind-Value="nuevaObra.TipoObra" />
-            </div>
-        </div>
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(modoEdicionObra ? "Editar Obra" : "Agregar Obra")</h5>
+                    <button type="button" class="btn-close" @onclick="CerrarFormObra" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="@nuevaObra" OnValidSubmit="GuardarObra">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label>Título</label>
+                                <InputText class="form-control" @bind-Value="nuevaObra.Titulo" />
+                                <ValidationMessage For="@(() => nuevaObra.Titulo)" />
+                            </div>
+                            <div class="col-md-6">
+                                <label>Tipo de Obra</label>
+                                <InputText class="form-control" @bind-Value="nuevaObra.TipoObra" />
+                                <ValidationMessage For="@(() => nuevaObra.TipoObra)" />
+                            </div>
+                        </div>
 
-        <div class="row mb-3">
-            <div class="col">
-                <label>Fecha</label>
-                <InputDate TValue="DateTime" @bind-Value="nuevaObra.FechaPublicacion" />
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label>Fecha de Publicación</label>
+                                <InputDate class="form-control" @bind-Value="nuevaObra.FechaPublicacion" />
+                                <ValidationMessage For="@(() => nuevaObra.FechaPublicacion)" />
+                            </div>
+                            <div class="col-md-6">
+                                <label>Autores</label>
+                                <InputText class="form-control" @bind-Value="nuevaObra.Autores" />
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label>País</label>
+                                <InputText class="form-control" @bind-Value="nuevaObra.Pais" />
+                            </div>
+                            <div class="col-md-6">
+                                <label>Ciudad</label>
+                                <InputText class="form-control" @bind-Value="nuevaObra.Ciudad" />
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label>Editorial</label>
+                                <InputText class="form-control" @bind-Value="nuevaObra.Editorial" />
+                            </div>
+                            <div class="col-md-6">
+                                <label>ISBN/DOI</label>
+                                <InputText class="form-control" @bind-Value="nuevaObra.ISBN" />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Resumen</label>
+                            <InputTextArea class="form-control" rows="3" @bind-Value="nuevaObra.Resumen" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Subir PDF</label>
+                            <InputFile OnChange="SubirPdfObra" accept=".pdf,application/pdf" />
+                            @if (!string.IsNullOrEmpty(errorArchivoObra))
+                            {
+                                <div class="text-danger">@errorArchivoObra</div>
+                            }
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Guardar
+                            </button>
+                            <button type="button" class="btn btn-secondary" @onclick="CerrarFormObra">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
             </div>
         </div>
-
-        <div class="mb-3">
-            <label>Subir PDF</label>
-            <InputFile OnChange="SubirPdfObra" />
-        </div>
-
-        <div class="d-flex gap-2">
-            <button class="btn btn-primary">
-                <i class="bi bi-check-circle"></i> Guardar
-            </button>
-            <button type="button" class="btn btn-secondary"
-                    @onclick="() => mostrarFormObra = false">
-                <i class="bi bi-x-circle"></i> Cancelar
-            </button>
-        </div>
-    </EditForm>
+    </div>
 }
-
 @if (mostrarCapacitaciones)
 {
     <h4>Capacitaciones</h4>
@@ -797,14 +848,22 @@ else
         </tbody>
     </table>
 }
-
-
 @if (mostrarObras)
 {
     <div class="mb-3">
-        <button class="btn btn-success" @onclick="MostrarFormObra">
-            <i class="bi bi-plus-circle"></i> Agregar Obra
-        </button>
+        @if (puedeAgregar)
+        {
+            <button class="btn btn-success" @onclick="MostrarFormObra">
+                <i class="bi bi-plus-circle"></i> Agregar Obra
+            </button>
+        }
+        else
+        {
+            <button class="btn btn-secondary" disabled>
+                <i class="bi bi-plus-circle"></i> Agregar Obra (deshabilitado)
+            </button>
+            <p class="text-muted mt-2">Ya postulaste. Solo puedes agregar más obras si tu postulación fue rechazada.</p>
+        }
     </div>
 
     <h4>Obras</h4>
@@ -814,6 +873,10 @@ else
                 <th>Título</th>
                 <th>Tipo</th>
                 <th>Fecha</th>
+                <th>Autores</th>
+                <th>DOI</th>
+                <th>ISBN</th>
+                <th>Pais</th>
                 <th>PDF</th>
                 <th></th>
             </tr>
@@ -825,10 +888,15 @@ else
                     <td>@obra.Titulo</td>
                     <td>@obra.TipoObra</td>
                     <td>@obra.FechaPublicacion.ToShortDateString()</td>
+                    <td>@obra.Autores</td>
+                    <td>@obra.DOI</td>
+                    <td>@obra.ISBN</td>
+                    <td>@obra.Pais</td>
                     <td>
-                        @if (obra.Documento is not null && obra.Documento.Length > 0)
+                        @if (obra.Documento != null && obra.Documento.Length > 0)
                         {
-                            <a href="#" onclick="openPdf('@Convert.ToBase64String(obra.Documento)'); return false;">
+                            <a href="#" @onclick="() => AbrirPdf(obra.Documento)" 
+                               style="cursor:pointer; color:blue; text-decoration:underline;">
                                 Ver PDF
                             </a>
                         }
@@ -838,7 +906,9 @@ else
                         }
                     </td>
                     <td>
-                        <button class="btn btn-warning btn-sm" @onclick="() => EditarObra(obra)">
+                        <button class="btn btn-warning btn-sm"
+                                @onclick="() => EditarObra(obra)"
+                                disabled="@(puedeAgregar == false)">
                             <i class="bi bi-pencil"></i> Editar
                         </button>
                     </td>
@@ -1168,19 +1238,22 @@ else
 }
 
 if (tablaSeleccionada == "Obras")
-{
-    var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
-    if (!string.IsNullOrEmpty(cedula))
-    {
-        listaObras = await obraService.ObtenerPorCedulaAsync(cedula);
-        mostrarObras = true;
-    }
-}
-else
-{
-    mostrarObras = false;
-}
-        if (tablaSeleccionada == "EvaluacionesDocentes")
+        {
+            var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
+            if (!string.IsNullOrEmpty(cedula))
+            {
+                listaObras = await obraService.ObtenerPorCedulaAsync(cedula);
+                Console.WriteLine($"Obras recibidas: {listaObras.Count}"); // Debug
+                mostrarObras = true;
+            }
+            else
+            {
+                mensaje = "No se pudo obtener la cédula del usuario";
+            }
+        }
+        
+
+if (tablaSeleccionada == "EvaluacionesDocentes")
         {
             var cedula = await JS.InvokeAsync<string>("localStorage.getItem", "cedulaUsuario");
             if (!string.IsNullOrEmpty(cedula))
@@ -1305,18 +1378,14 @@ else
     }
 
 
-
-    
-    private async Task AbrirPdf(byte[]? pdf)
+private async Task AbrirPdf(byte[]? pdf)
+{
+    if (pdf != null && pdf.Length > 0)
     {
-        if (pdf != null && pdf.Length > 0)
-        {
-            string base64 = Convert.ToBase64String(pdf);
-            await JS.InvokeVoidAsync("openPdf(base64)", base64);
-        }
-
+        string base64 = Convert.ToBase64String(pdf);
+        await JS.InvokeVoidAsync("openPdf", base64); // Eliminado el parámetro "base64" del nombre
     }
-
+}
    
 
     private void EditarInvestigacion(Investigacion inv)
@@ -1342,13 +1411,14 @@ else
 
     
 
-    // ————— Obras —————
+ // ————— Obras —————
 private List<ObraS> listaObras = new();
 private ObraS nuevaObra = new();
 private bool mostrarObras = false;
 private bool mostrarFormObra = false;
 private bool modoEdicionObra = false;
 private IBrowserFile? archivoPDFObra;
+private string? errorArchivoObra;
 
 // Mostrar formulario
 private void MostrarFormObra()
@@ -1361,12 +1431,42 @@ private void MostrarFormObra()
     mostrarFormObra = true;
     modoEdicionObra = false;
     archivoPDFObra = null;
+    errorArchivoObra = null;
+}
+
+// Cerrar formulario
+private void CerrarFormObra()
+{
+    mostrarFormObra = false;
+    modoEdicionObra = false;
+    nuevaObra = new ObraS();
+    archivoPDFObra = null;
+    errorArchivoObra = null;
 }
 
 // Subir PDF
 private async Task SubirPdfObra(InputFileChangeEventArgs e)
 {
     archivoPDFObra = e.File;
+    
+    if (archivoPDFObra.ContentType != "application/pdf")
+    {
+        errorArchivoObra = "Solo se permiten archivos en formato PDF.";
+        return;
+    }
+
+    try
+    {
+        using var stream = archivoPDFObra.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
+        using var memory = new MemoryStream();
+        await stream.CopyToAsync(memory);
+        nuevaObra.Documento = memory.ToArray();
+        errorArchivoObra = null;
+    }
+    catch (Exception ex)
+    {
+        errorArchivoObra = $"Error al cargar el archivo: {ex.Message}";
+    }
 }
 
 // Guardar obra
@@ -1374,27 +1474,25 @@ private async Task GuardarObra()
 {
     try
     {
-        if (archivoPDFObra is not null)
-        {
-            using var stream = archivoPDFObra.OpenReadStream(10 * 1024 * 1024);
-            using var ms = new MemoryStream();
-            await stream.CopyToAsync(ms);
-            nuevaObra.Documento = ms.ToArray();
-        }
-            
+        nuevaObra.Cedula = cedulaUsuario;
+        
         if (modoEdicionObra)
+        {
             await obraService.ActualizarObraAsync(nuevaObra);
+            mensaje = "Obra actualizada correctamente.";
+        }
         else
-            nuevaObra = await obraService.GuardarObraAsync(nuevaObra) ?? new ObraS();
+        {
+            await obraService.GuardarObraAsync(nuevaObra);
+            mensaje = "Obra guardada correctamente.";
+        }
 
-        listaObras = await obraService.ObtenerPorCedulaAsync(nuevaObra.Cedula);
-        mostrarFormObra = false;
-        modoEdicionObra = false;
-        archivoPDFObra = null;
+        listaObras = await obraService.ObtenerPorCedulaAsync(cedulaUsuario);
+        CerrarFormObra();
     }
     catch (Exception ex)
     {
-        mensaje = $"Error: {ex.Message}";
+        mensaje = $"Error al guardar la obra: {ex.Message}";
     }
 }
 
@@ -1407,12 +1505,18 @@ private void EditarObra(ObraS obra)
         Titulo = obra.Titulo,
         TipoObra = obra.TipoObra,
         FechaPublicacion = obra.FechaPublicacion,
-        Documento = obra.Documento
+        Pais = obra.Pais,
+        Ciudad = obra.Ciudad,
+        Editorial = obra.Editorial,
+        ISBN = obra.ISBN,
+        DOI = obra.DOI,
+        Enlace = obra.Enlace,
+        Autores = obra.Autores,
+        Resumen = obra.Resumen,
+        Documento = obra.Documento,
     };
+    
     mostrarFormObra = true;
     modoEdicionObra = true;
-}
-   
-
-  
+} 
 }

@@ -14,8 +14,26 @@ namespace Proyecto.Frontend.Services
 
         public async Task<List<ObraS>> ObtenerPorCedulaAsync(string cedula)
         {
-            return await _httpClient.GetFromJsonAsync<List<ObraS>>($"api/Obra/por-cedula/{cedula}")
-                ?? new List<ObraS>();
+            try
+            {
+                Console.WriteLine($"Intentando obtener obras para cédula: {cedula}");
+                var response = await _httpClient.GetAsync($"api/Obra/PorCedula/{cedula}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var obras = await response.Content.ReadFromJsonAsync<List<ObraS>>();
+                    Console.WriteLine($"Obras obtenidas: {obras?.Count ?? 0}");
+                    return obras ?? new List<ObraS>();
+                }
+
+                Console.WriteLine($"Error al obtener obras: {response.StatusCode}");
+                return new List<ObraS>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Excepción al obtener obras: {ex.Message}");
+                return new List<ObraS>();
+            }
         }
 
 
@@ -28,6 +46,17 @@ namespace Proyecto.Frontend.Services
         public async Task ActualizarObraAsync(ObraS obra)
         {
             await _httpClient.PutAsJsonAsync($"api/Obra/{obra.IdObra}", obra);
+        }
+
+        public async Task<List<ObraS>> ListarObrasAsync()
+        {
+            return await _httpClient.GetFromJsonAsync<List<ObraS>>("api/Obra/Listar")
+                ?? new List<ObraS>();
+        }
+
+        public async Task<ObraS?> BuscarObraAsync(int id)
+        {
+            return await _httpClient.GetFromJsonAsync<ObraS>($"api/Obra/Buscar/{id}");
         }
     }
 }
