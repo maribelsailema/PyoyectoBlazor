@@ -15,27 +15,6 @@ namespace Proyecto.Server.Controllers
         {
             _context = context;
         }
-        [HttpGet("por-cedula/{cedula}")]
-public async Task<ActionResult<List<ObraS>>> ObtenerPorCedula(string cedula)
-{
-    var obras = await _context.Obras
-        .Where(o => o.Cedula == cedula)
-        .ToListAsync();
-
-    // MAPEAR Obra → ObraS
-    var resultado = obras.Select(o => new ObraS
-    {
-        IdObra = o.IdObra,
-        Cedula = o.Cedula,
-        Titulo = "", // <-- puedes obtenerlo si lo tienes, o dejarlo vacío
-        TipoObra = o.TipoObra,
-        FechaPublicacion = DateTime.Parse(o.Fecha.ToString()),
-        Documento = o.Pdf ?? new byte[0],
-        NombreArchivo = "archivo.pdf", // por defecto o uno real
-    }).ToList();
-
-    return Ok(resultado);
-}
 
         [HttpGet]
         public async Task<ActionResult<List<Obra>>> ObtenerTodos()
@@ -57,15 +36,51 @@ public async Task<ActionResult<List<ObraS>>> ObtenerPorCedula(string cedula)
             return obra;
         }
 
+        [HttpGet("por-cedula/{cedula}")]
+        public async Task<ActionResult<List<ObraS>>> ObtenerPorCedula(string cedula)
+        {
+            var obras = await _context.Obras
+                .Where(o => o.Cedula == cedula)
+                .Select(o => new ObraS
+                {
+                    IdObra = o.IdObra,
+                    Cedula = o.Cedula,
+                    Titulo = o.Titulo,
+                    TipoObra = o.TipoObra,
+                    Fecha = o.Fecha,
+                    Pais = o.Pais,
+                    Ciudad = o.Ciudad,
+                    Editorial = o.Editorial,
+                    ISBN = o.ISBN,
+                    DOI = o.DOI,
+                    Enlace = o.Enlace,
+                    Autores = o.Autores,
+                    Resumen = o.Resumen,
+                    Documento = o.Documento
+                })
+                .ToListAsync();
+
+            return Ok(obras);
+        }
+
         [HttpPost]
         public async Task<ActionResult<Obra>> Crear(ObraS obraS)
         {
             var obra = new Obra
             {
                 Cedula = obraS.Cedula,
+                Titulo = obraS.Titulo,
                 TipoObra = obraS.TipoObra,
-                Fecha = DateOnly.FromDateTime(obraS.FechaPublicacion),
-                Pdf = obraS.Documento,
+                Fecha = obraS.Fecha,
+                Pais = obraS.Pais,
+                Ciudad = obraS.Ciudad,
+                Editorial = obraS.Editorial,
+                ISBN = obraS.ISBN,
+                DOI = obraS.DOI,
+                Enlace = obraS.Enlace,
+                Autores = obraS.Autores,
+                Resumen = obraS.Resumen,
+                Documento = obraS.Documento
             };
 
             _context.Obras.Add(obra);
@@ -74,36 +89,36 @@ public async Task<ActionResult<List<ObraS>>> ObtenerPorCedula(string cedula)
             return CreatedAtAction(nameof(ObtenerPorId), new { id = obra.IdObra }, obra);
         }
 
-
         [HttpPut("{id}")]
-        public async Task<IActionResult> Actualizar(int id, Obra obra)
+        public async Task<IActionResult> Actualizar(int id, ObraS obraS)
         {
-            if (id != obra.IdObra)
+            var obra = await _context.Obras.FindAsync(id);
+            if (obra == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            _context.Entry(obra).State = EntityState.Modified;
+            obra.Titulo = obraS.Titulo;
+            obra.TipoObra = obraS.TipoObra;
+            obra.Fecha = obraS.Fecha;
+            obra.Pais = obraS.Pais;
+            obra.Ciudad = obraS.Ciudad;
+            obra.Editorial = obraS.Editorial;
+            obra.ISBN = obraS.ISBN;
+            obra.DOI = obraS.DOI;
+            obra.Enlace = obraS.Enlace;
+            obra.Autores = obraS.Autores;
+            obra.Resumen = obraS.Resumen;
 
-            try
+            if (obraS.Documento != null && obraS.Documento.Length > 0)
             {
-                await _context.SaveChangesAsync();
+                obra.Documento = obraS.Documento;
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ObraExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+
+            await _context.SaveChangesAsync();
 
             return NoContent();
         }
-
         [HttpDelete("{id}")]
         public async Task<IActionResult> Eliminar(int id)
         {
@@ -133,20 +148,19 @@ public async Task<ActionResult<List<ObraS>>> ObtenerPorCedula(string cedula)
             var fechaActual = DateOnly.FromDateTime(DateTime.Today);
 
             var obras = await _context.Obras
-                .Where(o => o.Cedula == cedula && o.Fecha > fechaDesdeParsed && o.Fecha <= fechaActual)
+                .Where(o => o.Cedula == cedula &&
+                            o.Fecha > fechaDesdeParsed &&
+                            o.Fecha <= fechaActual)
                 .Select(o => new Obra
                 {
                     IdObra = o.IdObra,
                     TipoObra = o.TipoObra,
                     Fecha = o.Fecha,
-                    Cedula = o.Cedula // <-- asegúrate de incluir esto
+                    Cedula = o.Cedula
                 })
                 .ToListAsync();
 
             return obras;
         }
-
-
-
     }
 }
