@@ -7,12 +7,352 @@
 @inject HttpClient Http
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 
+<style>
+    /* Color Palette Variables (Red Theme) */
+    :root {
+        --primary-red: #8B0000; /* Dark Red */
+        --accent-red: #a52a2a; /* Lighter Red for hover/active */
+        --text-light: #f8f9fa;
+        --text-dark: #343a40;
+        --background-light: #f5f5f5;
+        --background-dark: #e9ecef;
+        --danger-color: #E74C3C; /* Strong red for danger actions */
+        --success-color: #28a745;
+        --info-color: #17a2b8;
+        --warning-color: #ffc107;
+        --secondary-color: #6c757d;
+    }
 
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: var(--background-light);
+        color: var(--text-dark);
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    /* Navbar Styles */
+    .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: var(--primary-red);
+        padding: 1rem 2rem;
+        color: var(--text-light);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .navbar-left h3 {
+        margin: 0;
+        font-size: 1.7rem;
+        color: var(--text-light);
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 1.5rem;
+    }
+
+    .nav-item {
+        color: var(--text-light);
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+    }
+
+        .nav-item i {
+            margin-right: 0.5rem;
+        }
+
+        .nav-item:hover {
+            background-color: var(--accent-red);
+            color: var(--text-light);
+        }
+
+        .nav-item.active {
+            background-color: var(--accent-red);
+            font-weight: bold;
+        }
+
+    .cerrar-sesion {
+        background-color: var(--danger-color);
+    }
+
+        .cerrar-sesion:hover {
+            background-color: #c0392b; /* Darker shade of danger-color */
+        }
+
+    /* Main Content Styles */
+    .contenido-promocion {
+        flex-grow: 1;
+        padding: 2rem;
+        background-color: var(--background-light);
+    }
+
+    .container {
+        max-width: 960px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        padding: 2.5rem;
+        border-radius: 12px;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .text-center.mt-5 {
+        margin-top: 3rem !important;
+    }
+
+    .spinner-border {
+        color: var(--primary-red) !important;
+        width: 3rem;
+        height: 3rem;
+        border-width: 0.3em;
+    }
+
+    .alert {
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        font-size: 1.1rem;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+        border-color: #f5c6cb;
+    }
+
+    .alert-warning {
+        background-color: #fff3cd;
+        color: #856404;
+        border-color: #ffeeba;
+    }
+
+    .alert-info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border-color: #bee5eb;
+    }
+
+    /* Current Position Section */
+    .current-position {
+        border: 1px solid var(--primary-red);
+        background-color: var(--background-dark);
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+
+        .current-position h3 {
+            color: var(--primary-red);
+            font-size: 1.8rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+        }
+
+            .current-position h3 i {
+                margin-right: 0.75rem;
+                font-size: 1.5rem;
+            }
+
+        .current-position strong {
+            color: var(--accent-red);
+        }
+
+        .current-position p {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+    /* Promotion Table Styles */
+    h4 {
+        color: var(--primary-red);
+        font-size: 1.6rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+        h4 i {
+            margin-right: 0.75rem;
+            font-size: 1.4rem;
+        }
+
+    .promotion-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+        .promotion-table th,
+        .promotion-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .promotion-table thead {
+            background-color: var(--primary-red);
+            color: var(--text-light);
+        }
+
+            .promotion-table thead th {
+                font-weight: 600;
+                font-size: 1.05rem;
+            }
+
+        .promotion-table tbody tr:hover {
+            background-color: var(--background-dark);
+        }
+
+        .promotion-table .btn-primary {
+            background-color: var(--primary-red);
+            border-color: var(--primary-red);
+            padding: 0.4rem 0.8rem;
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+            .promotion-table .btn-primary:hover {
+                background-color: var(--accent-red);
+                border-color: var(--accent-red);
+            }
+
+            .promotion-table .btn-primary i {
+                margin-right: 0.4rem;
+            }
+
+    .badge {
+        padding: 0.5em 0.8em;
+        border-radius: 0.25rem;
+        font-size: 0.85em;
+        font-weight: 700;
+    }
+
+    .bg-info {
+        background-color: var(--info-color) !important;
+        color: #fff !important;
+    }
+
+    .bg-secondary {
+        background-color: var(--secondary-color) !important;
+        color: #fff !important;
+    }
+
+    /* Requirements Info Section */
+    .requirements-info {
+        background-color: var(--background-dark);
+        border: 1px solid var(--primary-red);
+        padding: 2rem;
+        border-radius: 10px;
+        margin-top: 2rem;
+    }
+
+        .requirements-info h4 {
+            color: var(--primary-red);
+            margin-bottom: 1.5rem;
+        }
+
+        .requirements-info ul {
+            padding-left: 0;
+            list-style: none;
+        }
+
+        .requirements-info li {
+            font-size: 1.1rem;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+        }
+
+            .requirements-info li i {
+                font-size: 1.25rem;
+                margin-right: 0.75rem;
+            }
+
+            .requirements-info li strong {
+                color: var(--text-dark);
+            }
+
+        .requirements-info .btn-primary {
+            margin-top: 1.5rem;
+        }
+
+
+    /* Footer Styles */
+    .footer {
+        background-color: var(--primary-red);
+        color: var(--text-light);
+        padding: 2.5rem 2rem;
+        text-align: center;
+        font-size: 1rem;
+        box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.2);
+        margin-top: auto; /* Push footer to the bottom */
+    }
+
+    .footer-info {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+        gap: 1.5rem;
+    }
+
+    .footer-section {
+        flex: 1;
+        min-width: 250px;
+        text-align: left;
+        padding: 0 1rem;
+    }
+
+        .footer-section h4 {
+            color: var(--text-light);
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+            .footer-section h4 i {
+                margin-right: 0.6rem;
+                font-size: 1.5rem;
+            }
+
+        .footer-section p, .footer-section a {
+            color: var(--text-light);
+            text-decoration: none;
+            line-height: 1.6;
+            transition: color 0.3s ease;
+        }
+
+            .footer-section a:hover {
+                color: var(--background-dark); /* A slightly different shade for hover */
+            }
+
+            .footer-section a i {
+                margin-right: 0.5rem;
+            }
+
+    .copyright {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        font-size: 0.95rem;
+        opacity: 0.9;
+    }
+</style>
 
 <header class="navbar">
     <div class="navbar-left">
         <h3>Bienvenido</h3>
-        </div>
+    </div>
     <nav class="navbar-right nav-links">
         <NavLink href="/inicio" class="nav-item"><i class="bi bi-house-fill"></i> Inicio</NavLink>
         <NavLink href="/promocion" class="nav-item"><i class="bi bi-bar-chart-line-fill"></i> Promoción</NavLink>
@@ -213,7 +553,7 @@
 
 @code {
     // Variables, OnInitializedAsync, LoadRequisitosPromocion, LoadRolActual, LoadDatosCumplimiento
-   
+
     private string cedulaUsuario;
     private RolActualDto currentRol;
     private List<RequisitoPromocionDto> requisitosPromocion = new();
