@@ -25,7 +25,7 @@
         background-color: #fff;
         padding: 2rem;
         border-radius: 12px;
-        width: 90%;
+        width: 70%;
         max-width: 560px; /* 40% más grande */
         max-height: 360px; /* 20% más alto */
         overflow-y: auto;
@@ -104,11 +104,11 @@
         background-color: white;
         border-radius: 15px;
         box-shadow: 0 10px 25px rgba(139, 0, 0, 0.2);
-        padding: 4rem; /* Más padding para mayor altura */
+        padding: 2.5rem; /* Reducido para menor altura */
         width: 100%;
-        max-width: 672px; /* 40% más ancho */
-        min-height: 580px; /* 20% más alto */
-        border: 3px solid #8B0000; /* Borde rojo */
+        max-width: 550px;
+        min-height: 180px; /* Aproximadamente un 40% menos que 300px */
+        border: 3px solid #8B0000;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -116,77 +116,77 @@
 
     .login-header {
         text-align: center;
-        margin-bottom: 3rem;
+        margin-bottom: 2rem; /* Reducido para menor altura */
     }
 
         .login-header i {
-            color: #8B0000; /* Rojo oscuro */
-            font-size: 5.5rem;
-            margin-bottom: 1.8rem;
+            color: #8B0000;
+            font-size: 4rem; /* Reducido el tamaño del icono */
+            margin-bottom: 1rem; /* Reducido */
         }
 
         .login-header h2 {
-            color: #8B0000; /* Rojo oscuro */
-            font-size: 2.8rem;
-            margin-bottom: 0.8rem;
+            color: #8B0000;
+            font-size: 2.2rem; /* Reducido el tamaño del título */
+            margin-bottom: 0.5rem; /* Reducido */
             text-transform: uppercase;
             letter-spacing: 1px;
         }
 
         .login-header p {
-            font-size: 1.4rem;
+            font-size: 1.1rem; /* Reducido el tamaño del párrafo */
             color: #666;
         }
 
     label {
         display: block;
-        margin-bottom: 1rem;
-        font-size: 1.4rem;
-        color: #8B0000; /* Rojo oscuro */
+        margin-bottom: 0.8rem; /* Reducido */
+        font-size: 1.2rem; /* Reducido */
+        color: #8B0000;
         font-weight: 600;
     }
 
     .input-group {
         position: relative;
-        margin-bottom: 2.2rem;
+        margin-bottom: 1.5rem; /* Reducido */
     }
 
         .input-group i {
             position: absolute;
-            left: 18px;
+            left: 15px; /* Ajustado */
             top: 50%;
             transform: translateY(-50%);
-            color: #8B0000; /* Rojo oscuro */
-            font-size: 1.6rem;
+            color: #8B0000;
+            font-size: 1.4rem; /* Reducido */
         }
 
     .form-input {
         width: 100%;
-        padding: 1.5rem 1.5rem 1.5rem 4.5rem;
+        padding: 1rem 1rem 1rem 4rem; /* Reducido para menor altura y ajustado padding-left */
         border: 2px solid #ddd;
         border-radius: 10px;
-        font-size: 1.4rem;
+        font-size: 1.2rem; /* Reducido */
         transition: all 0.3s;
     }
 
         .form-input:focus {
-            border-color: #8B0000; /* Rojo oscuro */
+            border-color: #8B0000;
             outline: none;
             box-shadow: 0 0 0 4px rgba(139, 0, 0, 0.2);
         }
 
     .btn-login {
         width: 100%;
-        background-color: #8B0000 !important; /* Rojo oscuro - forzado */
+        background-color: #8B0000 !important;
         color: white !important;
         border: none;
-        padding: 1.6rem;
+        padding: 1.2rem; /* Reducido */
         border-radius: 10px;
-        font-size: 1.6rem;
+        font-size: 1.4rem; /* Reducido */
         font-weight: bold;
         cursor: pointer;
         transition: background-color 0.3s;
-        margin-top: 1.5rem;
+        margin-top: 1rem; /* Reducido */
         display: flex;
         align-items: center;
         justify-content: center;
@@ -195,12 +195,12 @@
     }
 
         .btn-login:hover {
-            background-color: #a52a2a !important; /* Rojo más claro */
+            background-color: #a52a2a !important;
         }
 
         .btn-login i {
-            margin-right: 12px;
-            font-size: 1.8rem;
+            margin-right: 10px; /* Reducido */
+            font-size: 1.6rem; /* Reducido */
         }
 </style>
 
@@ -221,7 +221,7 @@
     <div class="login-container">
         <div class="login-form">
             <div class="login-header">
-                <i class="fas fa-user-circle"></i> @* Removed fa-3x as size is now handled by CSS *@
+                <i class="fas fa-user-circle"></i>
                 <h2>LOGIN</h2>
                 <p>Ingrese sus credenciales</p>
             </div>

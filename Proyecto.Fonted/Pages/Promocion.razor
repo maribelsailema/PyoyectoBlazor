@@ -48,7 +48,7 @@
     .navbar-left h3 {
         margin: 0;
         font-size: 1.7rem;
-        color: var(--text-light);
+        color: var(--text-light); /* Asegura que el texto "Bienvenido" sea blanco */
     }
 
     .nav-links {
@@ -65,19 +65,23 @@
         font-size: 1.1rem;
         display: flex;
         align-items: center;
+        /* Para eliminar cualquier borde azul predeterminado que pudiera aparecer con el foco del navegador */
+        outline: none;
     }
 
         .nav-item i {
             margin-right: 0.5rem;
         }
 
+        /* ESTILOS CORREGIDOS PARA HOVER Y ACTIVE */
         .nav-item:hover {
-            background-color: var(--accent-red);
-            color: var(--text-light);
+            background-color: var(--accent-red); /* Fondo rojo más claro al pasar el ratón */
+            color: var(--text-light); /* Texto blanco al pasar el ratón */
         }
 
         .nav-item.active {
-            background-color: var(--accent-red);
+            background-color: var(--accent-red); /* Fondo rojo más claro para el elemento activo */
+            color: var(--text-light); /* Texto blanco para el elemento activo */
             font-weight: bold;
         }
 
@@ -285,7 +289,6 @@
             margin-top: 1.5rem;
         }
 
-
     /* Footer Styles */
     .footer {
         background-color: var(--primary-red);
@@ -351,9 +354,10 @@
 
 <header class="navbar">
     <div class="navbar-left">
-        <h3>Bienvenido</h3>
+        <h3>Bienvenido</h3> @* Aquí deberías mostrar el nombre del usuario si está disponible, como en Inicio.razor *@
     </div>
-    <nav class="navbar-right nav-links">
+    <nav class="nav-links">
+        @* Cambiado de navbar-right a nav-links para consistencia con los otros archivos *@
         <NavLink href="/inicio" class="nav-item"><i class="bi bi-house-fill"></i> Inicio</NavLink>
         <NavLink href="/promocion" class="nav-item"><i class="bi bi-bar-chart-line-fill"></i> Promoción</NavLink>
         <NavLink href="/perfil" class="nav-item"><i class="bi bi-person-fill"></i> Perfil</NavLink>
@@ -428,13 +432,14 @@
                                         {
                                             if (postulacionActual == null || postulacionActual.RolSolicitado != req.HaciaRol)
                                             {
-                                                <button class="btn btn-sm btn-primary" @onclick="Postular">
+                                                <button class="btn btn-sm btn-primary" @onclick="() => Postular(req.HaciaRol)">
+                                                    @* Pasando el RolSolicitado al método Postular *@
                                                     <i class="bi bi-send-check"></i> Postular
                                                 </button>
                                             }
                                             else
                                             {
-                                                <span class="badge bg-info text-dark">Ya postulado</span>
+                                                <span class="badge bg-info">Ya postulado</span>
                                             }
                                         }
                                         else
@@ -459,73 +464,75 @@
             @if (currentRol != null && requisitosPromocion.Any())
             {
                 var primerRequisito = requisitosPromocion.FirstOrDefault(r => r.DesdeRol == currentRol.Rol);
-                <div class="requirements-info">
-                    <h4><i class="bi bi-card-checklist"></i> Tu progreso actual:</h4>
-                    <ul class="list-unstyled ms-3">
-                        <li>
-                            <i class="bi bi-clock-history text-primary me-2"></i>
-                            <strong>Tiempo en el rol:</strong> @currentRol.AniosEnRol años de @primerRequisito.TiempoMinimoAnios requeridos
-                            @(currentRol.AniosEnRol >= primerRequisito.TiempoMinimoAnios ? " ✔" : " ✖")
-                        </li>
-                        <li>
-                            <i class="bi bi-journal-richtext text-success me-2"></i>
-                            <strong>Obras publicadas:</strong> @totalObras de @primerRequisito.ObrasMinimas requeridas
-                            @(totalObras >= primerRequisito.ObrasMinimas ? " ✔" : " ✖")
-                        </li>
-                        <li>
-                            <i class="bi bi-award-fill text-warning me-2"></i>
-                            <strong>Puntaje evaluación:</strong> @(ultimaEvaluacion?.PuntajeFinal ?? 0)% de @primerRequisito.PuntajeEvaluacionMinimo requerido
-                            @(((ultimaEvaluacion?.PuntajeFinal ?? 0) >= primerRequisito.PuntajeEvaluacionMinimo) ? " ✔" : " ✖")
-                        </li>
-                        <li>
-                            <i class="bi bi-person-video2 text-info me-2"></i>
-                            <strong>Horas capacitación:</strong> @totalHorasCapacitacion de @primerRequisito.HorasCapacitacionMin requeridas
-                            @(totalHorasCapacitacion >= primerRequisito.HorasCapacitacionMin ? " ✔" : " ✖")
-                        </li>
-                        @if (primerRequisito.MesesInvestigacionMin.HasValue)
-                        {
+                if (primerRequisito != null) @* Añadido check de null para primerRequisito *@
+                {
+                    <div class="requirements-info">
+                        <h4><i class="bi bi-card-checklist"></i> Tu progreso actual:</h4>
+                        <ul class="list-unstyled ms-3">
                             <li>
-                                <i class="bi bi-search text-secondary me-2"></i>
-                                <strong>Meses investigación:</strong> @totalMesesInvestigacion de @primerRequisito.MesesInvestigacionMin.Value requeridos
-                                @(totalMesesInvestigacion >= primerRequisito.MesesInvestigacionMin.Value ? " ✔" : " ✖")
+                                <i class="bi bi-clock-history text-primary me-2"></i>
+                                <strong>Tiempo en el rol:</strong> @currentRol.AniosEnRol años de @primerRequisito.TiempoMinimoAnios requeridos
+                                @(currentRol.AniosEnRol >= primerRequisito.TiempoMinimoAnios ? " ✔" : " ✖")
                             </li>
+                            <li>
+                                <i class="bi bi-journal-richtext text-success me-2"></i>
+                                <strong>Obras publicadas:</strong> @totalObras de @primerRequisito.ObrasMinimas requeridas
+                                @(totalObras >= primerRequisito.ObrasMinimas ? " ✔" : " ✖")
+                            </li>
+                            <li>
+                                <i class="bi bi-award-fill text-warning me-2"></i>
+                                <strong>Puntaje evaluación:</strong> @(ultimaEvaluacion?.PuntajeFinal ?? 0)% de @primerRequisito.PuntajeEvaluacionMinimo requerido
+                                @(((ultimaEvaluacion?.PuntajeFinal ?? 0) >= primerRequisito.PuntajeEvaluacionMinimo) ? " ✔" : " ✖")
+                            </li>
+                            <li>
+                                <i class="bi bi-person-video2 text-info me-2"></i>
+                                <strong>Horas capacitación:</strong> @totalHorasCapacitacion de @primerRequisito.HorasCapacitacionMin requeridas
+                                @(totalHorasCapacitacion >= primerRequisito.HorasCapacitacionMin ? " ✔" : " ✖")
+                            </li>
+                            @if (primerRequisito.MesesInvestigacionMin.HasValue)
+                            {
+                                <li>
+                                    <i class="bi bi-search text-secondary me-2"></i>
+                                    <strong>Meses investigación:</strong> @totalMesesInvestigacion de @primerRequisito.MesesInvestigacionMin.Value requeridos
+                                    @(totalMesesInvestigacion >= primerRequisito.MesesInvestigacionMin.Value ? " ✔" : " ✖")
+                                </li>
+                            }
+                            else
+                            {
+                                <li>
+                                    <i class="bi bi-dash-circle text-muted me-2"></i>
+                                    <strong>Meses investigación:</strong> No aplica para este nivel
+                                </li>
+                            }
+                        </ul>
+
+                        @if (postulacionActual == null)
+                        {
+                            if (puedePostular)
+                            {
+                                <button class="btn btn-primary" @onclick="() => Postular(primerRequisito.HaciaRol)">
+                                    @* Pasando el RolSolicitado al método Postular *@
+                                    <i class="bi bi-send-check"></i> Postular para promoción
+                                </button>
+                            }
+                            else
+                            {
+                                <div class="alert alert-warning mt-2">
+                                    Aún no cumples con todos los requisitos para postularte.
+                                </div>
+                            }
                         }
                         else
                         {
-                            <li>
-                                <i class="bi bi-dash-circle text-muted me-2"></i>
-                                <strong>Meses investigación:</strong> No aplica para este nivel
-                            </li>
-                        }
-                    </ul>
-
-
-                    @if (postulacionActual == null)
-                    {
-                        if (puedePostular)
-                        {
-                            <button class="btn btn-primary" @onclick="Postular">
-                                <i class="bi bi-send-check"></i> Postular para promoción
-                            </button>
-                        }
-                        else
-                        {
-                            <div class="alert alert-warning mt-2">
-                                Aún no cumples con todos los requisitos para postularte.
+                            <div class="alert alert-info mt-2">
+                                Ya te has postulado para el rol
+                                <strong class="ms-1 me-2">@postulacionActual.RolSolicitado</strong>
+                                Estado:
+                                <strong class="ms-1">@postulacionActual.Estado</strong>.
                             </div>
                         }
-                    }
-                    else
-                    {
-                        <div class="alert alert-info mt-2">
-                            Ya te has postulado para el rol
-                            <strong class="ms-1 me-2">@postulacionActual.RolSolicitado</strong>
-                            Estado:
-                            <strong class="ms-1">@postulacionActual.Estado</strong>.
-                        </div>
-
-                    }
-                </div>
+                    </div>
+                }
             }
         }
     </div>
@@ -552,8 +559,6 @@
 </footer>
 
 @code {
-    // Variables, OnInitializedAsync, LoadRequisitosPromocion, LoadRolActual, LoadDatosCumplimiento
-
     private string cedulaUsuario;
     private RolActualDto currentRol;
     private List<RequisitoPromocionDto> requisitosPromocion = new();
@@ -565,7 +570,6 @@
     private bool errorLoading = false;
     private bool puedePostular = false;
     private PostulacionDto postulacionActual = null;
-
 
     protected override async Task OnInitializedAsync()
     {
@@ -587,8 +591,13 @@
                 await LoadRolActual();
                 await LoadDatosCumplimiento();
 
-                var requisitoActual = requisitosPromocion.FirstOrDefault(r => r.DesdeRol == currentRol.Rol);
-                puedePostular = requisitoActual?.CumpleRequisitos == true;
+                // Asegúrate de que currentRol no sea null antes de intentar encontrar el requisito
+                if (currentRol != null)
+                {
+                    var requisitoActual = requisitosPromocion.FirstOrDefault(r => r.DesdeRol == currentRol.Rol);
+                    puedePostular = requisitoActual?.CumpleRequisitos == true;
+                }
+
                 await CargarPostulacion();
             }
             catch (Exception rolEx)
@@ -637,17 +646,25 @@
                         var cumple = await Http.GetFromJsonAsync<bool>($"api/Promocion/VerificarRequisitos/{cedulaUsuario}/{req.HaciaRol}");
                         req.CumpleRequisitos = cumple;
                     }
-                    catch
+                    catch (Exception ex) // Captura específica para la verificación de requisitos
                     {
+                        Logger.LogError(ex, $"Error al verificar requisitos para {req.HaciaRol}");
                         req.CumpleRequisitos = false;
                     }
                 }
             }
         }
+        else
+        {
+            Logger.LogError($"Error al cargar requisitos de promoción: {response.StatusCode}");
+            // Considerar lanzar una excepción o establecer errorLoading si es crítico
+        }
     }
 
     private async Task LoadDatosCumplimiento()
     {
+        if (currentRol == null) return; // No se puede cargar sin un rol actual
+
         try
         {
             var fechaDesde = currentRol.FechaAsignacion.ToString("yyyy-MM-dd");
@@ -684,6 +701,7 @@
         catch (Exception ex)
         {
             Logger.LogWarning(ex, "Error al obtener datos de cumplimiento");
+            // No se establece errorLoading aquí para permitir que la página se muestre incluso si faltan datos de cumplimiento
         }
     }
 
@@ -696,16 +714,17 @@
         _ => "Rol no reconocido"
     };
 
-    private async Task Postular()
+    private async Task Postular(string rolSolicitado) // Recibe el rol solicitado como parámetro
     {
         if (!puedePostular || currentRol == null || !requisitosPromocion.Any()) return;
 
         try
         {
-            var requisitoActual = requisitosPromocion.FirstOrDefault(r => r.DesdeRol == currentRol.Rol);
-            if (requisitoActual == null)
+            var requisitoParaPostular = requisitosPromocion.FirstOrDefault(r => r.HaciaRol == rolSolicitado);
+
+            if (requisitoParaPostular == null || !requisitoParaPostular.CumpleRequisitos)
             {
-                Logger.LogWarning("No se encontró requisito para el rol actual");
+                Logger.LogWarning($"Intento de postulación inválido o requisitos no cumplidos para {rolSolicitado}");
                 return;
             }
 
@@ -713,7 +732,7 @@
             {
                 Cedula = cedulaUsuario,
                 RolActual = currentRol.Rol,
-                RolSolicitado = requisitoActual.HaciaRol,
+                RolSolicitado = rolSolicitado, // Usa el rol solicitado pasado como parámetro
                 FechaSolicitud = DateTime.Now,
                 Estado = "Pendiente"
             };
@@ -722,9 +741,12 @@
 
             if (response.IsSuccessStatusCode)
             {
-                Logger.LogInformation("Postulación exitosa");
-                //await localStorage.SetItemAsync("estadoPostulacion", "Pendiente");
-                await CargarPostulacion();
+                Logger.LogInformation("Postulación exitosa para el rol: {0}", rolSolicitado);
+                //await localStorage.SetItemAsync("estadoPostulacion", "Pendiente"); // Ya no es necesario si CargarPostulacion recarga
+                await CargarPostulacion(); // Recarga la postulación actual
+                // Reevaluar 'puedePostular' después de una postulación exitosa
+                var requisitoActualizado = requisitosPromocion.FirstOrDefault(r => r.DesdeRol == currentRol.Rol);
+                puedePostular = requisitoActualizado?.CumpleRequisitos == true;
                 StateHasChanged();
             }
             else
@@ -753,8 +775,9 @@
                 postulacionActual = null;
             }
         }
-        catch
+        catch (Exception ex) // Captura si hay un error de deserialización o de red
         {
+            Logger.LogWarning(ex, "Error al cargar postulación existente para el usuario {cedulaUsuario}", cedulaUsuario);
             postulacionActual = null;
         }
     }
@@ -766,8 +789,6 @@
         public DateOnly Fecha { get; set; }
         public string Cedula { get; set; } // necesario para que no sea null
     }
-
-
 
     public class EvaluacionDto
     {

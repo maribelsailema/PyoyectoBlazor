@@ -4,6 +4,7 @@
 @using Proyecto.Shared.Models
 @using System.Text.Json
 @inject HttpClient Http
+@inject NavigationManager Navigation
 
 <style>
     /* Color Palette Variables (Red Theme) */
@@ -15,6 +16,10 @@
         --background-light: #f5f5f5;
         --background-dark: #e9ecef;
         --danger-color: #E74C3C; /* Strong red for danger actions */
+        --success-color: #28a745;
+        --info-color: #17a2b8;
+        --warning-color: #ffc107;
+        --secondary-color: #6c757d;
     }
 
     body {
@@ -23,17 +28,26 @@
         padding: 0;
         background-color: var(--background-light);
         color: var(--text-dark);
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
     }
 
     /* Navbar Styles */
     .navbar {
         display: flex;
-        justify-content: flex-end; /* Align items to the right as there's no left content */
+        justify-content: space-between; /* Align left content and right links */
         align-items: center;
         background-color: var(--primary-red);
         padding: 1rem 2rem;
         color: var(--text-light);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .navbar-left h3 {
+        margin: 0;
+        font-size: 1.7rem;
+        color: var(--text-light); /* Asegura que el texto "Bienvenido" sea blanco */
     }
 
     .nav-links {
@@ -50,6 +64,7 @@
         font-size: 1.1rem;
         display: flex;
         align-items: center;
+        outline: none; /* Elimina el borde azul al enfocar */
     }
 
         .nav-item i {
@@ -57,12 +72,13 @@
         }
 
         .nav-item:hover {
-            background-color: var(--accent-red);
-            color: var(--text-light);
+            background-color: var(--accent-red); /* Fondo rojo más claro al pasar el ratón */
+            color: var(--text-light); /* Texto blanco al pasar el ratón */
         }
 
         .nav-item.active {
-            background-color: var(--accent-red);
+            background-color: var(--accent-red); /* Fondo rojo más claro para el elemento activo */
+            color: var(--text-light); /* Texto blanco para el elemento activo */
             font-weight: bold;
         }
 
@@ -196,12 +212,14 @@
 </style>
 
 <header class="navbar">
-
-    <nav class="navbar-right nav-links">
+    <div class="navbar-left">
+        <h3>Bienvenido</h3> @* Aquí podrías mostrar el nombre del usuario si lo obtienes *@
+    </div>
+    <nav class="nav-links">
         <NavLink href="/inicio" class="nav-item"><i class="bi bi-house-fill"></i> Inicio</NavLink>
         <NavLink href="/promocion" class="nav-item"><i class="bi bi-bar-chart-line-fill"></i> Promoción</NavLink>
-        <NavLink href="/perfil" class="nav-item active"><i class="bi bi-person-fill"></i> Perfil</NavLink> @* Añadir 'active' para el enlace actual *@
-        <NavLink href="/exportar" class="nav-item ">
+        <NavLink href="/perfil" class="nav-item active"><i class="bi bi-person-fill"></i> Perfil</NavLink> @* Mantener 'active' para el enlace actual *@
+        <NavLink href="/exportar" class="nav-item">
             <i class="bi bi-download"></i> Agregar Documentos
         </NavLink>
         <NavLink href="/" class="nav-item cerrar-sesion"><i class="bi bi-box-arrow-right"></i> Cerrar Sesión</NavLink>
@@ -225,11 +243,9 @@
                 <h5 class="card-title text-primary">@usuario.Nom1 @usuario.Nom2 @usuario.Ape1 @usuario.Ape2</h5>
                 <p class="card-text"><strong>Cédula:</strong> @usuario.Ced</p>
                 <p class="card-text"><strong>Usuario:</strong> @usuario.Usuari</p>
-                <p class="card-text"><strong>Correo:</strong> @usuario.Usuari</p>
+                <p class="card-text"><strong>Correo:</strong> @usuario.Usuari</p> @* Posible error: ¿Debería ser @usuario.Correo? *@
             </div>
         </div>
-
-
     }
 </div>
 
@@ -265,6 +281,4 @@
             usuario = await Http.GetFromJsonAsync<UsuarioModel>($"api/Usuario/porCedula/{cedula}");
         }
     }
-
-
 }
