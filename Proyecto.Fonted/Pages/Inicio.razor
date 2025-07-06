@@ -7,6 +7,7 @@
 @inject HttpClient Http
 
 <style>
+    /* Color Palette Variables (Red Theme) */
     :root {
         --primary-red: #8B0000; /* Dark Red */
         --accent-red: #a52a2a; /* Lighter Red for hover/active */
@@ -14,6 +15,7 @@
         --text-dark: #343a40;
         --background-light: #f5f5f5;
         --background-dark: #e9ecef;
+        --danger-color: #E74C3C; /* Strong red for danger actions */
     }
 
     body {
@@ -21,6 +23,7 @@
         margin: 0;
         padding: 0;
         background-color: var(--background-light);
+        color: var(--text-dark); /* Añadido para el color de texto general del body, como en inicio-admin */
     }
 
     /* Navbar Styles */
@@ -37,6 +40,7 @@
     .navbar-left h3 {
         margin: 0;
         font-size: 1.7rem;
+        color: var(--text-light); /* Asegura que el texto "Bienvenido" sea blanco */
     }
 
     .navbar-right {
@@ -53,6 +57,8 @@
         font-size: 1.1rem;
         display: flex;
         align-items: center;
+        /* Eliminar cualquier borde azul predeterminado de los NavLink */
+        outline: none;
     }
 
         .nav-item i {
@@ -60,13 +66,22 @@
         }
 
         .nav-item:hover {
-            background-color: var(--accent-red);
-            color: var(--text-light);
+            background-color: var(--accent-red); /* Fondo rojo más claro al pasar el ratón */
+            color: var(--text-light); /* Texto blanco al pasar el ratón */
         }
 
         .nav-item.active {
-            background-color: var(--accent-red);
+            background-color: var(--accent-red); /* Fondo rojo más claro para el elemento activo */
+            color: var(--text-light); /* Texto blanco para el elemento activo */
             font-weight: bold;
+        }
+
+    .cerrar-sesion {
+        background-color: var(--danger-color);
+    }
+
+        .cerrar-sesion:hover {
+            background-color: #c0392b; /* Darker shade of danger-color */
         }
 
     /* Main Content Styles */
@@ -196,14 +211,14 @@
         <NavLink href="/perfil" class="nav-item">
             <i class="bi bi-person-fill"></i> Perfil
         </NavLink>
-        <NavLink href="/exportar" class="nav-item ">
+        <NavLink href="/exportar" class="nav-item">
+            @* Eliminado el espacio extra en la clase "nav-item " *@
             <i class="bi bi-download"></i> Agregar Documentos
         </NavLink>
-        <NavLink href="/" class="nav-item ">
+        <NavLink href="/" class="nav-item cerrar-sesion">
+            @* Aplicada la clase cerrar-sesion para el botón de cerrar sesión *@
             <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
         </NavLink>
-
-
     </nav>
 </header>
 
@@ -235,9 +250,6 @@
         </div>
     </div>
     <p class="copyright">© 2025 Sistema de Promoción, Todos los Derechos Reservados</p>
-
-
-
 </footer>
 
 @code {
@@ -261,6 +273,4 @@
             Console.WriteLine($"Error cargando datos del usuario: {ex.Message}");
         }
     }
-
-
 }
